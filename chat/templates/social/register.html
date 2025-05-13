@@ -1,0 +1,57 @@
+{% extends 'social/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">Register</h3>
+            </div>
+            <div class="card-body">
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control bg-dark text-white" required id="id_username">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_full_name" class="form-label">Full Name</label>
+                        <input type="text" name="full_name" class="form-control bg-dark text-white" required id="id_full_name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control bg-dark text-white" required id="id_email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_password1" class="form-label">Password</label>
+                        <input type="password" name="password1" class="form-control bg-dark text-white" required id="id_password1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_password2" class="form-label">Password confirmation</label>
+                        <input type="password" name="password2" class="form-control bg-dark text-white" required id="id_password2">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_profile_picture" class="form-label">Profile Picture</label>
+                        <input type="file" name="profile_picture" class="form-control bg-dark text-white" id="id_profile_picture">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Register</button>
+                </form>
+
+                <div class="text-center mt-3">
+                    Already have an account? <a href="{% url 'login' %}">Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

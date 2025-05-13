@@ -1,0 +1,237 @@
+{% extends 'social/base.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <!-- Create Post Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="POST" action="{% url 'create_post' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <textarea class="form-control bg-light text-dark" name="content" rows="3" placeholder="What's on your mind?"></textarea>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <label for="image-upload" class="btn btn-sm btn-outline-primary me-2">
+                                <i class="fas fa-image"></i> Photo
+                            </label>
+                            <input id="image-upload" type="file" name="image" accept="image/*" style="display: none;">
+                            
+                            <label for="video-upload" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-video"></i> Video
+                            </label>
+                            <input id="video-upload" type="file" name="video" accept="video/*" style="display: none;">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Post</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Posts Feed -->
+        {% for post in posts %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <a href="{% url 'profile' post.user.username %}">
+                        <img src="{{ post.user.profile_picture.url }}" class="profile-pic me-3" alt="{{ post.user.username }}">
+                    </a>
+                    <div>
+                        <a href="{% url 'profile' post.user.username %}" class="text-decoration-none text-dark">
+                            <h5 class="mb-0">@{{ post.user.username }}</h5>
+                        </a>
+                        <small class="text-muted">{{ post.created_at|timesince }} ago</small>
+                    </div>
+                </div>
+                
+                <p class="card-text mb-3">{{ post.content }}</p>
+                
+                {% if post.image %}
+                <img src="{{ post.image.url }}" class="img-fluid mb-3 rounded" alt="Post image">
+                {% endif %}
+                
+                {% if post.video %}
+                <div class="video-container mb-3 rounded">
+                    <video 
+                        controls 
+                        playsinline 
+                        preload="metadata" 
+                        poster="{% if post.image %}{{ post.image.url }}{% else %}{% static 'default-video-thumbnail.jpg' %}{% endif %}"
+                        class="lazy-video"
+                        data-src="{{ post.video.url }}"
+                    >
+                        <source src="{{ post.video.url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <span class="likes-count-{{ post.id }}">{{ post.likes.count }}</span> likes
+                    </div>
+                    <div>
+                        {{ post.comments.count }} comments
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="post-actions d-flex justify-content-around">
+                    <a href="#" class="like-btn" data-post-id="{{ post.id }}">
+                        <i class="like-icon-{{ post.id }} {% if post.is_liked %}fas fa-heart text-danger{% else %}far fa-heart{% endif %}"></i>
+                    </a>
+                    <a href="#" data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}">
+                        <i class="far fa-comment"></i>
+                    </a>
+                    <a href="#" class="save-btn" data-post-id="{{ post.id }}">
+                        <i class="save-icon-{{ post.id }} far fa-bookmark"></i>
+                    </a>
+                </div>
+                
+                <div class="collapse" id="comments-{{ post.id }}">
+                    <hr>
+                    <div class="mb-3">
+                        {% for comment in post.comments.all|slice:":5" %}
+                        <div class="mb-2">
+                            <strong>@{{ comment.user.username }}</strong>: {{ comment.content }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <form class="comment-form" action="{% url 'add_comment' post.id %}" method="POST">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light text-dark" name="content" placeholder="Write a comment...">
+                            <button class="btn btn-outline-primary" type="submit">Post</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .video-container {
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        height: 0;
+        overflow: hidden;
+        background: #000;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .video-container video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        background: #000;
+    }
+    
+    video {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    video:hover {
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    
+    .profile-pic {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Like buttons functionality
+    const likeButtons = document.querySelectorAll('.like-btn');
+    likeButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const postId = this.getAttribute('data-post-id');
+            const likeIcon = document.querySelector(`.like-icon-${postId}`);
+            const likesCount = document.querySelector(`.likes-count-${postId}`);
+
+            fetch(`/like_post/${postId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({}),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.liked) {
+                    likeIcon.classList.remove('far');
+                    likeIcon.classList.add('fas', 'text-danger');
+                } else {
+                    likeIcon.classList.remove('fas', 'text-danger');
+                    likeIcon.classList.add('far');
+                }
+                likesCount.textContent = data.likes_count;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Video lazy loading and auto-play when visible
+    const lazyVideos = document.querySelectorAll('.lazy-video');
+    
+    const videoObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const video = entry.target;
+                video.src = video.getAttribute('data-src');
+                
+                // Auto-play when 50% of video is visible
+                const playPromise = video.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        // Auto-play was prevented, show controls
+                        video.controls = true;
+                    });
+                }
+                
+                observer.unobserve(video);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    lazyVideos.forEach(video => {
+        videoObserver.observe(video);
+    });
+
+    // Pause other videos when one is playing
+    document.querySelectorAll('video').forEach(video => {
+        video.addEventListener('play', function() {
+            document.querySelectorAll('video').forEach(otherVideo => {
+                if (otherVideo !== video && !otherVideo.paused) {
+                    otherVideo.pause();
+                }
+            });
+        });
+        
+        // Show controls on hover
+        video.addEventListener('mouseenter', function() {
+            this.controls = true;
+        });
+        
+        video.addEventListener('mouseleave', function() {
+            if (!this.paused) this.controls = false;
+        });
+    });
+});
+</script>
+{% endblock %}

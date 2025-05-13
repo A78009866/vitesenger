@@ -1,0 +1,80 @@
+{% extends 'social/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <!-- Profile Header -->
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <img src="{{ profile_user.profile_picture.url }}" class="profile-pic mb-3" style="width: 100px; height: 100px;" alt="{{ profile_user.username }}">
+                <h3>{{ profile_user.full_name }}</h3>
+                <p class="text-muted">@{{ profile_user.username }}</p>
+                
+                {% if profile_user != request.user %}
+                    {% if is_friend %}
+                        <button class="btn btn-outline-secondary" disabled>Friends</button>
+                    {% elif has_sent_request %}
+                        <button class="btn btn-outline-secondary" disabled>Request Sent</button>
+                    {% elif has_received_request %}
+                        <a href="{% url 'accept_friend_request' profile_user.username %}" class="btn btn-primary me-2">Accept Request</a>
+                        <a href="{% url 'reject_friend_request' profile_user.username %}" class="btn btn-outline-danger">Reject</a>
+                    {% else %}
+                        <a href="{% url 'send_friend_request' profile_user.username %}" class="btn btn-primary">Add Friend</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- User Posts -->
+        {% for post in posts %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="{{ post.user.profile_picture.url }}" class="profile-pic me-3" alt="{{ post.user.username }}">
+                    <div>
+                        <h5 class="mb-0">@{{ post.user.username }}</h5>
+                        <small class="text-muted">{{ post.created_at|timesince }} ago</small>
+                    </div>
+                </div>
+                
+                <p class="card-text mb-3">{{ post.content }}</p>
+                
+                {% if post.image %}
+                <img src="{{ post.image.url }}" class="img-fluid mb-3 rounded" alt="Post image">
+                {% endif %}
+                
+                {% if post.video %}
+                <video controls class="w-100 mb-3 rounded">
+                    <source src="{{ post.video.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <span class="likes-count-{{ post.id }}">{{ post.likes.count }}</span> likes
+                    </div>
+                    <div>
+                        {{ post.comments.count }} comments
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="post-actions d-flex justify-content-around">
+                    <a href="#" class="like-btn" data-post-id="{{ post.id }}">
+                        <i class="like-icon-{{ post.id }} far fa-heart"></i>
+                    </a>
+                    <a href="#" data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}">
+                        <i class="far fa-comment"></i>
+                    </a>
+                    <a href="#" class="save-btn" data-post-id="{{ post.id }}">
+                        <i class="save-icon-{{ post.id }} far fa-bookmark"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

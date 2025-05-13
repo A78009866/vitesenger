@@ -1,0 +1,75 @@
+{% extends 'social/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <!-- Friend Requests -->
+        {% if received_requests %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Friend Requests</h5>
+            </div>
+            <div class="card-body">
+                {% for user in received_requests %}
+                <div class="d-flex align-items-center mb-3">
+                    <img src="{{ user.profile_picture.url }}" class="profile-pic me-3" alt="{{ user.username }}">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">{{ user.full_name }}</h6>
+                        <small class="text-muted">@{{ user.username }}</small>
+                    </div>
+                    <div>
+                        <a href="{% url 'accept_friend_request' user.username %}" class="btn btn-sm btn-primary me-2">Accept</a>
+                        <a href="{% url 'reject_friend_request' user.username %}" class="btn btn-sm btn-outline-danger">Reject</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Friends List -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Your Friends ({{ friends.count }})</h5>
+            </div>
+            <div class="card-body">
+                {% if friends %}
+                    {% for friend in friends %}
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{{ friend.profile_picture.url }}" class="profile-pic me-3" alt="{{ friend.username }}">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">{{ friend.full_name }}</h6>
+                            <small class="text-muted">@{{ friend.username }}</small>
+                        </div>
+                        <a href="{% url 'profile' friend.username %}" class="btn btn-sm btn-outline-primary">View Profile</a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">You don't have any friends yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Sent Requests -->
+        {% if sent_requests %}
+        <div class="card">
+            <div class="card-header">
+                <h5>Sent Requests</h5>
+            </div>
+            <div class="card-body">
+                {% for user in sent_requests %}
+                <div class="d-flex align-items-center mb-3">
+                    <img src="{{ user.profile_picture.url }}" class="profile-pic me-3" alt="{{ user.username }}">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">{{ user.full_name }}</h6>
+                        <small class="text-muted">@{{ user.username }}</small>
+                    </div>
+                    <span class="badge bg-secondary">Pending</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
