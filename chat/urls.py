@@ -12,7 +12,6 @@ urlpatterns = [
     path('post/create/', views.create_post, name='create_post'),
     path('post/<int:post_id>/like/', views.like_post, name='like_post'),
     path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
-    path('post/<int:post_id>/save/', views.save_post, name='save_post'),
     path('profile/<str:username>/', views.profile, name='profile'),
     path('friends/', views.friends, name='friends'),
     path('friend_request/<str:username>/', views.send_friend_request, name='send_friend_request'),
@@ -22,5 +21,6 @@ urlpatterns = [
     path('block_user/<str:username>/', views.block_user, name='block_user'),
     path('unblock_user/<str:username>/', views.unblock_user, name='unblock_user'),
     path('logout/', logout_view, name='logout_view'),
+    path('saved/', views.saved_posts, name='saved_posts'),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

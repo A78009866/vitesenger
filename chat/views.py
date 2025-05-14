@@ -64,15 +64,17 @@ def add_comment(request, post_id):
     return JsonResponse({'success': False})
 
 @login_required
-def save_post(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    saved_post, created = SavedPost.objects.get_or_create(user=request.user, post=post)
-    if not created:
-        saved_post.delete()
-    return JsonResponse({
-        'is_saved': created,
-        'post_id': post_id
-    })
+def saved_posts(request):
+    saved_posts = SavedPost.objects.filter(user=request.user).select_related('post').order_by('-saved_at')
+    posts = [saved.post for saved in saved_posts]
+    
+    # إضافة حالة الإعجاب والحفظ لكل منشور
+    for post in posts:
+        post.is_liked = post.likes.filter(user=request.user).exists()
+        post.is_saved = True  # جميع المنشورات هنا محفوظة بالضرورة
+    
+    return render(request, 'social/saved_posts.html', {'posts': posts})
+
 @login_required
 def send_friend_request(request, username):
     receiver = get_object_or_404(User, username=username)

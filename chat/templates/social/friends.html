@@ -3,11 +3,11 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8 mx-auto">
-        <!-- Friend Requests -->
+        <!-- طلبات الصداقة الواردة -->
         {% if received_requests %}
         <div class="card mb-4">
             <div class="card-header">
-                <h5>Friend Requests</h5>
+                <h5>طلبات الصداقة</h5>
             </div>
             <div class="card-body">
                 {% for user in received_requests %}
@@ -18,85 +18,85 @@
                         <small class="text-muted">@{{ user.username }}</small>
                     </div>
                     <div>
-                        <a href="{% url 'accept_friend_request' user.username %}" class="btn btn-sm btn-primary me-2">Accept</a>
-                        <a href="{% url 'reject_friend_request' user.username %}" class="btn btn-sm btn-outline-danger">Reject</a>
+                        <a href="{% url 'accept_friend_request' user.username %}" class="btn btn-sm btn-primary me-2">قبول</a>
+                        <a href="{% url 'reject_friend_request' user.username %}" class="btn btn-sm btn-outline-danger">رفض</a>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-        
-        <!-- Friends List -->
+
+        <!-- قائمة الأصدقاء -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5>Your Friends ({{ friends.count }})</h5>
+                <h5>أصدقاؤك ({{ friends.count }})</h5>
             </div>
             <div class="card-body">
                 {% if friends %}
                     {% for friend in friends %}
-<div class="d-flex align-items-center mb-3">
-    <img src="{{ friend.profile_picture.url }}" class="profile-pic me-3" alt="{{ friend.username }}">
-    <div class="flex-grow-1">
-        <h6 class="mb-0">{{ friend.full_name }}</h6>
-        <small class="text-muted">@{{ friend.username }}</small>
-    </div>
-    <!-- داخل حلقة عرض الأصدقاء -->
-<div>
-    <a href="{% url 'profile' friend.username %}" class="btn btn-sm btn-outline-primary me-2">View Profile</a>
-</div>
-</div>
-{% endfor %}
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{{ friend.profile_picture.url }}" class="profile-pic me-3" alt="{{ friend.username }}">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">{{ friend.full_name }}</h6>
+                            <small class="text-muted">@{{ friend.username }}</small>
+                        </div>
+                        <div>
+                            <a href="{% url 'profile' friend.username %}" class="btn btn-sm btn-outline-primary me-2">عرض الملف</a>
+                        </div>
+                    </div>
+                    {% endfor %}
                 {% else %}
-                    <p class="text-muted">You don't have any friends yet.</p>
+                    <p class="text-muted">ليس لديك أصدقاء حتى الآن.</p>
                 {% endif %}
             </div>
         </div>
-        
-        <!-- Sent Requests -->
+
+        <!-- الطلبات المرسلة -->
         {% if sent_requests %}
         <div class="card">
             <div class="card-header">
-                <h5>Sent Requests</h5>
+                <h5>الطلبات المرسلة</h5>
             </div>
             <div class="card-body">
                 {% for user in received_requests %}
-<div class="d-flex align-items-center mb-3">
-    {% if user.profile_picture %}
-        <img src="{{ user.profile_picture.url }}" class="profile-pic me-3" alt="{{ user.username }}">
-    {% else %}
-        <img src="/media/profile_pics/default_profile.png" class="profile-pic me-3" alt="Default Profile">
-    {% endif %}
+                <div class="d-flex align-items-center mb-3">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" class="profile-pic me-3" alt="{{ user.username }}">
+                    {% else %}
+                        <img src="/media/profile_pics/default_profile.png" class="profile-pic me-3" alt="الصورة الافتراضية">
+                    {% endif %}
                     <div class="flex-grow-1">
                         <h6 class="mb-0">{{ user.full_name }}</h6>
                         <small class="text-muted">@{{ user.username }}</small>
                     </div>
-                    <span class="badge bg-secondary">Pending</span>
+                    <span class="badge bg-secondary">بانتظار القبول</span>
                 </div>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-        <!-- بعد قسم Sent Requests -->
-<div class="card mt-4">
-    <div class="card-header">
-        <h5>Blocked Users</h5>
-    </div>
-    <div class="card-body">
-        {% for user in request.user.blocked_users.all %}
-        <div class="d-flex align-items-center mb-3">
-            <img src="{{ user.profile_picture.url }}" class="profile-pic me-3" alt="{{ user.username }}">
-            <div class="flex-grow-1">
-                <h6 class="mb-0">{{ user.full_name }}</h6>
-                <small class="text-muted">@{{ user.username }}</small>
+
+        <!-- المستخدمون المحظورون -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>المستخدمون المحظورون</h5>
             </div>
-            <a href="{% url 'unblock_user' user.username %}" class="btn btn-sm btn-outline-warning">Unblock</a>
+            <div class="card-body">
+                {% for user in request.user.blocked_users.all %}
+                <div class="d-flex align-items-center mb-3">
+                    <img src="{{ user.profile_picture.url }}" class="profile-pic me-3" alt="{{ user.username }}">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">{{ user.full_name }}</h6>
+                        <small class="text-muted">@{{ user.username }}</small>
+                    </div>
+                    <a href="{% url 'unblock_user' user.username %}" class="btn btn-sm btn-outline-warning">إلغاء الحظر</a>
+                </div>
+                {% empty %}
+                <p class="text-muted">لم تقم بحظر أي مستخدم.</p>
+                {% endfor %}
+            </div>
         </div>
-        {% empty %}
-        <p class="text-muted">You haven't blocked any users.</p>
-        {% endfor %}
-    </div>
-</div>
     </div>
 </div>
 {% endblock %}
