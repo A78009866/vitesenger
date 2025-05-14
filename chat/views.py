@@ -8,10 +8,11 @@ import cloudinary.uploader
 
 @login_required
 def home(request):
-    posts = Post.objects.all().order_by('-created_at')
-    # إضافة حالة الإعجاب لكل منشور
+    blocked_users = request.user.blocked_users.all()
+    posts = Post.objects.exclude(user__in=blocked_users).order_by('-created_at')
     for post in posts:
-        post.is_liked = post.likes.filter(user=request.user).exists()  # تم التعديل هنا
+        post.is_liked = post.likes.filter(user=request.user).exists()
+        post.is_saved = SavedPost.objects.filter(user=request.user, post=post).exists()
     return render(request, 'social/home.html', {'posts': posts})
     
 @login_required
@@ -46,15 +47,21 @@ def like_post(request, post_id):
         'post_id': post_id
     })
 
-@login_required
+from django.http import JsonResponse
+
 def add_comment(request, post_id):
     if request.method == 'POST':
-        post = get_object_or_404(Post, id=post_id)
-        content = request.POST.get('content')
+        content = request.POST.get('content', '').strip()
         if content:
-            Comment.objects.create(user=request.user, post=post, content=content)
-            return JsonResponse({'status': 'success'})
-    return JsonResponse({'status': 'error'}, status=400)
+            post = get_object_or_404(Post, id=post_id)
+            comment = Comment.objects.create(user=request.user, post=post, content=content)
+            return JsonResponse({
+                'success': True,
+                'username': request.user.username,
+                'content': comment.content,
+                'profile_picture': request.user.profile_picture.url if request.user.profile_picture else '/media/profile_pics/default_profile.png'
+            })
+    return JsonResponse({'success': False})
 
 @login_required
 def save_post(request, post_id):
@@ -62,8 +69,10 @@ def save_post(request, post_id):
     saved_post, created = SavedPost.objects.get_or_create(user=request.user, post=post)
     if not created:
         saved_post.delete()
-    return JsonResponse({'is_saved': created})
-
+    return JsonResponse({
+        'is_saved': created,
+        'post_id': post_id
+    })
 @login_required
 def send_friend_request(request, username):
     receiver = get_object_or_404(User, username=username)
@@ -162,3 +171,39 @@ def login_view(request):
         form = AuthenticationForm()
     
     return render(request, 'social/login.html', {'form': form})
+
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+from django.views.decorators.http import require_POST
+
+@require_POST
+def logout_view(request):
+    logout(request)
+    return redirect('login')  # غيّرها لاسم URL المناسب عندك
+
+@login_required
+def block_user(request, username):
+    user_to_block = get_object_or_404(User, username=username)
+    
+    # لا يمكن للمستخدم حظر نفسه
+    if request.user == user_to_block:
+        return redirect('profile', username=username)
+    
+    # إضافة المستخدم إلى قائمة المحظورين
+    request.user.blocked_users.add(user_to_block)
+    
+    # إزالة أي طلبات صداقة بين المستخدمين
+    request.user.friend_requests.remove(user_to_block)
+    user_to_block.friend_requests.remove(request.user)
+    
+    # إزالة أي صداقة موجودة
+    request.user.friends.remove(user_to_block)
+    user_to_block.friends.remove(request.user)
+    
+    return redirect('profile', username=username)
+
+@login_required
+def unblock_user(request, username):
+    user_to_unblock = get_object_or_404(User, username=username)
+    request.user.blocked_users.remove(user_to_unblock)
+    return redirect('profile', username=username)

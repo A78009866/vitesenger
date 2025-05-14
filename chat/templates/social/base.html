@@ -269,25 +269,35 @@
                     <!-- البروفيل -->
                 <div class="user-dropdown dropdown ms-3">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                        <img src="{{ request.user.profile_picture.url }}" class="profile-pic me-2" alt="Profile">
-                        <span class="d-none d-lg-inline">{{ request.user.username }}</span>
-                    </a>
+    {% if request.user.profile_picture %}
+        <img src="{{ request.user.profile_picture.url }}" class="profile-pic me-2" alt="Profile">
+    {% else %}
+        <img src="/media/profile_pics/default_profile.png" class="profile-pic me-2" alt="Default Profile">
+    {% endif %}
+    <span class="d-none d-lg-inline">{{ request.user.username }}</span>
+</a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         {% if request.user.is_authenticated and request.user.username %}
                         <li><a class="dropdown-item" href="{% url 'profile' request.user.username %}"><i class="fas fa-user me-2"></i>Profile</a></li>
                         <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
                         {% endif %}
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+<form action="{% url 'logout_view' %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="dropdown-item">
+        <i class="fas fa-sign-out-alt me-2"></i>Logout
+    </button>
+</form>
                     </ul>
                 </div>
                     <li class="nav-item me-3">
                         <a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a>
                     </li>
                     
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'friends' %}"><i class="fas fa-users"></i> Friends</a>
-                    </li>
+                    <!-- في القائمة -->
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'friends' %}"><i class="fas fa-users"></i> Friends</a>
+</li>
                 </ul>
 
                 
@@ -376,6 +386,8 @@
                 });
             });
         });
+
+    
     </script>
 </body>
 </html>

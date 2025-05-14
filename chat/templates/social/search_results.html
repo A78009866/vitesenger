@@ -20,7 +20,18 @@
                             {% for user in users %}
                                 <a href="{% url 'profile' user.username %}" class="list-group-item list-group-item-action">
                                     <div class="d-flex align-items-center">
-                                        <img src="{{ user.profile_picture.url }}" class="profile-pic me-3" alt="{{ user.username }}">
+                                        {% if user.profile_picture %}
+                                            <img src="{{ user.profile_picture.url }}" 
+                                                 class="rounded-circle me-3 border" 
+                                                 alt="{{ user.username }}"
+                                                 style="width: 50px; height: 50px; object-fit: cover;"
+                                                 onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png'">
+                                        {% else %}
+                                            <img src="/media/profile_pics/default_profile.png" 
+                                                 class="rounded-circle me-3 border" 
+                                                 alt="Default Profile"
+                                                 style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% endif %}
                                         <div>
                                             <h6 class="mb-1">{{ user.get_full_name }}</h6>
                                             <small class="text-muted">@{{ user.username }}</small>

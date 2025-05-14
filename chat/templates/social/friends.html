@@ -35,15 +35,18 @@
             <div class="card-body">
                 {% if friends %}
                     {% for friend in friends %}
-                    <div class="d-flex align-items-center mb-3">
-                        <img src="{{ friend.profile_picture.url }}" class="profile-pic me-3" alt="{{ friend.username }}">
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0">{{ friend.full_name }}</h6>
-                            <small class="text-muted">@{{ friend.username }}</small>
-                        </div>
-                        <a href="{% url 'profile' friend.username %}" class="btn btn-sm btn-outline-primary">View Profile</a>
-                    </div>
-                    {% endfor %}
+<div class="d-flex align-items-center mb-3">
+    <img src="{{ friend.profile_picture.url }}" class="profile-pic me-3" alt="{{ friend.username }}">
+    <div class="flex-grow-1">
+        <h6 class="mb-0">{{ friend.full_name }}</h6>
+        <small class="text-muted">@{{ friend.username }}</small>
+    </div>
+    <!-- داخل حلقة عرض الأصدقاء -->
+<div>
+    <a href="{% url 'profile' friend.username %}" class="btn btn-sm btn-outline-primary me-2">View Profile</a>
+</div>
+</div>
+{% endfor %}
                 {% else %}
                     <p class="text-muted">You don't have any friends yet.</p>
                 {% endif %}
@@ -57,9 +60,13 @@
                 <h5>Sent Requests</h5>
             </div>
             <div class="card-body">
-                {% for user in sent_requests %}
-                <div class="d-flex align-items-center mb-3">
-                    <img src="{{ user.profile_picture.url }}" class="profile-pic me-3" alt="{{ user.username }}">
+                {% for user in received_requests %}
+<div class="d-flex align-items-center mb-3">
+    {% if user.profile_picture %}
+        <img src="{{ user.profile_picture.url }}" class="profile-pic me-3" alt="{{ user.username }}">
+    {% else %}
+        <img src="/media/profile_pics/default_profile.png" class="profile-pic me-3" alt="Default Profile">
+    {% endif %}
                     <div class="flex-grow-1">
                         <h6 class="mb-0">{{ user.full_name }}</h6>
                         <small class="text-muted">@{{ user.username }}</small>
@@ -70,6 +77,26 @@
             </div>
         </div>
         {% endif %}
+        <!-- بعد قسم Sent Requests -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Blocked Users</h5>
+    </div>
+    <div class="card-body">
+        {% for user in request.user.blocked_users.all %}
+        <div class="d-flex align-items-center mb-3">
+            <img src="{{ user.profile_picture.url }}" class="profile-pic me-3" alt="{{ user.username }}">
+            <div class="flex-grow-1">
+                <h6 class="mb-0">{{ user.full_name }}</h6>
+                <small class="text-muted">@{{ user.username }}</small>
+            </div>
+            <a href="{% url 'unblock_user' user.username %}" class="btn btn-sm btn-outline-warning">Unblock</a>
+        </div>
+        {% empty %}
+        <p class="text-muted">You haven't blocked any users.</p>
+        {% endfor %}
+    </div>
+</div>
     </div>
 </div>
 {% endblock %}

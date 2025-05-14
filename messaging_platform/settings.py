@@ -26,12 +26,13 @@ SECRET_KEY = 'django-insecure-m(x8xu413g_0^_dfyrw#)mjc_gn7szcc-kx^*pf9xhabh99gjs
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['trimer.onrender.com', '*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',  # أضف هذا في أعلى القائمة
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,14 +45,7 @@ INSTALLED_APPS = [
     'channels',
 ]
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [('127.0.0.1', 6379)],
-        },
-    },
-}
+
 
 # Media settings
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
@@ -99,6 +93,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'messaging_platform.wsgi.application'
+ASGI_APPLICATION = 'messaging_platform.asgi.application'
 
 
 # Database
@@ -155,3 +150,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'chat.User'
 LOGIN_URL = '/login/'
+
+# إعدادات المنطقة الزمنية للجزائر
+TIME_ZONE = 'Africa/Algiers'
+USE_TZ = True
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+LOGIN_REDIRECT_URL = 'home'  # استبدل 'home' باسم المسار الذي تريده بعد تسجيل الدخول
