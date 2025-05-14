@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as auth_login
 from .forms import CustomUserCreationForm, PostForm, FriendRequestForm
-from .models import Post, Like, Comment, SavedPost, User
+from .models import Post, Like, Comment, SavedPost, CustomUser  # تم التعديل هنا
 from django.http import JsonResponse
 import cloudinary.uploader
 

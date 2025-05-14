@@ -4,7 +4,7 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('chat.urls')),
+    path('', include('vite.urls')),
     path('login/', auth_views.LoginView.as_view(template_name='social/login.html'), name='login'),
-    path('chat/', include('chat.urls')),
+    path('vite/', include('vite.urls')),
 ]

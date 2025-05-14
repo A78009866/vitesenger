@@ -1,13 +1,13 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, Post
+from .models import CustomUser, Post
 
 class CustomUserCreationForm(UserCreationForm):
     full_name = forms.CharField(max_length=100, required=True)
     profile_picture = forms.ImageField(required=False)
     
     class Meta:
-        model = User
+        model = CustomUser
         fields = ('username', 'full_name', 'email', 'password1', 'password2', 'profile_picture')
 
 class PostForm(forms.ModelForm):
