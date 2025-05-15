@@ -439,7 +439,7 @@
             <div class="navbar-container">
                 <div class="navbar-top-row">
                     <a class="navbar-brand" href="{% url 'home' %}">
-                        <i class="fas fa-users me-2"></i> Aite
+                        <i class="fas fa-users me-2"></i> Vite
                     </a>
 
                     <div class="search-container">
@@ -572,6 +572,26 @@
                 });
             });
         });
+
+        // تحديث المحادثة تلقائياً
+function updateChat() {
+    if (window.location.pathname.includes('/messages/')) {
+        const chatId = window.location.pathname.split('/')[2];
+        if (chatId) {
+            fetch(`/messages/update/${chatId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.new_messages) {
+                        // إضافة الرسائل الجديدة
+                        location.reload(); // أو معالجة DOM بشكل ديناميكي
+                    }
+                });
+        }
+    }
+}
+
+// تحديث كل 5 ثوان
+setInterval(updateChat, 1000);
     </script>
 </body>
 </html>

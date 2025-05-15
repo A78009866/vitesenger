@@ -15,7 +15,18 @@ def home(request):
         post.is_liked = post.likes.filter(user=request.user).exists()
         post.is_saved = SavedPost.objects.filter(user=request.user, post=post).exists()
     return render(request, 'social/home.html', {'posts': posts})
+    # حساب الرسائل غير المقروءة
+    unread_messages_count = Message.objects.filter(
+        receiver=request.user,
+        is_read=False
+    ).count()
     
+    context = {
+        'posts': posts,
+        'unread_messages_count': unread_messages_count,
+    }
+    return render(request, 'social/home.html', context)
+
 @login_required
 def create_post(request):
     if request.method == 'POST':
@@ -269,3 +280,163 @@ def delete_post(request, post_id):
         return redirect('profile', username=request.user.username)
     
     return render(request, 'social/confirm_delete.html', {'post': post})
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Chat, Message, CustomUser
+from django.http import JsonResponse
+from django.db.models import Q
+from django.utils import timezone
+
+@login_required
+def messages_list(request):
+    # جلب جميع المحادثات التي يشارك فيها المستخدم
+    chats = Chat.objects.filter(participants=request.user).order_by('-created_at')
+    
+    # إنشاء قائمة تحتوي على معلومات كل محادثة
+    chats_data = []
+    for chat in chats:
+        # الحصول على المستخدم الآخر
+        other_user = None
+        for user in chat.participants.all():
+            if user != request.user:
+                other_user = user
+                break
+        
+        if other_user:
+            # الحصول على آخر رسالة
+            last_message = Message.objects.filter(
+                Q(sender=request.user, receiver=other_user) |
+                Q(sender=other_user, receiver=request.user)
+            ).order_by('-timestamp').first()
+            
+            chats_data.append({
+                'chat': chat,
+                'other_user': other_user,
+                'last_message': last_message
+            })
+    
+    return render(request, 'social/messages_list.html', {'chats_data': chats_data})
+
+@login_required
+def chat_detail(request, chat_id):
+    chat = get_object_or_404(Chat, id=chat_id, participants=request.user)
+    
+    # الحصول على المستخدم الآخر في المحادثة
+    other_user = None
+    for user in chat.participants.all():
+        if user != request.user:
+            other_user = user
+            break
+    
+    if not other_user:
+        return redirect('messages_list')
+    
+    messages = Message.objects.filter(
+        (Q(sender=request.user) & Q(receiver=other_user)) | 
+        (Q(sender=other_user) & Q(receiver=request.user))
+    ).order_by('timestamp')
+    
+    # وضع علامة على الرسائل كمقروءة
+    messages.filter(receiver=request.user, is_read=False).update(is_read=True, seen_at=timezone.now())
+    
+    return render(request, 'social/chat_detail.html', {
+        'chat': chat,
+        'other_user': other_user,
+        'messages': messages
+    })
+
+@login_required
+def new_chat(request, username):
+    other_user = get_object_or_404(CustomUser, username=username)
+    
+    # التحقق من أن المستخدمين أصدقاء
+    if not request.user.friends.filter(id=other_user.id).exists():
+        return redirect('profile', username=username)
+    
+    # البحث عن محادثة موجودة أو إنشاء جديدة
+    chat, created = Chat.objects.get_or_create()
+    chat.participants.add(request.user, other_user)
+    
+    return redirect('chat_detail', chat_id=chat.id)
+
+@login_required
+def send_message(request, chat_id):
+    if request.method == 'POST':
+        chat = get_object_or_404(Chat, id=chat_id, participants=request.user)
+        other_user = chat.participants.exclude(id=request.user.id).first()
+        content = request.POST.get('content', '').strip()
+        
+        if content:
+            message = Message.objects.create(
+                sender=request.user,
+                receiver=other_user,
+                content=content
+            )
+            
+            # تحديث آخر رسالة في المحادثة
+            chat.last_message = message.content
+            chat.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message_id': message.id,
+                'content': message.content,
+                'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M'),
+                'sender_username': request.user.username,
+                'sender_profile_picture': request.user.profile_picture.url if request.user.profile_picture else '/media/profile_pics/default_profile.png'
+            })
+    
+    return JsonResponse({'success': False})
+
+@login_required
+def update_chat(request, chat_id):
+    chat = get_object_or_404(Chat, id=chat_id, participants=request.user)
+    last_message_id = request.GET.get('last_message_id', 0)
+    
+    new_messages = Message.objects.filter(
+        Q(chat=chat, id__gt=last_message_id),
+        Q(receiver=request.user) | Q(sender=request.user)
+    ).order_by('timestamp')
+    
+    messages_data = []
+    for message in new_messages:
+        messages_data.append({
+            'id': message.id,
+            'content': message.content,
+            'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M'),
+            'sender': message.sender.username,
+            'is_read': message.is_read,
+            'is_sender': message.sender == request.user
+        })
+    
+    return JsonResponse({
+        'new_messages': messages_data,
+        'last_message_id': new_messages.last().id if new_messages.exists() else last_message_id
+    })
+
+# views.py
+from django.http import JsonResponse
+from .models import Message
+
+def get_new_messages(request, chat_id):
+    last_id = request.GET.get('last_id', 0)
+    messages = Message.objects.filter(
+        chat_id=chat_id,
+        id__gt=last_id
+    ).order_by('timestamp')
+    
+    messages_data = []
+    for message in messages:
+        messages_data.append({
+            'id': message.id,
+            'content': message.content,
+            'timestamp': message.timestamp.strftime("%H:%M"),
+            'is_sender': message.sender == request.user,
+            'is_read': message.is_read,
+            'sender_username': message.sender.username,
+            'sender_profile_pic': message.sender.profile_picture.url if message.sender.profile_picture else None
+        })
+    
+    return JsonResponse({'messages': messages_data})

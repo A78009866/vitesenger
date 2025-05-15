@@ -1,0 +1,131 @@
+{% extends 'social/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <a href="{% url 'messages_list' %}" class="text-white"><i class="fas fa-arrow-left"></i></a>
+                    <h5 class="mb-0">
+                        {% for user in chat.participants.all %}
+                            {% if user != request.user %}
+                                محادثة مع @{{ user.username }}
+                            {% endif %}
+                        {% endfor %}
+                    </h5>
+                    <div></div>
+                </div>
+                
+                <div class="card-body chat-messages" id="chat-messages" style="height: 500px; overflow-y: auto;">
+                    {% for message in messages %}
+                        <div class="mb-3 {% if message.sender == request.user %}text-end{% else %}text-start{% endif %}">
+                            <div class="d-flex {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">
+                                {% if message.sender != request.user %}
+                                    <img src="{{ message.sender.profile_picture.url|default:'/media/profile_pics/default_profile.png' }}" 
+                                         class="rounded-circle me-2" width="40" height="40" alt="{{ message.sender.username }}">
+                                {% endif %}
+                                <div>
+                                    <div class="p-3 rounded {% if message.sender == request.user %}bg-primary text-white{% else %}bg-light{% endif %}">
+                                        {{ message.content }}
+                                    </div>
+                                    <small class="text-muted d-block mt-1">
+                                        {{ message.timestamp|date:"H:i" }}
+                                        {% if message.sender == request.user and message.is_read %}
+                                            <i class="fas fa-check-double text-info ms-1"></i>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">لا توجد رسائل بعد</p>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="card-footer">
+                    <form id="message-form" class="d-flex">
+                        {% csrf_token %}
+                        <input type="text" id="message-input" name="content" class="form-control me-2" placeholder="اكتب رسالة..." required>
+                        <button type="submit" class="btn btn-primary">إرسال</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageForm = document.getElementById('message-form');
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    let lastMessageId = {% if messages.last %}{{ messages.last.id }}{% else %}0{% endif %};
+    
+    // جعل المحادثة تنتقل للأسفل عند التحميل
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // إرسال الرسائل
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch("{% url 'send_message' chat.id %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                messageInput.value = ''; // تفريغ حقل الإدخال
+                lastMessageId = data.message_id;
+            }
+        });
+    });
+    
+    // استلام الرسائل الجديدة تلقائياً
+    function checkNewMessages() {
+        fetch("{% url 'get_new_messages' chat.id %}?last_id=" + lastMessageId)
+        .then(response => response.json())
+        .then(data => {
+            if (data.messages.length > 0) {
+                data.messages.forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `mb-3 ${message.is_sender ? 'text-end' : 'text-start'}`;
+                    
+                    messageDiv.innerHTML = `
+                        <div class="d-flex ${message.is_sender ? 'justify-content-end' : 'justify-content-start'}">
+                            ${!message.is_sender ? `
+                                <img src="${message.sender_profile_pic || '/media/profile_pics/default_profile.png'}" 
+                                     class="rounded-circle me-2" width="40" height="40" alt="${message.sender_username}">
+                            ` : ''}
+                            <div>
+                                <div class="p-3 rounded ${message.is_sender ? 'bg-primary text-white' : 'bg-light'}">
+                                    ${message.content}
+                                </div>
+                                <small class="text-muted d-block mt-1">
+                                    ${message.timestamp}
+                                    ${message.is_sender && message.is_read ? '<i class="fas fa-check-double text-info ms-1"></i>' : ''}
+                                </small>
+                            </div>
+                        </div>
+                    `;
+                    chatMessages.appendChild(messageDiv);
+                    lastMessageId = message.id;
+                });
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+    }
+    
+    // التحقق من الرسائل الجديدة كل 3 ثواني
+    setInterval(checkNewMessages, 3000);
+});
+</script>
+{% endblock %}

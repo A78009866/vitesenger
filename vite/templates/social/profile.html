@@ -24,6 +24,13 @@
                 <div class="d-flex justify-content-center gap-2">
                     {% if is_friend %}
                         <button class="btn btn-outline-secondary" disabled>أصدقاء</button>
+                        <!-- في ملف profile.html -->
+{% if is_friend %}
+    <a href="{% url 'new_chat' profile_user.username %}" class="btn btn-primary">
+        <i class="fas fa-comment"></i> راسل
+    </a>
+{% endif %}
+
                     {% elif has_sent_request %}
                         <button class="btn btn-outline-secondary" disabled>تم إرسال الطلب</button>
                     {% elif has_received_request %}
