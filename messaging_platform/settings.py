@@ -161,6 +161,15 @@ LOGIN_REDIRECT_URL = 'home'  # استبدل 'home' باسم المسار الذ�
 
 
 # تحليل Internal Database URL
-
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'vitesql',
+        'USER': 'vite',
+        'PASSWORD': '1234',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+}
 
 AUTH_USER_MODEL = 'vite.CustomUser'  # استبدل your_app_name باسم تطبيقك
