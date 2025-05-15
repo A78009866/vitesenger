@@ -34,7 +34,7 @@
                 {% include 'social/post_template.html' with post=post %}
             {% endfor %}
 <!-- في نهاية ملف base.html قبل غلق body -->
-<a href="{% url 'messages_list' %}" class="btn btn-primary rounded-circle floating-chat-button">
+<a href="{% url 'chat_list' request.user.username %}" class="btn btn-primary rounded-circle floating-chat-button">
     <i class="fas fa-comments"></i>
     {% if unread_messages_count > 0 %}
         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -47,7 +47,7 @@
 .floating-chat-button {
     position: fixed;
     bottom: 30px;
-    right: 30px;
+    left: 30px;
     width: 60px;
     height: 60px;
     font-size: 1.5rem;

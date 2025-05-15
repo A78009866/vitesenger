@@ -1,0 +1,482 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>محادثة</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #000000; /* لون أخضر مشابه للواتساب */
+            --secondary-color: #f0f0f0;
+            --text-color: #333;
+            --white: #fff;
+            --message-received: #ffffff;
+            --message-sent: #beafafde;
+            --time-color: rgba(0,0,0,0.4);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #e5ddd5;
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* تحسينات الهيدر الجديدة */
+        .chat-header {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--primary-color);
+            color: var(--white);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            height: 56px; /* ارتفاع ثابت */
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            gap: 12px;
+        }
+        
+        .back-btn {
+            color: var(--white);
+            font-size: 18px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .profile-pic {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .user-name {
+            font-size: 16px;
+            font-weight: 500;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: #e5ddd5;
+            background-image: url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png');
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 15px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .sent {
+            align-self: flex-end;
+            background: var(--message-sent);
+            color: var(--text-color);
+            border-top-right-radius: 0;
+            margin-left: 0;
+        }
+        
+        .received {
+            align-self: flex-start;
+            background: var(--message-received);
+            color: var(--text-color);
+            border-top-left-radius: 0;
+            margin-right: 0;
+            box-shadow: 0 1px 0.5px rgba(0,0,0,0.1);
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: var(--time-color);
+            display: block;
+            text-align: left;
+            margin-top: 2px;
+            direction: ltr;
+        }
+        
+        .received .message-time {
+            color: rgba(0,0,0,0.5);
+        }
+        
+        .chat-footer {
+            padding: 8px 12px;
+            background: var(--secondary-color);
+            border-top: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            position: sticky;
+            bottom: 0;
+        }
+        
+        .message-input-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: var(--white);
+            border-radius: 20px;
+            padding: 6px 12px;
+            margin: 0 8px;
+            min-height: 40px;
+        }
+        
+        .message-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 15px;
+            padding: 6px;
+            background: transparent;
+            max-height: 100px;
+            resize: none;
+            width: 100%;
+        }
+        
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .send-btn {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+        
+        /* تحسينات للويب فيو على الهواتف */
+        @media (max-width: 768px) {
+            .chat-header {
+                padding: 6px 10px;
+                height: 52px;
+            }
+            
+            .message {
+                max-width: 85%;
+                padding: 8px 12px;
+                margin-bottom: 6px;
+            }
+            
+            .profile-pic {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .user-name {
+                font-size: 15px;
+            }
+            
+            .chat-footer {
+                padding: 6px 10px;
+            }
+            
+            .message-input-container {
+                padding: 6px 10px;
+                min-height: 36px;
+                border-radius: 18px;
+            }
+            
+            .message-input {
+                font-size: 14px;
+            }
+            
+            .action-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+        }
+        .message-time {
+    font-size: 11px;
+    color: var(--time-color);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+    direction: ltr;
+}
+
+.fa-check {
+    color: rgba(0,0,0,0.3);
+    font-size: 10px;
+}
+
+.fa-check-double {
+    color: #4fc3f7;
+    font-size: 10px;
+}
+   
+.verified-badge {
+    color: #1DA1F2;
+    font-size: 0.8em;
+    margin-right: 3px;
+    vertical-align: middle;
+}
+
+.dark-mode .verified-badge {
+    color: #1DA1F2;
+}
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- الهيدر الجديد الأكثر أناقة -->
+        <div class="chat-header">
+            <a href="javascript:history.back()" class="back-btn">
+                <i class="fas fa-arrow-right"></i>
+            </a>
+            <div class="header-content">
+             <a href="{% if other_user.username %}{% url 'profile' other_user.username %}{% else %}#{% endif %}">
+    <img src="{{ other_user.profile_picture.url }}" 
+         alt="Profile" 
+         class="profile-pic"
+         onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';">
+</a>
+
+                <div class="user-name">
+                    {{ other_user.username }}
+                    {% if other_user.is_verified %}
+                        <span class="verified-badge" title="حساب موثوق (لديه أكثر من 10 متابعين)">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div id="chat-box" class="chat-box">
+            {% for message in messages %}
+            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+                <p>{{ message.content }}</p>
+                <span class="message-time">
+                    {{ message.timestamp|time:"H:i" }}
+                    {% if message.sender == request.user and message.is_read %}
+                        <i class="fas fa-check-double" style="color: #4fc3f7;"></i>
+                    {% elif message.sender == request.user %}
+                        <i class="fas fa-check"></i>
+                    {% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="chat-footer">
+            <button class="action-btn">
+                <i class="far fa-smile"></i>
+            </button>
+            
+            <div class="message-input-container">
+                <textarea id="message-input" class="message-input" placeholder="اكتب رسالة..." rows="1"></textarea>
+            </div>
+            
+            <button id="send-btn" class="action-btn send-btn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const chatBox = document.getElementById("chat-box");
+            const messageInput = document.getElementById("message-input");
+            const sendButton = document.getElementById("send-btn");
+            const otherUser = "{{ other_user.username }}";
+            let lastMessageId = 0;
+            
+            // Auto-resize textarea
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                
+                if (window.innerHeight < 500) {
+                    setTimeout(() => {
+                        window.scrollTo(0, document.body.scrollHeight);
+                    }, 100);
+                }
+            });
+            
+            messageInput.addEventListener('focus', function() {
+                setTimeout(() => {
+                    window.scrollTo(0, document.body.scrollHeight);
+                }, 300);
+            });
+            
+            function scrollToBottom() {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+            
+            function formatTime(dateString) {
+                const date = new Date(dateString);
+                let hours = date.getHours();
+                let minutes = date.getMinutes();
+                const ampm = hours >= 12 ? 'م' : 'ص';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                minutes = minutes < 10 ? '0'+minutes : minutes;
+                return hours + ':' + minutes + ' ' + ampm;
+            }
+            
+            function fetchMessages() {
+                fetch(`/chat/${otherUser}/get-messages/`)
+                .then(response => response.json())
+                .then(messages => {
+                    chatBox.innerHTML = "";
+                    messages.forEach(msg => {
+                        addMessageToChat(msg, false);
+                        lastMessageId = msg.id;
+                    });
+                    scrollToBottom();
+                });
+            }
+            
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                if (!message) return;
+                
+                fetch("{% url 'send_message' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        receiver: otherUser, 
+                        content: message
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.error) {
+                        addMessageToChat(data, true);
+                        messageInput.value = "";
+                        messageInput.style.height = 'auto';
+                        scrollToBottom();
+                    }
+                });
+            }
+            
+            function addMessageToChat(msg, isNew) {
+    const messageDiv = document.createElement("div");
+    messageDiv.classList.add("message");
+    
+    if (msg.sender === "{{ request.user.username }}") {
+        messageDiv.classList.add("sent");
+    } else {
+        messageDiv.classList.add("received");
+    }
+    
+    let seenIcon = "";
+    if (msg.sender === "{{ request.user.username }}") {
+        if (msg.is_read) {
+            seenIcon = `<i class="fas fa-check-double" style="color: #4fc3f7;"></i>`;
+        } else {
+            seenIcon = `<i class="fas fa-check"></i>`;
+        }
+    }
+    
+    messageDiv.innerHTML = `
+        <p>${msg.content}</p>
+        <span class="message-time">
+            ${formatTime(msg.timestamp)}
+            ${seenIcon}
+        </span>
+    `;
+    
+    chatBox.appendChild(messageDiv);
+    
+    if (isNew) {
+        lastMessageId = msg.id;
+    }
+}
+            
+            function checkNewMessages() {
+                fetch(`/chat/${otherUser}/get-messages/`)
+                .then(response => response.json())
+                .then(messages => {
+                    messages.forEach(msg => {
+                        if (msg.id > lastMessageId) {
+                            addMessageToChat(msg, true);
+                            lastMessageId = msg.id;
+                            scrollToBottom();
+                        }
+                    });
+                });
+            }
+            
+            sendButton.addEventListener("click", sendMessage);
+            
+            messageInput.addEventListener("keypress", function(event) {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            setInterval(checkNewMessages, 2000);
+            
+            fetchMessages();
+            scrollToBottom();
+            
+            setTimeout(() => {
+                messageInput.focus();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

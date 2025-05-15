@@ -4,7 +4,6 @@ from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import logout_view
-from .views import get_new_messages
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -26,12 +25,9 @@ urlpatterns = [
     path('unblock_user/<str:username>/', views.unblock_user, name='unblock_user'),
     path('logout/', logout_view, name='logout_view'),
     path('saved/', views.saved_posts, name='saved_posts'),
-    path('messages/update/<int:chat_id>/', views.update_chat, name='update_chat'),
-    path('messages/', views.messages_list, name='messages_list'),
-    path('messages/<int:chat_id>/', views.chat_detail, name='chat_detail'),
-    path('messages/new/<str:username>/', views.new_chat, name='new_chat'),
-    path('messages/send/<int:chat_id>/', views.send_message, name='send_message'),
-    path('chat/<int:chat_id>/get_new_messages/', get_new_messages, name='get_new_messages'),
-
+    path("chat/<str:username>/", views.chat_view, name="chat"),
+    path("send-message/", views.send_message, name="send_message"),
+    path("chat/<str:username>/get-messages/", views.get_messages, name="get_messages"),
+    path('chat/list/<str:username>/', views.chat_list, name='chat_list'),  # يتوقع وسيطة username
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
