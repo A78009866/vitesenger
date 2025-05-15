@@ -10,12 +10,28 @@ class CustomUserCreationForm(UserCreationForm):
         model = CustomUser
         fields = ('username', 'full_name', 'email', 'password1', 'password2', 'profile_picture')
 
+class ProfileEditForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'full_name', 'email', 'profile_picture', 'bio')
+        widgets = {
+            'bio': forms.Textarea(attrs={'rows': 3}),
+        }
+
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ('content', 'image', 'video')
         widgets = {
             'content': forms.Textarea(attrs={'rows': 3, 'placeholder': "What's on your mind?"}),
+        }
+
+class PostEditForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ('content', 'image', 'video')
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 3}),
         }
 
 class FriendRequestForm(forms.Form):

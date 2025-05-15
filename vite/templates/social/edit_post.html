@@ -1,0 +1,39 @@
+{% extends 'social/base.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h3>تعديل المنشور</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <textarea class="form-control bg-light text-dark" name="content" rows="3" placeholder="بماذا تفكر؟">{{ post.content }}</textarea>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <label for="image-upload" class="btn btn-sm btn-outline-primary me-2">
+                                <i class="fas fa-image"></i> صورة
+                            </label>
+                            <input id="image-upload" type="file" name="image" accept="image/*" style="display: none;">
+                            
+                            <label for="video-upload" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-video"></i> فيديو
+                            </label>
+                            <input id="video-upload" type="file" name="video" accept="video/*" style="display: none;">
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                            <a href="{% url 'profile' request.user.username %}" class="btn btn-outline-secondary">إلغاء</a>
+                        </div>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -6,6 +6,7 @@
         <!-- رأس الملف الشخصي -->
         <div class="card mb-4">
             <div class="card-body text-center">
+                
                 {% if profile_user.profile_picture %}
                     <img src="{{ profile_user.profile_picture.url }}" class="profile-pic mb-3" style="width: 100px; height: 100px;" alt="{{ profile_user.username }}">
                 {% else %}
@@ -13,7 +14,12 @@
                 {% endif %}
                 <h3>{{ profile_user.full_name }}</h3>
                 <p class="text-muted">@{{ profile_user.username }}</p>
-                
+                {% if profile_user == request.user %}
+<div class="d-flex justify-content-center gap-2 mt-3">
+    <a href="{% url 'edit_profile' request.user.username %}" class="btn btn-outline-primary">تعديل الملف الشخصي</a>
+    <a href="{% url 'create_post' %}" class="btn btn-primary">إنشاء منشور جديد</a>
+</div>
+{% endif %}
                 {% if profile_user != request.user %}
                 <div class="d-flex justify-content-center gap-2">
                     {% if is_friend %}
@@ -38,9 +44,7 @@
         </div>
 
         <!-- منشورات المستخدم -->
-          <!-- تغذية المنشورات -->
-    {% for post in posts %}
+          {% for post in posts %}
                 {% include 'social/post_template.html' with post=post %}
             {% endfor %}
-    
 {% endblock %}

@@ -5,6 +5,7 @@ from .forms import CustomUserCreationForm, PostForm, FriendRequestForm
 from .models import Post, Like, Comment, SavedPost, CustomUser  # تم التعديل هنا
 from django.http import JsonResponse
 import cloudinary.uploader
+from .forms import ProfileEditForm, PostEditForm  # إضافة الاستيراد
 
 @login_required
 def home(request):
@@ -77,14 +78,14 @@ def saved_posts(request):
 
 @login_required
 def send_friend_request(request, username):
-    receiver = get_object_or_404(User, username=username)
+    receiver = get_object_or_404(CustomUser, username=username)
     if request.user != receiver and receiver not in request.user.friend_requests.all():
         request.user.friend_requests.add(receiver)
     return redirect('profile', username=username)
 
 @login_required
 def accept_friend_request(request, username):
-    sender = get_object_or_404(User, username=username)
+    sender = get_object_or_404(CustomUser, username=username)
     if sender in request.user.received_friend_requests.all():
         request.user.friends.add(sender)
         sender.friends.add(request.user)
@@ -93,21 +94,21 @@ def accept_friend_request(request, username):
 
 @login_required
 def reject_friend_request(request, username):
-    sender = get_object_or_404(User, username=username)
+    sender = get_object_or_404(CustomUser, username=username)
     if sender in request.user.received_friend_requests.all():
         request.user.received_friend_requests.remove(sender)
     return redirect('friends')
 
 @login_required
 def profile(request, username):
-    user = get_object_or_404(User, username=username)
+    user = get_object_or_404(CustomUser, username=username)
     posts = user.posts.all().order_by('-created_at')
     is_friend = user in request.user.friends.all()
     has_sent_request = user in request.user.friend_requests.all()
     has_received_request = request.user in user.friend_requests.all()
     
     context = {
-        'profile_user': user,
+        'profile_user': user,  # تم التصحيح هنا من CustomUser إلى user
         'posts': posts,
         'is_friend': is_friend,
         'has_sent_request': has_sent_request,
@@ -131,7 +132,7 @@ def friends(request):
 @login_required
 def search_users(request):
     query = request.GET.get('q', '')
-    users = User.objects.filter(username__icontains=query) | User.objects.filter(full_name__icontains=query)
+    users = CustomUser.objects.filter(username__icontains=query) | CustomUser.objects.filter(full_name__icontains=query)
     return render(request, 'social/search_results.html', {'users': users, 'query': query})
 
 def register(request):
@@ -185,7 +186,7 @@ def logout_view(request):
 
 @login_required
 def block_user(request, username):
-    user_to_block = get_object_or_404(User, username=username)
+    user_to_block = get_object_or_404(CustomUser, username=username)
     
     # لا يمكن للمستخدم حظر نفسه
     if request.user == user_to_block:
@@ -206,6 +207,65 @@ def block_user(request, username):
 
 @login_required
 def unblock_user(request, username):
-    user_to_unblock = get_object_or_404(User, username=username)
+    user_to_unblock = get_object_or_404(CustomUser, username=username)
     request.user.blocked_users.remove(user_to_unblock)
     return redirect('profile', username=username)
+
+@login_required
+def edit_profile(request, username):
+    if request.user.username != username:
+        return redirect('profile', username=username)
+    
+    if request.method == 'POST':
+        form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            user = form.save(commit=False)
+            
+            # Handle profile picture upload to Cloudinary
+            if 'profile_picture' in request.FILES:
+                user.profile_picture = cloudinary.uploader.upload(request.FILES['profile_picture'])['url']
+            
+            user.save()
+            return redirect('profile', username=username)
+    else:
+        form = ProfileEditForm(instance=request.user)
+    
+    return render(request, 'social/edit_profile.html', {'form': form})
+
+@login_required
+def edit_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    
+    if request.user != post.user:
+        return redirect('home')
+    
+    if request.method == 'POST':
+        form = PostEditForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            post = form.save(commit=False)
+            
+            # Handle file uploads to Cloudinary
+            if 'image' in request.FILES:
+                post.image = cloudinary.uploader.upload(request.FILES['image'])['url']
+            if 'video' in request.FILES:
+                post.video = cloudinary.uploader.upload(request.FILES['video'], resource_type="video")['url']
+            
+            post.save()
+            return redirect('profile', username=request.user.username)
+    else:
+        form = PostEditForm(instance=post)
+    
+    return render(request, 'social/edit_post.html', {'form': form, 'post': post})
+
+@login_required
+def delete_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    
+    if request.user != post.user:
+        return redirect('home')
+    
+    if request.method == 'POST':
+        post.delete()
+        return redirect('profile', username=request.user.username)
+    
+    return render(request, 'social/confirm_delete.html', {'post': post})
