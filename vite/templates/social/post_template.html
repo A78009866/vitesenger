@@ -31,22 +31,26 @@
         <p class="card-text mb-3">{{ post.content }}</p>
         
         {% if post.image %}
-        <img src="{{ post.image.url }}" class="img-fluid mb-3 rounded" alt="Post image">
+        <div class="post-media-container">
+            <img src="{{ post.image.url }}" class="img-fluid rounded post-image" alt="Post image" loading="lazy">
+        </div>
         {% endif %}
         
         {% if post.video %}
-        <div class="video-container mb-3 rounded">
-            <video 
-                controls 
-                playsinline 
-                preload="metadata" 
-                poster="{% if post.image %}{{ post.image.url }}{% else %}{% static 'default-video-thumbnail.jpg' %}{% endif %}"
-                class="lazy-video"
-                data-src="{{ post.video.url }}"
-            >
-                <source src="{{ post.video.url }}" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
+        <div class="post-media-container">
+            <div class="ratio ratio-16x9 video-container">
+                <video 
+                    controls 
+                    playsinline 
+                    preload="metadata" 
+                    poster="{% if post.image %}{{ post.image.url }}{% else %}{% static 'default-video-thumbnail.jpg' %}{% endif %}"
+                    class="lazy-video"
+                    data-src="{{ post.video.url }}"
+                >
+                    <source src="{{ post.video.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
         </div>
         {% endif %}
         
@@ -121,6 +125,73 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* تحسينات الصور والفيديوهات للهواتف */
+    .post-media-container {
+        margin-bottom: 1rem;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        background-color: #f8f9fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .post-image {
+        max-height: 500px;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        object-fit: contain;
+    }
+    
+    .video-container {
+        width: 100%;
+        background-color: #000;
+    }
+    
+    .video-container video {
+        width: 100%;
+        height: auto;
+        max-height: 500px;
+    }
+    
+    @media (max-width: 768px) {
+        .post-image {
+            max-height: 350px;
+        }
+        
+        .video-container {
+            max-height: 300px;
+        }
+        
+        .video-container video {
+            max-height: 300px;
+        }
+        
+        .post-media-container {
+            margin-left: -15px;
+            margin-right: -15px;
+            border-radius: 0;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .post-image {
+            max-height: 280px;
+        }
+        
+        .video-container {
+            max-height: 250px;
+        }
+        
+        .video-container video {
+            max-height: 250px;
+        }
+    }
+</style>
+
 <script>
 // استخدام تفويض الأحدث مع منع التكرار
 document.addEventListener('DOMContentLoaded', function() {
@@ -129,6 +200,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ربط المعالج الجديد
     document.body.addEventListener('submit', handleCommentSubmit);
+    
+    // تحميل متأخر للفيديوهات
+    const lazyVideos = document.querySelectorAll('.lazy-video');
+    lazyVideos.forEach(video => {
+        if (video.dataset.src) {
+            video.src = video.dataset.src;
+        }
+    });
 });
 
 // دالة معالجة الإرسال
