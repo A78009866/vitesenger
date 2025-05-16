@@ -122,67 +122,104 @@
     </div>
 </div>
 <script>
+// استخدام تفويض الأحدث مع منع التكرار
 document.addEventListener('DOMContentLoaded', function() {
-    // معالجة إرسال التعليقات
-    document.querySelectorAll('.comment-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const postId = this.id.split('-')[2];
-            const formData = new FormData(this);
-            
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // إنشاء عنصر التعليق الجديد
-                    const commentsContainer = this.closest('.modal-body').querySelector('.comments-container');
-                    
-                    const commentDiv = document.createElement('div');
-                    commentDiv.className = 'd-flex mb-3';
-                    commentDiv.innerHTML = `
-                        <a href="/profile/${data.username}/">
-                            <img src="${data.profile_picture}" class="rounded-circle me-2 border" 
-                                style="width: 40px; height: 40px; object-fit: cover;"
-                                onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
-                                alt="${data.username}">
-                        </a>
-                        <div>
-                            <div class="d-flex align-items-center">
-                                <a href="/profile/${data.username}/" class="text-decoration-none text-dark me-2">
-                                    <strong>@${data.username}</strong>
-                                </a>
-                                <small class="text-muted">الآن</small>
-                            </div>
-                            <p class="mb-0">${data.content}</p>
-                        </div>
-                    `;
-                    
-                    // إضافة التعليق الجديد في الأعلى
-                    if (commentsContainer.firstChild) {
-                        commentsContainer.insertBefore(commentDiv, commentsContainer.firstChild);
-                    } else {
-                        commentsContainer.appendChild(commentDiv);
-                    }
-                    
-                    // تحديث عدد التعليقات
-                    const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`);
-                    if (commentsCountElement) {
-                        const currentCount = parseInt(commentsCountElement.textContent.trim().split(' ')[0]);
-                        commentsCountElement.textContent = `${currentCount + 1} تعليقات`;
-                    }
-                    
-                    // مسح حقل الإدخال
-                    this.querySelector('input[name="content"]').value = '';
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        });
-    });
+    // تعطيل المعالجات السابقة لمنع التكرار
+    document.body.removeEventListener('submit', handleCommentSubmit);
+    
+    // ربط المعالج الجديد
+    document.body.addEventListener('submit', handleCommentSubmit);
 });
+
+// دالة معالجة الإرسال
+function handleCommentSubmit(e) {
+    // التحقق مما إذا كان الحدث من نموذج تعليق
+    if (e.target.classList.contains('comment-form')) {
+        e.preventDefault();
+        const form = e.target;
+        
+        // التحقق مما إذا كان النموذج قيد المعالجة بالفعل
+        if (form.dataset.processing === 'true') return;
+        form.dataset.processing = 'true';
+        
+        const postId = form.id.split('-')[2];
+        const formData = new FormData(form);
+        
+        // تعطيل الزر أثناء الإرسال
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري الإرسال...';
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // إعادة تمكين الزر
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+            form.dataset.processing = 'false';
+            
+            if (data.success) {
+                // إنشاء عنصر التعليق الجديد
+                const commentsContainer = form.closest('.modal-body').querySelector('.comments-container');
+                
+                const commentDiv = document.createElement('div');
+                commentDiv.className = 'd-flex mb-3';
+                commentDiv.innerHTML = `
+                    <a href="/profile/${data.username}/">
+                        <img src="${data.profile_picture}" class="rounded-circle me-2 border" 
+                            style="width: 40px; height: 40px; object-fit: cover;"
+                            onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
+                            alt="${data.username}">
+                    </a>
+                    <div>
+                        <div class="d-flex align-items-center">
+                            <a href="/profile/${data.username}/" class="text-decoration-none text-dark me-2">
+                                <strong>@${data.username}</strong>
+                            </a>
+                            <small class="text-muted">الآن</small>
+                        </div>
+                        <p class="mb-0">${data.content}</p>
+                    </div>
+                `;
+                
+                // إضافة التعليق الجديد في الأعلى
+                if (commentsContainer.firstChild) {
+                    commentsContainer.insertBefore(commentDiv, commentsContainer.firstChild);
+                } else {
+                    commentsContainer.appendChild(commentDiv);
+                }
+                
+                // تحديث عدد التعليقات
+                const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`);
+                if (commentsCountElement) {
+                    const currentCount = parseInt(commentsCountElement.textContent.trim().split(' ')[0]);
+                    commentsCountElement.textContent = `${currentCount + 1} تعليقات`;
+                }
+                
+                // مسح حقل الإدخال
+                form.querySelector('input[name="content"]').value = '';
+                
+                // إخفاء رسالة "لا توجد تعليقات" إذا كانت موجودة
+                const noCommentsMsg = commentsContainer.querySelector('.text-center');
+                if (noCommentsMsg) {
+                    noCommentsMsg.remove();
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+            form.dataset.processing = 'false';
+            alert('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى');
+        });
+    }
+}
 </script>

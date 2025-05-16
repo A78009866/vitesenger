@@ -463,3 +463,7 @@ def chat(request, username):
         'other_user': other_user,
     }
     return render(request, 'chat.html', context)
+from django.shortcuts import render
+
+def splash(request):
+    return render(request, 'splash.html')
