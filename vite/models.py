@@ -86,3 +86,26 @@ class SavedPost(models.Model):
 
     def __str__(self):
         return f"{self.user.username} saved {self.post.id}"
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('message', 'رسالة جديدة'),
+        ('like', 'إعجاب'),
+        ('comment', 'تعليق'),
+        ('friend_request', 'طلب صداقة'),
+        ('friend_accept', 'قبول الصداقة'),
+    )
+    
+    recipient = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    content = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+    related_id = models.PositiveIntegerField(null=True, blank=True)  # يمكن أن يكون معرف المنشور أو الرسالة
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_notification_type_display()} لـ {self.recipient.username}"

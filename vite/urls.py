@@ -28,6 +28,9 @@ urlpatterns = [
     path("chat/<str:username>/", views.chat_view, name="chat"),
     path("send-message/", views.send_message, name="send_message"),
     path("chat/<str:username>/get-messages/", views.get_messages, name="get_messages"),
-    path('chat/list/<str:username>/', views.chat_list, name='chat_list'),  # يتوقع وسيطة username
+    path('chat/list/<str:username>/', views.chat_list, name='chat_list'),
+path('notifications/', views.notifications, name='notifications'),
+path('notifications/unread_count/', views.get_unread_notifications_count, name='unread_notifications_count'),
+path('notifications/mark_as_read/<int:notification_id>/', views.mark_notification_as_read, name='mark_notification_as_read'),  # يتوقع وسيطة username
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

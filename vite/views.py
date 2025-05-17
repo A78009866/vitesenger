@@ -6,6 +6,7 @@ from .models import Post, Like, Comment, SavedPost, CustomUser  # تم التع�
 from django.http import JsonResponse
 import cloudinary.uploader
 from .forms import ProfileEditForm, PostEditForm  # إضافة الاستيراد
+from .models import Notification
 
 @login_required
 def home(request):
@@ -14,16 +15,21 @@ def home(request):
     for post in posts:
         post.is_liked = post.likes.filter(user=request.user).exists()
         post.is_saved = SavedPost.objects.filter(user=request.user, post=post).exists()
-    return render(request, 'social/home.html', {'posts': posts})
-    # حساب الرسائل غير المقروءة
+    
     unread_messages_count = Message.objects.filter(
         receiver=request.user,
+        is_read=False
+    ).count()
+    
+    unread_notifications_count = Notification.objects.filter(
+        recipient=request.user,
         is_read=False
     ).count()
     
     context = {
         'posts': posts,
         'unread_messages_count': unread_messages_count,
+        'unread_count': unread_notifications_count,
     }
     return render(request, 'social/home.html', context)
 
@@ -47,33 +53,6 @@ def create_post(request):
         form = PostForm()
     return render(request, 'social/create_post.html', {'form': form})
 
-@login_required
-def like_post(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    like, created = Like.objects.get_or_create(user=request.user, post=post)
-    if not created:
-        like.delete()
-    return JsonResponse({
-        'liked': created,  # تم التعديل هنا من 'is_liked' إلى 'liked'
-        'likes_count': post.likes.count(),
-        'post_id': post_id
-    })
-
-from django.http import JsonResponse
-
-def add_comment(request, post_id):
-    if request.method == 'POST':
-        content = request.POST.get('content', '').strip()
-        if content:
-            post = get_object_or_404(Post, id=post_id)
-            comment = Comment.objects.create(user=request.user, post=post, content=content)
-            return JsonResponse({
-                'success': True,
-                'username': request.user.username,
-                'content': comment.content,
-                'profile_picture': request.user.profile_picture.url if request.user.profile_picture else '/media/profile_pics/default_profile.png'
-            })
-    return JsonResponse({'success': False})
 
 @login_required
 def saved_posts(request):
@@ -87,13 +66,72 @@ def saved_posts(request):
     
     return render(request, 'social/saved_posts.html', {'posts': posts})
 
+# في دالة like_post
+@login_required
+def like_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    like, created = Like.objects.get_or_create(user=request.user, post=post)
+    if created:
+        # إرسال إشعار للمستخدم صاحب المنشور
+        if request.user != post.user:
+            Notification.objects.create(
+                recipient=post.user,
+                sender=request.user,
+                notification_type='like',
+                content=f"{request.user.username} أعجب بمنشورك",
+                related_id=post.id
+            )
+    else:
+        like.delete()
+    return JsonResponse({
+        'liked': created,
+        'likes_count': post.likes.count(),
+        'post_id': post_id
+    })
+
+# في دالة add_comment
+def add_comment(request, post_id):
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        if content:
+            post = get_object_or_404(Post, id=post_id)
+            comment = Comment.objects.create(user=request.user, post=post, content=content)
+            
+            # إرسال إشعار للمستخدم صاحب المنشور
+            if request.user != post.user:
+                Notification.objects.create(
+                    recipient=post.user,
+                    sender=request.user,
+                    notification_type='comment',
+                    content=f"{request.user.username} علق على منشورك",
+                    related_id=post.id
+                )
+            
+            return JsonResponse({
+                'success': True,
+                'username': request.user.username,
+                'content': comment.content,
+                'profile_picture': request.user.profile_picture.url if request.user.profile_picture else '/media/profile_pics/default_profile.png'
+            })
+    return JsonResponse({'success': False})
+
+# في دالة send_friend_request
 @login_required
 def send_friend_request(request, username):
     receiver = get_object_or_404(CustomUser, username=username)
     if request.user != receiver and receiver not in request.user.friend_requests.all():
         request.user.friend_requests.add(receiver)
+        # إرسال إشعار
+        Notification.objects.create(
+            recipient=receiver,
+            sender=request.user,
+            notification_type='friend_request',
+            content=f"{request.user.username} أرسل لك طلب صداقة",
+            related_id=request.user.id
+        )
     return redirect('profile', username=username)
 
+# في دالة accept_friend_request
 @login_required
 def accept_friend_request(request, username):
     sender = get_object_or_404(CustomUser, username=username)
@@ -101,6 +139,15 @@ def accept_friend_request(request, username):
         request.user.friends.add(sender)
         sender.friends.add(request.user)
         request.user.received_friend_requests.remove(sender)
+        
+        # إرسال إشعار للمستخدم الذي تم قبول طلبه
+        Notification.objects.create(
+            recipient=sender,
+            sender=request.user,
+            notification_type='friend_accept',
+            content=f"{request.user.username} قبل طلب صداقتك",
+            related_id=request.user.id
+        )
     return redirect('friends')
 
 @login_required
@@ -467,3 +514,29 @@ from django.shortcuts import render
 
 def splash(request):
     return render(request, 'splash.html')
+
+@login_required
+def notifications(request):
+    notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+    unread_count = notifications.filter(is_read=False).count()
+    
+    # تحديث الإشعارات كمقروءة عند فتح الصفحة
+    if request.method == 'GET':
+        notifications.update(is_read=True)
+    
+    return render(request, 'social/notifications.html', {
+        'notifications': notifications,
+        'unread_count': unread_count
+    })
+
+@login_required
+def mark_notification_as_read(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
+    notification.is_read = True
+    notification.save()
+    return JsonResponse({'success': True})
+
+@login_required
+def get_unread_notifications_count(request):
+    count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+    return JsonResponse({'count': count})
