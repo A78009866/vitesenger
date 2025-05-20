@@ -265,7 +265,6 @@
 </style>
 
 <script>
-// استخدام تفويض الأحدث مع منع التكرار
 document.addEventListener('DOMContentLoaded', function() {
     // تعطيل المعالجات السابقة لمنع التكرار
     document.body.removeEventListener('submit', handleCommentSubmit);
@@ -289,101 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
- // إضافة حدث لحفظ المنشور
-    document.querySelectorAll('.save-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const postId = this.dataset.postId;
-            const saveIcon = document.querySelector(`.save-icon-${postId}`);
-            
-            fetch(`/post/${postId}/save/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'same-origin'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // تغيير حالة أيقونة الحفظ
-                    if (data.is_saved) {
-                        saveIcon.classList.remove('far');
-                        saveIcon.classList.add('fas', 'text-warning');
-                        
-                        // عرض إشعار توست
-                        showToast('تم حفظ المنشور', 'success');
-                    } else {
-                        saveIcon.classList.remove('fas', 'text-warning');
-                        saveIcon.classList.add('far');
-                        
-                        // عرض إشعار توست
-                        showToast('تم إزالة المنشور من المحفوظات', 'info');
-                    }
-                    
-                    // تأثير بسيط عند النقر
-                    saveIcon.style.transform = 'scale(1.2)';
-                    setTimeout(() => {
-                        saveIcon.style.transform = 'scale(1)';
-                    }, 200);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('حدث خطأ أثناء محاولة الحفظ', 'error');
-            });
-        });
-    });
-
-    // دالة لعرض إشعارات التوست
-    function showToast(message, type) {
-        const toastContainer = document.getElementById('toast-container');
-        if (!toastContainer) {
-            createToastContainer();
-        }
-        
-        const toast = document.createElement('div');
-        toast.className = `toast show align-items-center text-white bg-${type}`;
-        toast.setAttribute('role', 'alert');
-        toast.setAttribute('aria-live', 'assertive');
-        toast.setAttribute('aria-atomic', 'true');
-        toast.style.position = 'fixed';
-        toast.style.bottom = '20px';
-        toast.style.left = '20px';
-        toast.style.zIndex = '9999';
-        
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">
-                    ${message}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        `;
-        
-        document.getElementById('toast-container').appendChild(toast);
-        
-        // إزالة التوست بعد 3 ثواني
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
-    }
-
-    // دالة لإنشاء حاوية التوست إذا لم تكن موجودة
-    function createToastContainer() {
-        const container = document.createElement('div');
-        container.id = 'toast-container';
-        container.style.position = 'fixed';
-        container.style.bottom = '20px';
-        container.style.left = '20px';
-        container.style.zIndex = '9999';
-        document.body.appendChild(container);
-    }
-});
-
-// دالة معالجة الإرسال
+// دالة معالجة الإرسال المعدلة
 function handleCommentSubmit(e) {
     // التحقق مما إذا كان الحدث من نموذج تعليق
     if (e.target.classList.contains('comment-form')) {
@@ -407,7 +312,8 @@ function handleCommentSubmit(e) {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                'X-Requested-With': 'XMLHttpRequest' // إضافة هذا الهيدر
             }
         })
         .then(response => response.json())
@@ -470,7 +376,7 @@ function handleCommentSubmit(e) {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalBtnText;
             form.dataset.processing = 'false';
-            alert('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى');
+            showToast('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى', 'error');
         });
     }
 }
