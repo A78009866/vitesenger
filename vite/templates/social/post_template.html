@@ -93,27 +93,39 @@
             </div>
             <div class="modal-body">
                 <div class="comments-container" style="max-height: 400px; overflow-y: auto;">
-                    {% for comment in post.comments.all %}
-                    <div class="d-flex mb-3">
-                        <a href="{% url 'profile' comment.user.username %}">
-                            <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle me-2 border" 
-                                style="width: 40px; height: 40px; object-fit: cover;"
-                                onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
-                                alt="{{ comment.user.username }}">
-                        </a>
-                        <div>
-                            <div class="d-flex align-items-center">
-                                <a href="{% url 'profile' comment.user.username %}" class="text-decoration-none text-dark me-2">
-                                    <strong>@{{ comment.user.username }}</strong>
-                                </a>
-                                <small class="text-muted">{{ comment.created_at|timesince }} مضت</small>
-                            </div>
-                            <p class="mb-0">{{ comment.content }}</p>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <p class="text-muted text-center">لا توجد تعليقات حتى الآن</p>
-                    {% endfor %}
+                    <!-- داخل قسم التعليقات في المودال -->
+{% for comment in post.comments.all %}
+<div class="d-flex mb-3">
+    <a href="{% url 'profile' comment.user.username %}">
+        <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle me-2 border" 
+            style="width: 40px; height: 40px; object-fit: cover;"
+            onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
+            alt="{{ comment.user.username }}">
+    </a>
+    <div class="flex-grow-1">
+        <div class="d-flex align-items-center">
+            <a href="{% url 'profile' comment.user.username %}" class="text-decoration-none text-dark me-2">
+                <strong>@{{ comment.user.username }}</strong>
+            </a>
+            <small class="text-muted">{{ comment.created_at|timesince }} مضت</small>
+            
+            {% if comment.user == request.user or post.user == request.user %}
+            <div class="dropdown ms-auto">
+                <button class="btn btn-sm btn-link text-muted" type="button" id="commentDropdown-{{ comment.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="commentDropdown-{{ comment.id }}">
+                    <li><a class="dropdown-item text-danger delete-comment-btn" href="#" data-comment-id="{{ comment.id }}">حذف التعليق</a></li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        <p class="mb-0">{{ comment.content }}</p>
+    </div>
+</div>
+{% empty %}
+<p class="text-muted text-center">لا توجد تعليقات حتى الآن</p>
+{% endfor %}
                 </div>
                 <form id="comment-form-{{ post.id }}" class="comment-form mt-3" action="{% url 'add_comment' post.id %}" method="POST">
                     {% csrf_token %}
@@ -380,4 +392,47 @@ function handleCommentSubmit(e) {
         });
     }
 }
+// حذف التعليق
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const commentId = this.dataset.commentId;
+            
+            if (confirm('هل أنت متأكد من حذف هذا التعليق؟')) {
+                fetch(`/comment/${commentId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // إزالة عنصر التعليق من DOM
+                        const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`).closest('.d-flex.mb-3');
+                        commentElement.remove();
+                        
+                        // تحديث عدد التعليقات
+                        const postId = commentElement.closest('.modal').id.split('-')[2];
+                        const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`);
+                        if (commentsCountElement) {
+                            const currentCount = parseInt(commentsCountElement.textContent.trim().split(' ')[0]);
+                            commentsCountElement.textContent = `${currentCount - 1} تعليقات`;
+                        }
+                        
+                        showToast('تم حذف التعليق بنجاح', 'success');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('حدث خطأ أثناء حذف التعليق', 'error');
+                });
+            }
+        });
+    });
+});
 </script>

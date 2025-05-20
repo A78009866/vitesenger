@@ -540,3 +540,19 @@ def mark_notification_as_read(request, notification_id):
 def get_unread_notifications_count(request):
     count = Notification.objects.filter(recipient=request.user, is_read=False).count()
     return JsonResponse({'count': count})
+
+
+@login_required
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    
+    # التحقق من أن المستخدم هو صاحب التعليق أو صاحب المنشور
+    if request.user != comment.user and request.user != comment.post.user:
+        return JsonResponse({'success': False, 'error': 'غير مسموح لك بحذف هذا التعليق'}, status=403)
+    
+    if request.method == 'POST':
+        post_id = comment.post.id
+        comment.delete()
+        return JsonResponse({'success': True, 'post_id': post_id})
+    
+    return JsonResponse({'success': False, 'error': 'طريقة غير مسموحة'}, status=405)
