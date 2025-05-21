@@ -7,6 +7,7 @@ from django.utils import timezone
 class CustomUser(AbstractUser):
     full_name = models.CharField(max_length=100, blank=True)
     profile_picture = CloudinaryField('image', blank=True, null=True, default='profile_pics/default_profile.png')
+    cover_photo = CloudinaryField('image', blank=True, null=True, default='cover_photos/default_cover.jpg')  # أضف هذا الحقل
     bio = models.TextField(blank=True)
     friends = models.ManyToManyField('self', symmetrical=False, blank=True)
     friend_requests = models.ManyToManyField('self', symmetrical=False, blank=True, 
@@ -20,7 +21,7 @@ class CustomUser(AbstractUser):
 class Message(models.Model):
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sent_messages")
     receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="received_messages")
-    content = models.TextField()
+    content = models.TextField(default="")  # أو أي نص تريده
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     seen_at = models.DateTimeField(null=True, blank=True)

@@ -283,6 +283,10 @@ def edit_profile(request, username):
             if 'profile_picture' in request.FILES:
                 user.profile_picture = cloudinary.uploader.upload(request.FILES['profile_picture'])['url']
             
+            # Handle cover photo upload to Cloudinary
+            if 'cover_photo' in request.FILES:
+                user.cover_photo = cloudinary.uploader.upload(request.FILES['cover_photo'])['url']
+            
             user.save()
             return redirect('profile', username=username)
     else:
