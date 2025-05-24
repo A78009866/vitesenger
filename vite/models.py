@@ -5,6 +5,7 @@ from cloudinary.models import CloudinaryField
 from django.utils import timezone
 
 class CustomUser(AbstractUser):
+    is_verified = models.BooleanField(default=False)  # أضف هذا الحقل
     full_name = models.CharField(max_length=100, blank=True)
     profile_picture = CloudinaryField('image', blank=True, null=True, default='profile_pics/default_profile.png')
     cover_photo = CloudinaryField('image', blank=True, null=True, default='cover_photos/default_cover.jpg')  # أضف هذا الحقل
@@ -17,6 +18,11 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return f"@{self.username}"
+        
+    @property
+    def has_blue_badge(self):
+        return self.is_verified or self.friends.count() > 10  # تحديث الدالة
+
 
 class Message(models.Model):
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sent_messages")

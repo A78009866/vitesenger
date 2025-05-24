@@ -16,7 +16,14 @@ class ProfileEditForm(forms.ModelForm):
         fields = ('username', 'full_name', 'email', 'profile_picture', 'cover_photo', 'bio')
         widgets = {
             'bio': forms.Textarea(attrs={'rows': 3}),
+            'profile_picture': forms.ClearableFileInput(attrs={'accept': 'image/*'}),
+            'cover_photo': forms.ClearableFileInput(attrs={'accept': 'image/*'}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['profile_picture'].required = False
+        self.fields['cover_photo'].required = False
 
 class PostForm(forms.ModelForm):
     class Meta:

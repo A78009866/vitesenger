@@ -279,13 +279,17 @@ def edit_profile(request, username):
         if form.is_valid():
             user = form.save(commit=False)
             
-            # Handle profile picture upload to Cloudinary
+            # Handle profile picture upload
             if 'profile_picture' in request.FILES:
                 user.profile_picture = cloudinary.uploader.upload(request.FILES['profile_picture'])['url']
+            elif 'profile_picture-clear' in request.POST:
+                user.profile_picture = None
             
-            # Handle cover photo upload to Cloudinary
+            # Handle cover photo upload
             if 'cover_photo' in request.FILES:
                 user.cover_photo = cloudinary.uploader.upload(request.FILES['cover_photo'])['url']
+            elif 'cover_photo-clear' in request.POST:
+                user.cover_photo = None
             
             user.save()
             return redirect('profile', username=username)
