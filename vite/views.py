@@ -48,11 +48,15 @@ def create_post(request):
                 post.video = cloudinary.uploader.upload(request.FILES['video'], resource_type="video")['url']
             
             post.save()
+            
+            # إضافة 10 نقاط للمستخدم عند إنشاء المنشور
+            request.user.points += 10
+            request.user.save()
+            
             return redirect('home')
     else:
         form = PostForm()
     return render(request, 'social/create_post.html', {'form': form})
-
 
 @login_required
 def saved_posts(request):
@@ -331,11 +335,14 @@ def delete_post(request, post_id):
         return redirect('home')
     
     if request.method == 'POST':
+        # خصم 10 نقاط مع التحقق من عدم وجود نقاط سالبة
+        request.user.points = max(0, request.user.points - 10)
+        request.user.save()
+        
         post.delete()
         return redirect('profile', username=request.user.username)
     
     return render(request, 'social/confirm_delete.html', {'post': post})
-
 
 from .models import Message
 from django.contrib.auth.decorators import login_required

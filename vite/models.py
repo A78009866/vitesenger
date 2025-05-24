@@ -15,6 +15,7 @@ class CustomUser(AbstractUser):
                                            related_name='received_friend_requests')
     blocked_users = models.ManyToManyField('self', symmetrical=False, blank=True, 
                                          related_name='blocked_by')
+    points = models.IntegerField(default=0)  # إضافة حقل النقاط
 
     def __str__(self):
         return f"@{self.username}"

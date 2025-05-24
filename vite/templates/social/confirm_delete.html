@@ -9,6 +9,10 @@
             </div>
             <div class="card-body">
                 <p>هل أنت متأكد أنك تريد حذف هذا المنشور؟</p>
+                <div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    سيتم خصم 10 نقاط من رصيدك عند حذف هذا المنشور
+</div>
                 <form method="POST">
                     {% csrf_token %}
                     <div class="d-flex justify-content-between">
