@@ -496,86 +496,31 @@
 
 </style>
 <style>
-    /* أنماط إضافية لزر الماسح */
-    #qrScannerBtn {
-        padding: 0.5rem 1rem;
-    }
-    
-    /* أنماط لعناصر الماسح */
-    #qrScanner {
-        object-fit: contain;
-    }
-    
-    /* رسالة عندما لا توجد كاميرا */
-    .no-camera-message {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        z-index: 10000;
-        text-align: center;
-    }
-    /* أنماط إضافية لواجهة الماسح */
+  /* أنماط زر الماسح */
 #qrScannerBtn {
-    padding: 0.5rem 1rem;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 8px;
+    padding: 8px 12px;
 }
 
-.scanner-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.8);
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+/* أنماط واجهة الماسح */
+#scannerContainer {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.scanner-video {
-    width: 80%;
-    max-width: 500px;
-    border-radius: 10px;
-    overflow: hidden;
+#scanFrame {
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.7);
 }
 
-.scan-line {
-    position: absolute;
-    top: 20%;
-    width: 80%;
-    max-width: 500px;
-    height: 2px;
-    background-color: #00ff00;
-    box-shadow: 0 0 10px #00ff00;
-    animation: scanAnimation 2s linear infinite;
+#switchCamera {
+    display: none; /* سيتم إظهاره فقط إذا كانت هناك أكثر من كاميرا */
 }
 
-.scan-frame {
-    position: absolute;
-    width: 80%;
-    max-width: 500px;
-    height: 60%;
-    max-height: 300px;
-    border: 2px solid rgba(0, 255, 0, 0.5);
-    border-radius: 10px;
-    pointer-events: none;
-}
-
-.scanner-instructions {
-    color: white;
-    margin-top: 20px;
-    font-size: 1.2rem;
-}
-
-@keyframes scanAnimation {
-    0% { top: 20%; }
-    100% { top: 80%; }
+@media (max-width: 768px) {
+    #qrScannerBtn span {
+        display: none;
+    }
 }
 </style>
 </head>
@@ -595,10 +540,10 @@
         <button class="btn btn-primary ms-2 btn-animate" type="submit">
             <i class="fas fa-search"></i>
         </button>
-        <!-- إضافة زر ماسح QR -->
-        <button type="button" class="btn btn-info ms-2 btn-animate" id="qrScannerBtn" title="مسح كود QR">
-    <i class="fas fa-qrcode"></i> مسح الكود
-</button>
+        <!-- زر ماسح QR مع أيقونة و نص -->
+        <button type="button" class="btn btn-info ms-2 btn-animate" id="qrScannerBtn">
+            <i class="fas fa-qrcode"></i> مسح الكود
+        </button>
     </form>
 </div>
 
@@ -785,121 +730,90 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.querySelector('.search-bar');
     
     qrScannerBtn.addEventListener('click', function() {
-        // إنشاء عناصر واجهة الماسح
-        const scannerContainer = document.createElement('div');
-        scannerContainer.style.position = 'fixed';
-        scannerContainer.style.top = '0';
-        scannerContainer.style.left = '0';
-        scannerContainer.style.width = '100%';
-        scannerContainer.style.height = '100%';
-        scannerContainer.style.zIndex = '9999';
-        scannerContainer.style.backgroundColor = 'rgba(0,0,0,0.8)';
-        scannerContainer.style.display = 'flex';
-        scannerContainer.style.flexDirection = 'column';
-        scannerContainer.style.alignItems = 'center';
-        scannerContainer.style.justifyContent = 'center';
-        
-        // عنصر الفيديو للمسح
-        const videoElement = document.createElement('video');
-        videoElement.id = 'qrScanner';
-        videoElement.style.width = '80%';
-        videoElement.style.maxWidth = '500px';
-        videoElement.style.borderRadius = '10px';
-        videoElement.style.overflow = 'hidden';
-        
-        // إضافة خط المسح المتحرك
-        const scanLine = document.createElement('div');
-        scanLine.style.position = 'absolute';
-        scanLine.style.top = '20%';
-        scanLine.style.width = '80%';
-        scanLine.style.maxWidth = '500px';
-        scanLine.style.height = '2px';
-        scanLine.style.backgroundColor = '#00ff00';
-        scanLine.style.boxShadow = '0 0 10px #00ff00';
-        scanLine.style.animation = 'scanAnimation 2s linear infinite';
-        
-        // إطار حول منطقة المسح
-        const scanFrame = document.createElement('div');
-        scanFrame.style.position = 'absolute';
-        scanFrame.style.width = '80%';
-        scanFrame.style.maxWidth = '500px';
-        scanFrame.style.height = '60%';
-        scanFrame.style.maxHeight = '300px';
-        scanFrame.style.border = '2px solid rgba(0, 255, 0, 0.5)';
-        scanFrame.style.borderRadius = '10px';
-        scanFrame.style.pointerEvents = 'none';
-        
-        // تعليمات للمستخدم
-        const instructions = document.createElement('div');
-        instructions.textContent = 'ضع كود QR داخل الإطار لمسحه';
-        instructions.style.color = 'white';
-        instructions.style.marginTop = '20px';
-        instructions.style.fontSize = '1.2rem';
-        
-        // زر الإغلاق
-        const closeBtn = document.createElement('button');
-        closeBtn.textContent = 'إغلاق الماسح';
-        closeBtn.className = 'btn btn-danger mt-3';
-        
-        // تجميع العناصر
-        scannerContainer.appendChild(videoElement);
-        scannerContainer.appendChild(scanLine);
-        scannerContainer.appendChild(scanFrame);
-        scannerContainer.appendChild(instructions);
-        scannerContainer.appendChild(closeBtn);
-        document.body.appendChild(scannerContainer);
-        
-        // إضافة أنيميشن لخط المسح
-        const styleElement = document.createElement('style');
-        styleElement.textContent = `
-            @keyframes scanAnimation {
-                0% { top: 20%; }
-                100% { top: 80%; }
-            }
+        // إنشاء واجهة الماسح
+        const scannerUI = `
+            <div id="scannerContainer" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:rgba(0,0,0,0.9);display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div style="position:relative;width:80%;max-width:400px;">
+                    <video id="qrScanner" style="width:100%;border-radius:10px;"></video>
+                    <div id="scanFrame" style="position:absolute;top:0;left:0;width:100%;height:100%;border:2px solid rgba(0,255,0,0.5);border-radius:10px;pointer-events:none;"></div>
+                    <div id="scanLine" style="position:absolute;top:20%;width:100%;height:3px;background:#00ff00;box-shadow:0 0 10px #00ff00;animation:scanAnimation 2s infinite linear;"></div>
+                </div>
+                <p style="color:white;margin-top:20px;font-size:1.1rem;">ضع كود QR داخل الإطار</p>
+                <button id="closeScanner" class="btn btn-danger mt-3">إغلاق الماسح</button>
+                <button id="switchCamera" class="btn btn-secondary mt-2">تبديل الكاميرا</button>
+                <style>
+                    @keyframes scanAnimation {
+                        0% { top: 20%; }
+                        100% { top: 80%; }
+                    }
+                </style>
+            </div>
         `;
-        document.head.appendChild(styleElement);
         
-        // بدء المسح بالكاميرا الخلفية
-        const scanner = new Instascan.Scanner({ 
-            video: videoElement,
-            mirror: false // تعطيل المرآة لاستخدام الكاميرا الخلفية
-        });
+        document.body.insertAdjacentHTML('beforeend', scannerUI);
         
-        scanner.addListener('scan', function(content) {
+        const videoElement = document.getElementById('qrScanner');
+        const closeBtn = document.getElementById('closeScanner');
+        const switchBtn = document.getElementById('switchCamera');
+        let currentCameraIndex = 0;
+        let cameras = [];
+        let scanner = new Instascan.Scanner({ video: videoElement, mirror: false });
+        
+        // دالة لبدء الكاميرا المحددة
+        function startCamera(index) {
+            if (cameras.length > 0) {
+                scanner.stop();
+                scanner.start(cameras[index]);
+                // جعل الكاميرا الخلفية هي الافتراضية إذا كانت متوفرة
+                if (cameras.length > 1) {
+                    const rearCameraIndex = cameras.findIndex(cam => cam.name.includes('back') || cam.name.includes('rear'));
+                    if (rearCameraIndex !== -1 && index !== rearCameraIndex) {
+                        currentCameraIndex = rearCameraIndex;
+                        startCamera(rearCameraIndex);
+                    }
+                }
+            }
+        }
+        
+        // البحث عن الكاميرات وبدء التشغيل
+        Instascan.Camera.getCameras()
+            .then(availableCameras => {
+                cameras = availableCameras;
+                if (cameras.length > 0) {
+                    startCamera(currentCameraIndex);
+                } else {
+                    alert('لم يتم العثور على كاميرا!');
+                    closeScanner();
+                }
+            })
+            .catch(err => {
+                console.error('حدث خطأ:', err);
+                alert('لا يمكن الوصول إلى الكاميرا');
+                closeScanner();
+            });
+        
+        // عند مسح الكود
+        scanner.addListener('scan', content => {
             const username = content.split('/').pop();
             searchInput.value = username;
             document.querySelector('form[action="{% url 'search_users' %}"]').submit();
-            
-            // تنظيف العناصر
-            scanner.stop();
-            document.body.removeChild(scannerContainer);
-            document.head.removeChild(styleElement);
+            closeScanner();
         });
         
-        Instascan.Camera.getCameras().then(function(cameras) {
-            if (cameras.length > 0) {
-                // البحث عن الكاميرا الخلفية أولاً
-                const rearCamera = cameras.find(cam => cam.name.toLowerCase().includes('rear')) || 
-                                 cameras[0];
-                scanner.start(rearCamera);
-            } else {
-                alert('لم يتم العثور على كاميرا!');
-                document.body.removeChild(scannerContainer);
-                document.head.removeChild(styleElement);
-            }
-        }).catch(function(e) {
-            console.error(e);
-            alert('حدث خطأ أثناء تشغيل الكاميرا');
-            document.body.removeChild(scannerContainer);
-            document.head.removeChild(styleElement);
+        // تبديل الكاميرا
+        switchBtn.addEventListener('click', () => {
+            currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+            startCamera(currentCameraIndex);
         });
         
-        // إضافة حدث لإغلاق الماسح
-        closeBtn.addEventListener('click', function() {
+        // إغلاق الماسح
+        function closeScanner() {
             scanner.stop();
-            document.body.removeChild(scannerContainer);
-            document.head.removeChild(styleElement);
-        });
+            const container = document.getElementById('scannerContainer');
+            if (container) container.remove();
+        }
+        
+        closeBtn.addEventListener('click', closeScanner);
     });
 });
 </script>
