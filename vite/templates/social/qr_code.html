@@ -97,19 +97,25 @@ document.addEventListener('DOMContentLoaded', function() {
         let cameras = [];
         let scanner = new Instascan.Scanner({ video: videoElement, mirror: false });
         
+        // دالة للعثور على الكاميرا الخلفية
+        function findRearCameraIndex(cameras) {
+            // البحث عن الكاميرا الخلفية بأسماء مختلفة
+            const rearTerms = ['back', 'rear', 'environment', '1'];
+            for (let i = 0; i < cameras.length; i++) {
+                const cameraName = cameras[i].name.toLowerCase();
+                if (rearTerms.some(term => cameraName.includes(term))) {
+                    return i;
+                }
+            }
+            return 0; // إذا لم يتم العثور، استخدم الكاميرا الأولى
+        }
+        
         // دالة لبدء الكاميرا المحددة
         function startCamera(index) {
             if (cameras.length > 0) {
                 scanner.stop();
                 scanner.start(cameras[index]);
-                // جعل الكاميرا الخلفية هي الافتراضية إذا كانت متوفرة
-                if (cameras.length > 1) {
-                    const rearCameraIndex = cameras.findIndex(cam => cam.name.includes('back') || cam.name.includes('rear'));
-                    if (rearCameraIndex !== -1 && index !== rearCameraIndex) {
-                        currentCameraIndex = rearCameraIndex;
-                        startCamera(rearCameraIndex);
-                    }
-                }
+                currentCameraIndex = index;
             }
         }
         
@@ -118,7 +124,14 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(availableCameras => {
                 cameras = availableCameras;
                 if (cameras.length > 0) {
-                    startCamera(currentCameraIndex);
+                    // العثور على الكاميرا الخلفية وبدء التشغيل بها
+                    const rearCameraIndex = findRearCameraIndex(cameras);
+                    startCamera(rearCameraIndex);
+                    
+                    // إظهار زر تبديل الكاميرا فقط إذا كان هناك أكثر من كاميرا
+                    if (cameras.length > 1) {
+                        switchBtn.style.display = 'block';
+                    }
                 } else {
                     alert('لم يتم العثور على كاميرا!');
                     closeScanner();
