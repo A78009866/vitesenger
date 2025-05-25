@@ -516,6 +516,67 @@
         z-index: 10000;
         text-align: center;
     }
+    /* أنماط إضافية لواجهة الماسح */
+#qrScannerBtn {
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.scanner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.scanner-video {
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.scan-line {
+    position: absolute;
+    top: 20%;
+    width: 80%;
+    max-width: 500px;
+    height: 2px;
+    background-color: #00ff00;
+    box-shadow: 0 0 10px #00ff00;
+    animation: scanAnimation 2s linear infinite;
+}
+
+.scan-frame {
+    position: absolute;
+    width: 80%;
+    max-width: 500px;
+    height: 60%;
+    max-height: 300px;
+    border: 2px solid rgba(0, 255, 0, 0.5);
+    border-radius: 10px;
+    pointer-events: none;
+}
+
+.scanner-instructions {
+    color: white;
+    margin-top: 20px;
+    font-size: 1.2rem;
+}
+
+@keyframes scanAnimation {
+    0% { top: 20%; }
+    100% { top: 80%; }
+}
 </style>
 </head>
 <body>
@@ -536,8 +597,8 @@
         </button>
         <!-- إضافة زر ماسح QR -->
         <button type="button" class="btn btn-info ms-2 btn-animate" id="qrScannerBtn" title="مسح كود QR">
-            <i class="fas fa-qrcode"></i>
-        </button>
+    <i class="fas fa-qrcode"></i> مسح الكود
+</button>
     </form>
 </div>
 
@@ -724,66 +785,120 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.querySelector('.search-bar');
     
     qrScannerBtn.addEventListener('click', function() {
-        // إنشاء عنصر الفيديو للمسح
+        // إنشاء عناصر واجهة الماسح
+        const scannerContainer = document.createElement('div');
+        scannerContainer.style.position = 'fixed';
+        scannerContainer.style.top = '0';
+        scannerContainer.style.left = '0';
+        scannerContainer.style.width = '100%';
+        scannerContainer.style.height = '100%';
+        scannerContainer.style.zIndex = '9999';
+        scannerContainer.style.backgroundColor = 'rgba(0,0,0,0.8)';
+        scannerContainer.style.display = 'flex';
+        scannerContainer.style.flexDirection = 'column';
+        scannerContainer.style.alignItems = 'center';
+        scannerContainer.style.justifyContent = 'center';
+        
+        // عنصر الفيديو للمسح
         const videoElement = document.createElement('video');
         videoElement.id = 'qrScanner';
-        videoElement.style.position = 'fixed';
-        videoElement.style.top = '0';
-        videoElement.style.left = '0';
-        videoElement.style.width = '100%';
-        videoElement.style.height = '100%';
-        videoElement.style.zIndex = '9999';
-        videoElement.style.backgroundColor = 'rgba(0,0,0,0.8)';
-        document.body.appendChild(videoElement);
+        videoElement.style.width = '80%';
+        videoElement.style.maxWidth = '500px';
+        videoElement.style.borderRadius = '10px';
+        videoElement.style.overflow = 'hidden';
         
-        // إنشاء زر الإغلاق
+        // إضافة خط المسح المتحرك
+        const scanLine = document.createElement('div');
+        scanLine.style.position = 'absolute';
+        scanLine.style.top = '20%';
+        scanLine.style.width = '80%';
+        scanLine.style.maxWidth = '500px';
+        scanLine.style.height = '2px';
+        scanLine.style.backgroundColor = '#00ff00';
+        scanLine.style.boxShadow = '0 0 10px #00ff00';
+        scanLine.style.animation = 'scanAnimation 2s linear infinite';
+        
+        // إطار حول منطقة المسح
+        const scanFrame = document.createElement('div');
+        scanFrame.style.position = 'absolute';
+        scanFrame.style.width = '80%';
+        scanFrame.style.maxWidth = '500px';
+        scanFrame.style.height = '60%';
+        scanFrame.style.maxHeight = '300px';
+        scanFrame.style.border = '2px solid rgba(0, 255, 0, 0.5)';
+        scanFrame.style.borderRadius = '10px';
+        scanFrame.style.pointerEvents = 'none';
+        
+        // تعليمات للمستخدم
+        const instructions = document.createElement('div');
+        instructions.textContent = 'ضع كود QR داخل الإطار لمسحه';
+        instructions.style.color = 'white';
+        instructions.style.marginTop = '20px';
+        instructions.style.fontSize = '1.2rem';
+        
+        // زر الإغلاق
         const closeBtn = document.createElement('button');
         closeBtn.textContent = 'إغلاق الماسح';
-        closeBtn.className = 'btn btn-danger';
-        closeBtn.style.position = 'fixed';
-        closeBtn.style.bottom = '20px';
-        closeBtn.style.left = '50%';
-        closeBtn.style.transform = 'translateX(-50%)';
-        closeBtn.style.zIndex = '10000';
-        document.body.appendChild(closeBtn);
+        closeBtn.className = 'btn btn-danger mt-3';
         
-        // بدء المسح
-        const scanner = new Instascan.Scanner({ video: videoElement });
+        // تجميع العناصر
+        scannerContainer.appendChild(videoElement);
+        scannerContainer.appendChild(scanLine);
+        scannerContainer.appendChild(scanFrame);
+        scannerContainer.appendChild(instructions);
+        scannerContainer.appendChild(closeBtn);
+        document.body.appendChild(scannerContainer);
+        
+        // إضافة أنيميشن لخط المسح
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+            @keyframes scanAnimation {
+                0% { top: 20%; }
+                100% { top: 80%; }
+            }
+        `;
+        document.head.appendChild(styleElement);
+        
+        // بدء المسح بالكاميرا الخلفية
+        const scanner = new Instascan.Scanner({ 
+            video: videoElement,
+            mirror: false // تعطيل المرآة لاستخدام الكاميرا الخلفية
+        });
         
         scanner.addListener('scan', function(content) {
-            // تحليل محتوى QR (نتوقع أن يكون اسم مستخدم)
-            const username = content.split('/').pop(); // افتراض أن الرابط ينتهي باسم المستخدم
+            const username = content.split('/').pop();
             searchInput.value = username;
-            
-            // إرسال النموذج تلقائياً
             document.querySelector('form[action="{% url 'search_users' %}"]').submit();
             
-            // إيقاف الماسح وإزالة العناصر
+            // تنظيف العناصر
             scanner.stop();
-            document.body.removeChild(videoElement);
-            document.body.removeChild(closeBtn);
+            document.body.removeChild(scannerContainer);
+            document.head.removeChild(styleElement);
         });
         
         Instascan.Camera.getCameras().then(function(cameras) {
             if (cameras.length > 0) {
-                scanner.start(cameras[0]);
+                // البحث عن الكاميرا الخلفية أولاً
+                const rearCamera = cameras.find(cam => cam.name.toLowerCase().includes('rear')) || 
+                                 cameras[0];
+                scanner.start(rearCamera);
             } else {
                 alert('لم يتم العثور على كاميرا!');
-                document.body.removeChild(videoElement);
-                document.body.removeChild(closeBtn);
+                document.body.removeChild(scannerContainer);
+                document.head.removeChild(styleElement);
             }
         }).catch(function(e) {
             console.error(e);
             alert('حدث خطأ أثناء تشغيل الكاميرا');
-            document.body.removeChild(videoElement);
-            document.body.removeChild(closeBtn);
+            document.body.removeChild(scannerContainer);
+            document.head.removeChild(styleElement);
         });
         
         // إضافة حدث لإغلاق الماسح
         closeBtn.addEventListener('click', function() {
             scanner.stop();
-            document.body.removeChild(videoElement);
-            document.body.removeChild(closeBtn);
+            document.body.removeChild(scannerContainer);
+            document.head.removeChild(styleElement);
         });
     });
 });
