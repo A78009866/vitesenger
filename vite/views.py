@@ -170,13 +170,20 @@ def profile(request, username):
     has_received_request = request.user in user.friend_requests.all()
     
     context = {
-        'profile_user': user,  # تم التصحيح هنا من CustomUser إلى user
+        'profile_user': user,
         'posts': posts,
         'is_friend': is_friend,
         'has_sent_request': has_sent_request,
         'has_received_request': has_received_request,
     }
     return render(request, 'social/profile.html', context)
+
+@login_required
+def qr_code_view(request, username):
+    user = get_object_or_404(CustomUser, username=username)
+    if not user.qr_code:
+        user.generate_qr_code()
+    return render(request, 'social/qr_code.html', {'profile_user': user})
 
 @login_required
 def friends(request):

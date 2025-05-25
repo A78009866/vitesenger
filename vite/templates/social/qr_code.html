@@ -1,0 +1,33 @@
+{% extends 'social/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3>كود QR الخاص بي</h3>
+                </div>
+                <div class="card-body">
+                    {% if profile_user.qr_code %}
+                        <img src="{{ profile_user.qr_code }}" class="img-fluid mb-3" alt="QR Code">
+                        <p class="text-muted">مسح هذا الكود للوصول إلى بروفايلي</p>
+                    {% else %}
+                        <p class="text-danger">لا يوجد كود QR متوفر</p>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-center gap-2 mt-3">
+                        <a href="{% url 'profile' profile_user.username %}" class="btn btn-outline-primary">
+                            العودة إلى البروفايل
+                        </a>
+                        <button onclick="window.print()" class="btn btn-primary">
+                            <i class="fas fa-print"></i> طباعة الكود
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

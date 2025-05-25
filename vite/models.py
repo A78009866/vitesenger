@@ -1,30 +1,73 @@
+import cloudinary
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.timezone import now
 from cloudinary.models import CloudinaryField
 from django.utils import timezone
+import qrcode
+from io import BytesIO
+from django.core.files import File
+import os
 
 class CustomUser(AbstractUser):
-    is_verified = models.BooleanField(default=False)  # أضف هذا الحقل
+    is_verified = models.BooleanField(default=False)
     full_name = models.CharField(max_length=100, blank=True)
     profile_picture = CloudinaryField('image', blank=True, null=True, default='profile_pics/default_profile.png')
-    cover_photo = CloudinaryField('image', blank=True, null=True, default='cover_photos/default_cover.jpg')  # أضف هذا الحقل
+    cover_photo = CloudinaryField('image', blank=True, null=True, default='cover_photos/default_cover.jpg')
     bio = models.TextField(blank=True)
     friends = models.ManyToManyField('self', symmetrical=False, blank=True)
     friend_requests = models.ManyToManyField('self', symmetrical=False, blank=True, 
                                            related_name='received_friend_requests')
     blocked_users = models.ManyToManyField('self', symmetrical=False, blank=True, 
                                          related_name='blocked_by')
-    points = models.IntegerField(default=0)  # إضافة حقل النقاط
+    points = models.IntegerField(default=0)
+    qr_code = CloudinaryField('image', blank=True, null=True)  # حقل جديد لكود QR
 
     def __str__(self):
         return f"@{self.username}"
         
     @property
     def has_blue_badge(self):
-        return self.is_verified or self.friends.count() > 10  # تحديث الدالة
+        return self.is_verified or self.friends.count() > 10
 
+    def generate_qr_code(self):
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        
+        # إنشاء رابط البروفايل
+        profile_url = f"https://yourdomain.com/profile/{self.username}"
+        qr.add_data(profile_url)
+        qr.make(fit=True)
+        
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        
+        # حفظ الصورة في Cloudinary
+        result = cloudinary.uploader.upload(
+            buffer.getvalue(),
+            folder="qr_codes",
+            public_id=f"user_{self.id}_qr",
+            overwrite=True
+        )
+        
+        self.qr_code = result['secure_url']
+        self.save()
+        
+        return self.qr_code
 
+    def save(self, *args, **kwargs):
+        # عند إنشاء مستخدم جديد، يتم توليد كود QR
+        if not self.pk or not self.qr_code:
+            super().save(*args, **kwargs)  # يجب حفظ المستخدم أولاً للحصول على ID
+            self.generate_qr_code()
+        super().save(*args, **kwargs)
+        
 class Message(models.Model):
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sent_messages")
     receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="received_messages")

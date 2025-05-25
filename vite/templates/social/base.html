@@ -493,8 +493,30 @@
         font-size: 14px;
     }
 }
-</style>
 
+</style>
+<style>
+    /* أنماط إضافية لزر الماسح */
+    #qrScannerBtn {
+        padding: 0.5rem 1rem;
+    }
+    
+    /* أنماط لعناصر الماسح */
+    #qrScanner {
+        object-fit: contain;
+    }
+    
+    /* رسالة عندما لا توجد كاميرا */
+    .no-camera-message {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        z-index: 10000;
+        text-align: center;
+    }
+</style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light">
@@ -507,13 +529,17 @@
                     </a>
 
                     <div class="search-container">
-                        <form class="d-flex w-100" action="{% url 'search_users' %}" method="GET">
-                            <input class="form-control search-bar" type="search" name="q" placeholder="ابحث عن المستخدمين..." aria-label="بحث">
-                            <button class="btn btn-primary ms-2 btn-animate" type="submit">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                    </div>
+    <form class="d-flex w-100" action="{% url 'search_users' %}" method="GET">
+        <input class="form-control search-bar" type="search" name="q" placeholder="ابحث عن المستخدمين..." aria-label="بحث">
+        <button class="btn btn-primary ms-2 btn-animate" type="submit">
+            <i class="fas fa-search"></i>
+        </button>
+        <!-- إضافة زر ماسح QR -->
+        <button type="button" class="btn btn-info ms-2 btn-animate" id="qrScannerBtn" title="مسح كود QR">
+            <i class="fas fa-qrcode"></i>
+        </button>
+    </form>
+</div>
 
                     <ul class="nav-menu navbar-nav flex-row">
                         <div class="user-dropdown dropdown ms-3">
@@ -691,6 +717,76 @@ setInterval(updateNotificationCount, 1000);
 // تشغيل عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', updateNotificationCount);
 </script>
-
+<script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const qrScannerBtn = document.getElementById('qrScannerBtn');
+    const searchInput = document.querySelector('.search-bar');
+    
+    qrScannerBtn.addEventListener('click', function() {
+        // إنشاء عنصر الفيديو للمسح
+        const videoElement = document.createElement('video');
+        videoElement.id = 'qrScanner';
+        videoElement.style.position = 'fixed';
+        videoElement.style.top = '0';
+        videoElement.style.left = '0';
+        videoElement.style.width = '100%';
+        videoElement.style.height = '100%';
+        videoElement.style.zIndex = '9999';
+        videoElement.style.backgroundColor = 'rgba(0,0,0,0.8)';
+        document.body.appendChild(videoElement);
+        
+        // إنشاء زر الإغلاق
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = 'إغلاق الماسح';
+        closeBtn.className = 'btn btn-danger';
+        closeBtn.style.position = 'fixed';
+        closeBtn.style.bottom = '20px';
+        closeBtn.style.left = '50%';
+        closeBtn.style.transform = 'translateX(-50%)';
+        closeBtn.style.zIndex = '10000';
+        document.body.appendChild(closeBtn);
+        
+        // بدء المسح
+        const scanner = new Instascan.Scanner({ video: videoElement });
+        
+        scanner.addListener('scan', function(content) {
+            // تحليل محتوى QR (نتوقع أن يكون اسم مستخدم)
+            const username = content.split('/').pop(); // افتراض أن الرابط ينتهي باسم المستخدم
+            searchInput.value = username;
+            
+            // إرسال النموذج تلقائياً
+            document.querySelector('form[action="{% url 'search_users' %}"]').submit();
+            
+            // إيقاف الماسح وإزالة العناصر
+            scanner.stop();
+            document.body.removeChild(videoElement);
+            document.body.removeChild(closeBtn);
+        });
+        
+        Instascan.Camera.getCameras().then(function(cameras) {
+            if (cameras.length > 0) {
+                scanner.start(cameras[0]);
+            } else {
+                alert('لم يتم العثور على كاميرا!');
+                document.body.removeChild(videoElement);
+                document.body.removeChild(closeBtn);
+            }
+        }).catch(function(e) {
+            console.error(e);
+            alert('حدث خطأ أثناء تشغيل الكاميرا');
+            document.body.removeChild(videoElement);
+            document.body.removeChild(closeBtn);
+        });
+        
+        // إضافة حدث لإغلاق الماسح
+        closeBtn.addEventListener('click', function() {
+            scanner.stop();
+            document.body.removeChild(videoElement);
+            document.body.removeChild(closeBtn);
+        });
+    });
+});
+</script>
 </body>
 </html>

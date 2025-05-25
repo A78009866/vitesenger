@@ -48,12 +48,16 @@
                     </div>
                 {% endif %}
                 
-                {% if profile_user == request.user %}
-                    <div class="d-flex justify-content-center gap-2 mt-3">
-                        <a href="{% url 'edit_profile' request.user.username %}" class="btn btn-outline-primary">تعديل الملف الشخصي</a>
-                        <a href="{% url 'create_post' %}" class="btn btn-primary">إنشاء منشور جديد</a>
-                    </div>
-                {% endif %}
+                <!-- بعد قسم البايو -->
+{% if profile_user == request.user %}
+    <div class="d-flex justify-content-center gap-2 mt-3">
+        <a href="{% url 'edit_profile' request.user.username %}" class="btn btn-outline-primary">تعديل الملف الشخصي</a>
+        <a href="{% url 'create_post' %}" class="btn btn-primary">إنشاء منشور جديد</a>
+        <a href="{% url 'qr_code_view' request.user.username %}" class="btn btn-info">
+            <i class="fas fa-qrcode"></i> كود QR
+        </a>
+    </div>
+{% endif %}
                 
                 {% if profile_user != request.user %}
                     <div class="d-flex justify-content-center gap-2">
