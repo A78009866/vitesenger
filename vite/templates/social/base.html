@@ -9,15 +9,35 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         :root {
+            /* Light theme */
             --bg-dark: #f8f9fa;
             --bg-darker: #e9ecef;
             --bg-light: #ffffff;
-            --primary: #000000; /* تغيير من #4a6bff إلى #000000 */
-            --primary-light: #333333; /* تغيير من #7a8fff إلى #333333 */
+            --primary: #000000;
+            --primary-light: #333333;
             --text: #212529;
             --text-muted: #6c757d;
             --border: #dee2e6;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --hover-bg: rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] {
+            /* Dark theme */
+            --bg-dark: #121212;
+            --bg-darker: #1e1e1e;
+            --bg-light: #2d2d2d;
+            --primary: #ffffff;
+            --primary-light: #cccccc;
+            --text: #ffffff;
+            --text-muted: #b3b3b3;
+            --border: #404040;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --hover-bg: rgba(255, 255, 255, 0.1);
+        }
+        
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
         
         body {
@@ -59,11 +79,31 @@
         
         .nav-link:hover {
             color: var(--primary) !important;
-            background-color: rgba(0, 0, 0, 0.1); /* تغيير من rgba(74, 107, 255, 0.1) */
+            background-color: var(--hover-bg);
         }
         
         .nav-link i {
             margin-right: 0.5rem;
+        }
+        
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: var(--bg-darker);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--hover-bg);
+            transform: scale(1.05);
+        }
+        
+        .theme-toggle i {
+            font-size: 1rem;
         }
         
         /* تحسينات للهاتف */
@@ -146,16 +186,21 @@
                 padding-left: 10px;
                 padding-right: 10px;
             }
+            
+            .theme-toggle {
+                padding: 0.3rem;
+                font-size: 0.9rem;
+            }
         }
 
         /* بقية الأنماط كما هي */
         .card {
             background-color: var(--bg-light);
-            border: none;
+            border: 1px solid var(--border);
             border-radius: 0.75rem;
             margin-bottom: 1.5rem;
             box-shadow: var(--shadow);
-            transition: transform 0.2s;
+            transition: transform 0.2s, background-color 0.3s ease, border-color 0.3s ease;
         }
         
         .card:hover {
@@ -174,12 +219,14 @@
             padding: 0.5rem 1.5rem;
             border-radius: 0.5rem;
             transition: all 0.2s;
+            color: var(--bg-light);
         }
         
         .btn-primary:hover {
             background-color: var(--primary-light);
             border-color: var(--primary-light);
             transform: translateY(-1px);
+            color: var(--bg-light);
         }
         
         .btn-outline-primary {
@@ -190,7 +237,7 @@
         
         .btn-outline-primary:hover {
             background-color: var(--primary);
-            color: white;
+            color: var(--bg-light);
         }
         
         .text-muted {
@@ -202,6 +249,7 @@
             margin-right: 1rem;
             font-size: 1.2rem;
             transition: all 0.2s;
+            color: var(--text);
         }
         
         .post-actions i:hover {
@@ -221,7 +269,7 @@
             height: 40px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid var(--primary); /* سيستخدم اللون الأسود الآن */
+            border: 2px solid var(--primary);
             transition: all 0.2s;
         }
         
@@ -231,7 +279,7 @@
         
         .search-bar {
             background-color: var(--bg-darker);
-            border: none;
+            border: 1px solid var(--border);
             color: var(--text);
             border-radius: 0.5rem;
             padding: 0.5rem 1rem;
@@ -243,19 +291,30 @@
         .search-bar:focus {
             background-color: var(--bg-darker);
             color: var(--text);
-            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2); /* تغيير من rgba(74, 107, 255, 0.2) */
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
             outline: none;
+            border-color: var(--primary);
+        }
+        
+        .search-bar::placeholder {
+            color: var(--text-muted);
         }
         
         .dropdown-menu {
-            border: none;
+            background-color: var(--bg-light);
+            border: 1px solid var(--border);
             border-radius: 0.5rem;
             box-shadow: var(--shadow);
             margin-top: 0.5rem;
         }
         
+        .dropdown-item {
+            color: var(--text);
+            transition: all 0.2s;
+        }
+        
         .dropdown-item:hover {
-            background-color: rgba(0, 0, 0, 0.1); /* تغيير من rgba(74, 107, 255, 0.1) */
+            background-color: var(--hover-bg);
             color: var(--primary);
         }
         
@@ -311,6 +370,75 @@
 
         .user-dropdown {
             margin-left: auto;
+        }
+        
+        /* Modal Styles for Dark Mode */
+        .modal-content {
+            background-color: var(--bg-light);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .modal-footer {
+            border-top: 1px solid var(--border);
+        }
+        
+        .btn-close {
+            filter: var(--bs-btn-close-filter, none);
+        }
+        
+        [data-theme="dark"] .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+        
+        /* Form Controls for Dark Mode */
+        .form-control {
+            background-color: var(--bg-darker);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        
+        .form-control:focus {
+            background-color: var(--bg-darker);
+            border-color: var(--primary);
+            color: var(--text);
+            box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+        
+        /* Settings Modal Styles */
+        .settings-section {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .settings-section:last-child {
+            border-bottom: none;
+        }
+        
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+        }
+        
+        .settings-label {
+            font-weight: 500;
+            color: var(--text);
+        }
+        
+        .settings-description {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
         }
     </style>
     <style>
@@ -530,7 +658,7 @@
                             <ul class="dropdown-menu dropdown-menu-end">
                                 {% if request.user.is_authenticated and request.user.username %}
                                     <li><a class="dropdown-item" href="{% url 'profile' request.user.username %}"><i class="fas fa-user me-2"></i>الملف الشخصي</a></li>
-                                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>الإعدادات</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="fas fa-cog me-2"></i>الإعدادات</a></li>
                                 {% endif %}
                                 <li><hr class="dropdown-divider"></li>
                                 <form action="{% url 'logout_view' %}" method="post">
@@ -569,6 +697,58 @@
         </div>
     </nav>
 
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">الإعدادات</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-section">
+                        <h6 class="fw-bold mb-3">المظهر</h6>
+                        <div class="settings-item">
+                            <div>
+                                <div class="settings-label">الوضع المضلم</div>
+                                <div class="settings-description">تغيير مظهر الموقع إلى الوضع المضلم</div>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm" disabled>قريباً</button>
+
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h6 class="fw-bold mb-3">الحساب</h6>
+                        <div class="settings-item">
+                            <div>
+                                <div class="settings-label">تعديل الملف الشخصي</div>
+                                <div class="settings-description">تحديث معلومات حسابك</div>
+                            </div>
+                            {% if request.user.username %}
+                                <a href="{% url 'edit_profile' request.user.username %}" class="btn btn-outline-primary btn-sm">تعديل</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h6 class="fw-bold mb-3">الخصوصية</h6>
+                        <div class="settings-item">
+                            <div>
+                                <div class="settings-label">إدارة الخصوصية</div>
+                                <div class="settings-description">التحكم في من يمكنه رؤية منشوراتك</div>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm" disabled>قريباً</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container py-4">
         {% block content %}
         {% endblock %}
@@ -576,6 +756,40 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Theme Toggle Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const body = document.body;
+            
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+            
+            // Theme toggle event
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    const currentTheme = body.getAttribute('data-theme');
+                    
+                    if (currentTheme === 'dark') {
+                        body.removeAttribute('data-theme');
+                        themeIcon.classList.remove('fa-sun');
+                        themeIcon.classList.add('fa-moon');
+                        localStorage.setItem('theme', 'light');
+                    } else {
+                        body.setAttribute('data-theme', 'dark');
+                        themeIcon.classList.remove('fa-moon');
+                        themeIcon.classList.add('fa-sun');
+                        localStorage.setItem('theme', 'dark');
+                    }
+                });
+            }
+        });
+
         // AJAX for like and save actions
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.like-btn').forEach(button => {
