@@ -8,11 +8,11 @@
 <style>
     :root {
         --primary-color: #1877f2;
-        --secondary-color: #f0f2f5;
-        --text-color: #050505;
-        --light-text: #65676b;
-        --white: #ffffff;
-        --border-color: #dddfe2;
+        --secondary-color: #18191a; /* تغيير إلى اللون الداكن */
+        --text-color: #e4e6eb; /* تغيير إلى اللون الفاتح */
+        --light-text: #b0b3b8; /* تغيير إلى اللون الفاتح */
+        --white: #242526; /* تغيير إلى اللون الداكن */
+        --border-color: #3e4042; /* تغيير إلى اللون الداكن */
     }
 
     body {
@@ -21,6 +21,7 @@
         padding: 0;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         -webkit-text-size-adjust: 100%;
+        color: var(--text-color); /* إضافة لون النص الأساسي */
     }
 
     .chat-list-container {
@@ -68,6 +69,7 @@
         font-size: 1.1rem;
         outline: none;
         box-sizing: border-box;
+        color: var(--text-color);
     }
 
     .user-list {
@@ -86,6 +88,7 @@
         border-bottom: 1px solid var(--border-color);
         transition: background-color 0.2s;
         cursor: pointer;
+        background-color: var(--white);
     }
 
     .user-item:hover {
@@ -113,6 +116,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        color: var(--text-color);
     }
 
     .last-message {
@@ -141,7 +145,7 @@
     }
 
     .user-item.new-message {
-        background-color: #e7f3ff;
+        background-color: #2d3a4b;
         border-left: 3px solid var(--primary-color);
     }
 
@@ -153,6 +157,23 @@
         font-size: 0.9rem;
         margin-right: 10px;
         display: inline-block;
+    }
+
+    .verified-badge {
+        color: #1DA1F2;
+        font-size: 0.8em;
+        margin-right: 3px;
+        vertical-align: middle;
+    }
+
+    .back-button {
+        background: none;
+        border: none;
+        color: var(--primary-color);
+        font-size: 1.3rem;
+        cursor: pointer;
+        padding: 8px;
+        margin-right: 10px;
     }
 
     /* تحسينات للشاشات الصغيرة */
@@ -206,96 +227,7 @@
         }
     }
 </style>
-<style>
-    :root {
-        --primary-color: #1877f2;
-        --secondary-color: #f0f2f5;
-        --text-color: #050505;
-        --light-text: #65676b;
-        --white: #ffffff;
-        --border-color: #dddfe2;
-        
-        /* متغيرات الوضع المظلم */
-        --dark-bg: #18191a;
-        --dark-card: #242526;
-        --dark-text: #e4e6eb;
-        --dark-light-text: #b0b3b8;
-        --dark-border: #3e4042;
-    }
 
-    /* أنماط الوضع المظلم */
-    body.dark-mode {
-        background-color: var(--dark-bg) !important;
-        color: var(--dark-text) !important;
-    }
-
-    .dark-mode .chat-list-container {
-        background-color: var(--dark-card) !important;
-    }
-
-    .dark-mode .chat-header {
-        background-color: var(--dark-card) !important;
-        border-bottom-color: var(--dark-border) !important;
-    }
-
-    .dark-mode .chat-title {
-        color: var(--dark-text) !important;
-    }
-
-    .dark-mode .search-container {
-        background-color: var(--dark-card) !important;
-    }
-
-    .dark-mode .search-input {
-        background-color: var(--dark-bg) !important;
-        color: var(--dark-text) !important;
-    }
-
-    .dark-mode .user-item {
-        background-color: var(--dark-card) !important;
-        border-bottom-color: var(--dark-border) !important;
-    }
-
-    .dark-mode .user-item:hover {
-        background-color: var(--dark-bg) !important;
-    }
-
-    .dark-mode .last-message,
-    .dark-mode .message-time {
-        color: var(--dark-light-text) !important;
-    }
-
-    .dark-mode .no-chats {
-        color: var(--dark-light-text) !important;
-    }
-
-    .dark-mode .user-item.new-message {
-        background-color: #2d3a4b !important;
-        border-left-color: var(--primary-color) !important;
-    }
-    .verified-badge {
-    color: #1DA1F2;
-    font-size: 0.8em;
-    margin-right: 3px;
-    vertical-align: middle;
-}
-
-.dark-mode .verified-badge {
-    color: #1DA1F2;
-}
-.back-button {
-    background: none;
-    border: none;
-    color: var(--primary-color);
-    font-size: 1.3rem;
-    cursor: pointer;
-    padding: 8px;
-    margin-right: 10px;
-}
-.dark-mode .back-button {
-    color: var(--primary-color);
-}
-</style>
 <div class="chat-list-container" dir="rtl">
     <div class="chat-header" style="display: flex; align-items: center; justify-content: space-between;">
         <button class="back-button" onclick="window.location.href='/home/'">
@@ -396,38 +328,6 @@
                     item.classList.remove('new-message');
                     const badge = item.querySelector('.new-message-badge');
                     if (badge) badge.remove();
-                }
-            });
-        });
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const darkModeToggle = document.getElementById("dark-mode-toggle");
-            const body = document.body;
-            
-            // تحميل حالة الوضع المظلم من localStorage
-            if (localStorage.getItem("dark-mode") === "enabled") {
-                body.classList.add("dark-mode");
-            }
-            
-            // عند النقر على زر التبديل
-            if (darkModeToggle) {
-                darkModeToggle.addEventListener("click", function() {
-                    body.classList.toggle("dark-mode");
-                    const isDarkMode = body.classList.contains("dark-mode");
-                    localStorage.setItem("dark-mode", isDarkMode ? "enabled" : "disabled");
-                    
-                    // إرسال حدث لتحديث الصفحات الأخرى
-                    window.dispatchEvent(new CustomEvent('darkModeChanged', { detail: isDarkMode }));
-                });
-            }
-            
-            // الاستماع لتغييرات الوضع المظلم من الصفحات الأخرى
-            window.addEventListener('darkModeChanged', function(e) {
-                if (e.detail) {
-                    body.classList.add("dark-mode");
-                } else {
-                    body.classList.remove("dark-mode");
                 }
             });
         });
