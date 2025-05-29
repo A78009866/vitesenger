@@ -9,31 +9,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         :root {
-            /* Light theme */
-            --bg-dark: #f8f9fa;
-            --bg-darker: #e9ecef;
-            --bg-light: #ffffff;
-            --primary: #000000;
-            --primary-light: #333333;
-            --text: #212529;
-            --text-muted: #6c757d;
-            --border: #dee2e6;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            --hover-bg: rgba(0, 0, 0, 0.1);
-        }
-        
-        [data-theme="dark"] {
-            /* Dark theme */
+            /* Dark theme as default */
             --bg-dark: #121212;
             --bg-darker: #1e1e1e;
             --bg-light: #2d2d2d;
-            --primary: #ffffff;
+            --primary: #ffffff; /* الأبيض كلون رئيسي */
             --primary-light: #cccccc;
             --text: #ffffff;
             --text-muted: #b3b3b3;
             --border: #404040;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             --hover-bg: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* إضافة نمط لشعار أبيض */
+        .navbar-brand {
+            color: white !important; /* تأكيد أن لون النص أبيض */
+            /* filter: brightness(0) invert(1); removed as image is already white */
+        }
+        
+        .logo-img {
+            height: 30px;
+            margin-left: 10px; /* For RTL, this adds space to the left of the image (between image and text) */
+            filter: brightness(0) invert(1); /* تحويل لون صورة الشعار إلى أبيض */
         }
         
         * {
@@ -50,28 +48,14 @@
         
         .navbar {
             background-color: var(--bg-light) !important;
-            border-bottom: 1px solid var(--border);
+            /* border-bottom: 1px solid var(--border); Removed to match Instagram style (border is on navbar-top-row) */
             box-shadow: var(--shadow);
-            padding: 0.5rem 0;
-    }
-        
-        .navbar-brand {
-            font-weight: 700;
-            color: var(--primary) !important;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-        }
-        
-        .logo-img {
-            height: 30px;
-            margin-left: 10px;
+            padding: 0; /* Adjusted padding, container will handle it */
         }
         
         .nav-link {
             color: var(--text) !important;
             font-weight: 500;
-            padding: 0.5rem 1rem !important;
             border-radius: 0.5rem;
             transition: all 0.2s;
             white-space: nowrap;
@@ -83,10 +67,10 @@
         }
         
         .nav-link i {
-            margin-right: 0.5rem;
+            margin-right: 0.5rem; /* Default, will be overridden where necessary */
         }
         
-        /* Theme Toggle Button */
+        /* Theme Toggle Button (If you still use it, otherwise can be removed) */
         .theme-toggle {
             background: var(--bg-darker);
             border: 1px solid var(--border);
@@ -106,94 +90,6 @@
             font-size: 1rem;
         }
         
-        /* تحسينات للهاتف */
-        @media (max-width: 768px) {
-            .navbar-container {
-                padding: 0 10px;
-            }
-            
-            .navbar-top-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .navbar-brand {
-                text-align: center;
-                margin-bottom: 10px;
-                font-size: 1.3rem;
-                justify-content: center;
-            }
-            
-            .logo-img {
-                height: 25px;
-                margin-left: 8px;
-            }
-            
-            .search-container {
-                margin: 10px 0;
-                order: 3;
-            }
-            
-            .search-bar {
-                font-size: 14px;
-                padding: 8px 12px;
-            }
-            
-            .nav-menu {
-                flex-direction: row;
-                justify-content: space-around;
-                margin-top: 10px;
-                order: 2;
-            }
-            
-            .nav-item {
-                margin: 0 5px;
-            }
-            
-            .nav-link {
-                padding: 8px !important;
-                font-size: 14px;
-            }
-            
-            .nav-link i {
-                margin-right: 0;
-                font-size: 18px;
-            }
-            
-            .nav-link span {
-                display: none;
-            }
-            
-            .user-dropdown {
-                margin-left: 0;
-                order: 1;
-                align-self: flex-end;
-                margin-bottom: 10px;
-            }
-            
-            .dropdown-menu {
-                position: absolute;
-                right: 10px;
-                left: auto;
-            }
-            
-            .profile-pic {
-                width: 36px;
-                height: 36px;
-            }
-            
-            .container {
-                padding-left: 10px;
-                padding-right: 10px;
-            }
-            
-            .theme-toggle {
-                padding: 0.3rem;
-                font-size: 0.9rem;
-            }
-        }
-
-        /* بقية الأنماط كما هي */
         .card {
             background-color: var(--bg-light);
             border: 1px solid var(--border);
@@ -264,7 +160,7 @@
             color: #ffa502;
         }
         
-        .profile-pic {
+        .profile-pic { /* Base style for profile pics */
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -277,7 +173,7 @@
             transform: scale(1.1);
         }
         
-        .search-bar {
+        .search-bar { /* Assuming this is for a dedicated search page, not in navbar */
             background-color: var(--bg-darker);
             border: 1px solid var(--border);
             color: var(--text);
@@ -318,7 +214,7 @@
             color: var(--primary);
         }
         
-        .container {
+        .container { /* Bootstrap's default, can be overridden if needed */
             max-width: 1200px;
         }
         
@@ -332,46 +228,6 @@
             animation: pulse 0.5s ease;
         }
 
-        .navbar-container {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .navbar-top-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            padding: 0.5rem 0;
-        }
-
-        .navbar-bottom-row {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            padding: 0.5rem 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .search-container {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            max-width: 600px;
-            margin: 0 1rem;
-        }
-
-        .nav-menu {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-
-        .user-dropdown {
-            margin-left: auto;
-        }
-        
         /* Modal Styles for Dark Mode */
         .modal-content {
             background-color: var(--bg-light);
@@ -391,7 +247,7 @@
             filter: var(--bs-btn-close-filter, none);
         }
         
-        [data-theme="dark"] .btn-close {
+        [data-theme="dark"] .btn-close { /* This might need adjustment based on how theme is set */
             filter: invert(1) grayscale(100%) brightness(200%);
         }
         
@@ -406,7 +262,7 @@
             background-color: var(--bg-darker);
             border-color: var(--primary);
             color: var(--text);
-            box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.1); /* Adjusted shadow to use primary color */
         }
         
         .form-control::placeholder {
@@ -440,264 +296,417 @@
             color: var(--text-muted);
             margin-top: 0.25rem;
         }
-    </style>
-    <style>
-    /* تحسينات للهاتف */
-    @media (max-width: 768px) {
-        .navbar-container {
-            padding: 0 10px;
+
+        /* أنماط جديدة لتشبه إنستجرام - مُحسنة */
+        .navbar .container { /* Targeting the .container directly inside .navbar */
+            padding-left: 15px;
+            padding-right: 15px;
         }
-        
+
         .navbar-top-row {
-            flex-direction: column;
-            align-items: stretch;
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* This is key for spacing brand and icons */
+            width: 100%;
+            padding: 10px 0; /* Vertical padding for the row */
+            border-bottom: 1px solid var(--border);
         }
         
         .navbar-brand {
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 1.3rem;
+            display: flex; /* Ensures image and text align well */
+            align-items: center;
+            /* margin-left: auto; Removed as justify-content: space-between on parent handles positioning */
         }
         
-        .search-container {
-            margin: 10px 0;
-            order: 3;
+        .logo-img { /* Already defined, ensure it's as desired */
+            height: 29px; /* Instagram logo is around this height */
+            margin-left: 10px; /* Space between image and text in RTL */
         }
         
-        .search-bar {
-            font-size: 14px;
-            padding: 8px 12px;
+        .nav-icons {
+            display: flex;
+            align-items: center;
+            gap: 22px; /* Spacing between icons */
         }
         
-        .nav-menu {
-            flex-direction: row;
-            justify-content: space-around;
-            margin-top: 10px;
-            order: 2;
+        .nav-icons .nav-link {
+            padding: 5px !important; /* Add some padding for easier interaction */
+            font-size: 1.5rem; /* Slightly larger icons */
+            line-height: 1; /* Helps align icons better */
         }
-        
-        .nav-item {
-            margin: 0 3px;
+        .nav-icons .nav-link i{
+             margin-right: 0rem !important;
         }
-        
-        .nav-link {
-            padding: 4px 6px !important;
-            font-size: 12px;
-        }
-        
-        .nav-link i {
-            margin-right: 0;
-            font-size: 16px;
-        }
-        
-        .nav-link span {
-            display: none;
-        }
-        
-        .user-dropdown {
-            margin-left: 0;
-            order: 1;
-            align-self: flex-end;
-            margin-bottom: 10px;
-        }
-        
-        .dropdown-menu {
-            position: absolute;
-            right: 10px;
-            left: auto;
-        }
-        
-        .profile-pic {
-            width: 32px;
-            height: 32px;
-        }
-        
-        .container {
-            padding-left: 10px;
-            padding-right: 10px;
-        }
-    }
-    @media (max-width: 768px) {
-    .card-footer .btn {
-        padding: 4px 8px;
-        font-size: 12px;
-    }
-
-    .post-actions i {
-        font-size: 18px !important;
-        margin-right: 0.5rem;
-    }
-
-    .post-actions {
-        justify-content: space-between !important;
-        gap: 8px;
-    }
-
-    .card-body h5 {
-        font-size: 14px;
-    }
-
-    .card-body small {
-        font-size: 11px;
-    }
-
-    .card-text {
-        font-size: 14px;
-    }
-
-    .card img,
-    .video-container {
-        max-height: 300px;
-        object-fit: contain;
-    }
-
-    .modal-dialog {
-        margin: 1rem;
-    }
-
-    .modal-body .form-control {
-        font-size: 13px;
-        padding: 6px 10px;
-    }
-
-    .modal-body .btn {
-        font-size: 13px;
-        padding: 6px 12px;
-    }
-}
-/* إضافة هذه الأنماط إلى قسم الـ CSS في base.html */
-
-/* أنماط خاصة بصفحة تعديل الملف الشخصي */
-.needs-validation .form-control {
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--border);
-    transition: all 0.2s;
+        /* أنماط النافبار السفلي المحسنة */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--bg-light);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    z-index: 1000;
+    height: 60px;
 }
 
-.needs-validation .form-control:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
+.bottom-nav .nav-link {
+    font-size: 1.4rem;
+    color: var(--text) !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px 10px !important;
+    margin: 0 !important;
 }
 
-.needs-validation textarea.form-control {
-    min-height: 120px;
-    resize: vertical;
+.bottom-nav .nav-link i {
+    margin: 0 !important;
 }
 
-.was-validated .form-control:invalid,
-.form-control.is-invalid {
-    border-color: #dc3545;
+.create-post-btn {
+    position: relative;
+    background-color: var(--primary);
+    color: var(--bg-light) !important;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
 }
 
-.was-validated .form-control:valid,
-.form-control.is-valid {
-    border-color: #198754;
+.create-post-btn i {
+    font-size: 1.4rem;
+    color: var(--bg-light) !important;
 }
 
-.invalid-feedback {
-    font-size: 0.85rem;
-    color: #dc3545;
+.create-post-btn:hover {
+    transform: scale(1.1);
+    background-color: var(--primary-light);
 }
 
-.valid-feedback {
-    font-size: 0.85rem;
-    color: #198754;
+/* تعديل حجم صورة البروفيل في النافبار السفلي */
+.bottom-nav .profile-pic {
+    width: 30px;
+    height: 30px;
+    border-width: 1px;
 }
 
-/* تحسينات للهاتف */
+/* تعديلات للهواتف المحمولة */
 @media (max-width: 768px) {
-    .needs-validation .form-control {
-        padding: 0.6rem 0.8rem;
-        font-size: 14px;
+    .bottom-nav {
+        height: 55px;
+        padding: 8px 0;
     }
     
-    .card-body {
-        padding: 1.5rem;
+    .bottom-nav .nav-link {
+        font-size: 1.2rem;
+        padding: 5px 8px !important;
     }
     
-    .btn {
-        padding: 0.5rem 1rem;
-        font-size: 14px;
+    .create-post-btn {
+        width: 45px;
+        height: 45px;
+        margin-bottom: 12px;
+    }
+    
+    .create-post-btn i {
+        font-size: 1.2rem;
+    }
+    
+    .bottom-nav .profile-pic {
+        width: 26px;
+        height: 26px;
     }
 }
+        
+        
+        
+        
+        /* Specific styling for profile picture in bottom nav */
+        
+        .bottom-nav .profile-pic {
+            width: 28px; /* Smaller profile pic for bottom nav */
+            height: 28px;
+            border-width: 1px; /* Thinner border */
+        }
+        
+        .container.py-4 { /* py-4 is Bootstrap's padding class */
+            padding-top: 1.5rem; /* Default from py-4 */
+            padding-bottom: 80px !important; /* Increased padding to prevent content overlap with bottom-nav + create button */
+        }
+        
+        /* Mobile Optimizations for Navbars */
+        @media (max-width: 768px) {
+            .navbar .container {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            .navbar-top-row {
+                padding: 8px 0;
+            }
+            
+            .nav-icons {
+                gap: 18px; /* Slightly reduced gap */
+            }
+            
+            .nav-icons .nav-link {
+                font-size: 1.3rem; /* Adjusted icon size for mobile */
+                padding: 4px !important;
+            }
+            
+            .logo-img {
+                height: 26px;
+            }
+            
+            
+             .container.py-4 {
+                padding-bottom: 70px !important;
+            }
+        }
 
+        /* أنماط خاصة بصفحة تعديل الملف الشخصي */
+        .needs-validation .form-control {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .needs-validation .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.1);
+        }
+
+        .needs-validation textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .was-validated .form-control:invalid,
+        .form-control.is-invalid {
+            border-color: #dc3545; /* Bootstrap danger color */
+        }
+
+        .was-validated .form-control:valid,
+        .form-control.is-valid {
+            border-color: #198754; /* Bootstrap success color */
+        }
+
+        .invalid-feedback {
+            font-size: 0.85rem;
+            color: #dc3545;
+        }
+
+        .valid-feedback {
+            font-size: 0.85rem;
+            color: #198754;
+        }
+
+        /* General Mobile improvements for cards, modals etc. from previous blocks */
+        @media (max-width: 768px) {
+            .card-footer .btn {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+
+            .post-actions i {
+                font-size: 1rem !important; /* unified size */
+                margin-right: 0.5rem;
+            }
+
+            .post-actions {
+                justify-content: space-around !important; /* Evenly space action icons */
+                gap: 5px; /* reduce gap */
+            }
+
+            .card-body h5 { font-size: 14px; }
+            .card-body small { font-size: 11px; }
+            .card-text { font-size: 14px; }
+
+            .card img, .video-container {
+                max-height: 300px;
+                object-fit: contain;
+            }
+
+            .modal-dialog { margin: 1rem; }
+            .modal-body .form-control { font-size: 13px; padding: 6px 10px; }
+            .modal-body .btn { font-size: 13px; padding: 6px 12px; }
+            
+            /* Profile edit page on mobile */
+            .needs-validation .form-control {
+                padding: 0.6rem 0.8rem;
+                font-size: 14px;
+            }
+            .card-body.profile-edit-card { /* Assuming a class for the card body on edit page */
+                padding: 1rem;
+            }
+            .profile-edit-card .btn { /* Buttons on edit page */
+                padding: 0.5rem 1rem;
+                font-size: 14px;
+            }
+            .nav-link span { /* Hide text in nav links if any was shown previously on mobile */
+                 display: none;
+            }
+        }
+/* أنماط شريط البحث في النافبار مع زر البحث */
+.navbar-search-container {
+    width: 100%;
+    padding: 10px 15px;
+    background-color: var(--bg-light);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.navbar-search-form {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+}
+
+.navbar-search {
+    background-color: var(--bg-darker);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    transition: all 0.2s;
+    flex-grow: 1;
+}
+
+.navbar-search-btn {
+    background-color: var(--primary);
+    color: var(--bg-light);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.navbar-search-btn:hover {
+    background-color: var(--primary-light);
+    transform: translateY(-1px);
+}
+
+.navbar-search:focus {
+    background-color: var(--bg-darker);
+    color: var(--text);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
+    outline: none;
+    border-color: var(--primary);
+}
+
+.navbar-search::placeholder {
+    color: var(--text-muted);
+}
+@media (max-width: 768px) {
+    .navbar-search-container {
+        padding: 8px 10px;
+        gap: 5px;
+    }
+    
+    .navbar-search-form {
+        gap: 5px;
+    }
+    
+    .navbar-search {
+        padding: 0.4rem 0.8rem;
+        font-size: 14px;
+    }
+    
+    .navbar-search-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 14px;
+    }
+    
+    .navbar-search-btn span {
+        display: none;
+    }
+    
+    .navbar-search-btn i {
+        margin: 0;
+    }
+}
 </style>
 
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container">
-            <div class="navbar-container">
-                <div class="navbar-top-row">
-                    <a class="navbar-brand" href="{% url 'home' %}">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/46/1000084215-removebg-preview.png" class="logo-img" alt="شعار Trimer">
-                        Trimer
-                    </a>
-
-                    <div class="search-container">
-    <form class="d-flex w-100" action="{% url 'search_users' %}" method="GET">
-        <input class="form-control search-bar" type="search" name="q" placeholder="ابحث عن المستخدمين..." aria-label="بحث">
-        <button class="btn btn-primary ms-2 btn-animate" type="submit">
-            <i class="fas fa-search"></i>
-        </button>
-        
-    </form>
-</div>
-
-                    <ul class="nav-menu navbar-nav flex-row">
-                        <div class="user-dropdown dropdown ms-3">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                {% if request.user.profile_picture %}
-                                    <img src="{{ request.user.profile_picture.url }}" class="profile-pic me-2" alt="صورة الحساب">
-                                {% else %}
-                                    <img src="/media/profile_pics/default_profile.png" class="profile-pic me-2" alt="صورة افتراضية">
-                                {% endif %}
-                                <span class="d-none d-lg-inline">{{ request.user.username }}</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                {% if request.user.is_authenticated and request.user.username %}
-                                    <li><a class="dropdown-item" href="{% url 'profile' request.user.username %}"><i class="fas fa-user me-2"></i>الملف الشخصي</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="fas fa-cog me-2"></i>الإعدادات</a></li>
-                                {% endif %}
-                                <li><hr class="dropdown-divider"></li>
-                                <form action="{% url 'logout_view' %}" method="post">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج
-                                    </button>
-                                </form>
-                            </ul>
-                        </div>
-
-                        <ul class="nav-menu navbar-nav flex-row">
-                            <!-- في قسم القائمة -->
-<li class="nav-item me-3">
-    <a class="nav-link position-relative" href="{% url 'notifications' %}">
-    <i class="fas fa-bell"></i>
-    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge" 
-          style="display: none;">
-        0
-    </span>
-</a>
-</li>
-                            <li class="nav-item me-3">
-                                <a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> </a>
-                            </li>
-                            <li class="nav-item me-3">
-                                <a class="nav-link" href="{% url 'friends' %}"><i class="fas fa-users"></i> </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'saved_posts' %}"><i class="fas fa-bookmark"></i> </a>
-                            </li>
-                        </ul>
-                    </ul>
-                </div>
+    <div class="container">
+        <div class="navbar-top-row">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/46/1000084215-removebg-preview.png" class="logo-img" alt="شعار Trimer">
+                Trimer
+            </a>
+            
+            <div class="nav-icons">
+                <a class="nav-link position-relative" href="{% url 'notifications' %}">
+                    <i class="fas fa-bell"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge" style="display: none; font-size: 0.6em; padding: 0.3em 0.5em;">0</span>
+                </a>
+                <a class="nav-link" href="{% url 'chat_list' request.user.username %}">
+                    <i class="fas fa-paper-plane"></i>
+                </a>
             </div>
         </div>
-    </nav>
+        
+        <!-- شريط البحث الجديد مع زر البحث -->
+        <div class="navbar-search-container">
+            <form class="navbar-search-form" action="{% url 'search_users' %}" method="get">
+                <input type="search" class="navbar-search" name="q" placeholder="ابحث عن مستخدمين..." value="{{ request.GET.q }}">
+                <button type="submit" class="navbar-search-btn">
+                    <i class="fas fa-search"></i>
+                    <span class="d-none d-sm-inline">بحث</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
 
-    <!-- Settings Modal -->
+    
+
+<div class="bottom-nav">
+    <a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i></a>
+    <a class="nav-link" href="{% url 'friends' %}"><i class="fas fa-users"></i></a>
+    <a href="{% url 'create_post' %}" class="create-post-btn">
+        <i class="fas fa-plus"></i>
+    </a>
+    <a class="nav-link" href="{% url 'game' %}"><i class="fas fa-gamepad"></i></a>
+    <div class="dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            {% if request.user.profile_picture %}
+                <img src="{{ request.user.profile_picture.url }}" class="profile-pic" alt="صورة البروفيل">
+            {% else %}
+                <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" class="profile-pic" alt="صورة افتراضية">
+            {% endif %}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+            {% if request.user.is_authenticated and request.user.username %}
+                <li><a class="dropdown-item" href="{% url 'profile' request.user.username %}"><i class="fas fa-user me-2"></i>الملف الشخصي</a></li>
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="fas fa-cog me-2"></i>الإعدادات</a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <form action="{% url 'logout_view' %}" method="post" style="margin:0;"> {% csrf_token %}
+                <button type="submit" class="dropdown-item">
+                    <i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج
+                </button>
+            </form>
+        </ul>
+    </div>
+</div>
+
     <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -706,18 +715,6 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="settings-section">
-                        <h6 class="fw-bold mb-3">المظهر</h6>
-                        <div class="settings-item">
-                            <div>
-                                <div class="settings-label">الوضع المضلم</div>
-                                <div class="settings-description">تغيير مظهر الموقع إلى الوضع المضلم</div>
-                            </div>
-                            <button class="btn btn-outline-primary btn-sm" disabled>قريباً</button>
-
-                        </div>
-                    </div>
-                    
                     <div class="settings-section">
                         <h6 class="fw-bold mb-3">الحساب</h6>
                         <div class="settings-item">
@@ -756,41 +753,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Theme Toggle Functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const themeToggle = document.getElementById('themeToggle');
-            const themeIcon = document.getElementById('themeIcon');
-            const body = document.body;
-            
-            // Load saved theme
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            if (savedTheme === 'dark') {
-                body.setAttribute('data-theme', 'dark');
-                themeIcon.classList.remove('fa-moon');
-                themeIcon.classList.add('fa-sun');
-            }
-            
-            // Theme toggle event
-            if (themeToggle) {
-                themeToggle.addEventListener('click', function() {
-                    const currentTheme = body.getAttribute('data-theme');
-                    
-                    if (currentTheme === 'dark') {
-                        body.removeAttribute('data-theme');
-                        themeIcon.classList.remove('fa-sun');
-                        themeIcon.classList.add('fa-moon');
-                        localStorage.setItem('theme', 'light');
-                    } else {
-                        body.setAttribute('data-theme', 'dark');
-                        themeIcon.classList.remove('fa-moon');
-                        themeIcon.classList.add('fa-sun');
-                        localStorage.setItem('theme', 'dark');
-                    }
-                });
-            }
+        // Initialize Bootstrap dropdowns
+        var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
+        var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+          return new bootstrap.Dropdown(dropdownToggleEl)
         });
 
-        // AJAX for like and save actions
+
+        // AJAX for like and save actions (يبقى كما هو)
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.like-btn').forEach(button => {
                 button.addEventListener('click', function(e) {
@@ -823,7 +793,7 @@
                             likeIcon.classList.remove('fas');
                             likeIcon.classList.add('far');
                         }
-                        likesCount.textContent = data.likes_count;
+                        if(likesCount) likesCount.textContent = data.likes_count;
                     });
                 });
             });
@@ -863,50 +833,43 @@
             });
         });
 
-        // تحديث المحادثة تلقائياً
-function updateChat() {
-    if (window.location.pathname.includes('/messages/')) {
-        const chatId = window.location.pathname.split('/')[2];
-        if (chatId) {
-            fetch(`/messages/update/${chatId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.new_messages) {
-                        // إضافة الرسائل الجديدة
-                        location.reload(); // أو معالجة DOM بشكل ديناميكي
-                    }
-                });
-        }
-    }
-}
-
-// تحديث كل 5 ثوان
-setInterval(updateChat, 1000);
-    </script>
-<script>
-// تحديث عدد الإشعارات غير المقروءة
-function updateNotificationCount() {
-    fetch('{% url "unread_notifications_count" %}')
-        .then(response => response.json())
-        .then(data => {
-            const badge = document.querySelector('.notification-badge');
-            if (badge) {
-                if (data.count > 0) {
-                    badge.textContent = data.count;
-                    badge.style.display = 'inline-block';
-                } else {
-                    badge.style.display = 'none';
+        // تحديث المحادثة تلقائياً (يبقى كما هو)
+        function updateChat() {
+            if (window.location.pathname.includes('/messages/')) {
+                const pathParts = window.location.pathname.split('/');
+                const chatIdIndex = pathParts.indexOf('messages') + 1; // chat_id should be after 'messages'
+                if (chatIdIndex < pathParts.length && pathParts[chatIdIndex]) {
+                    const chatId = pathParts[chatIdIndex];
+                    fetch(`/messages/update/${chatId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.new_messages) {
+                                location.reload(); // أو معالجة DOM بشكل ديناميكي
+                            }
+                        }).catch(error => console.error('Error updating chat:', error));
                 }
             }
-        });
-}
+        }
+        setInterval(updateChat, 5000); // Increased interval to 5 seconds
 
-// تحديث كل 30 ثانية
-setInterval(updateNotificationCount, 1000);
-
-// تشغيل عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', updateNotificationCount);
-</script>
-
+        // تحديث عدد الإشعارات غير المقروءة (يبقى كما هو)
+        function updateNotificationCount() {
+            fetch('{% url "unread_notifications_count" %}')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.querySelector('.notification-badge');
+                    if (badge) {
+                        if (data.count > 0) {
+                            badge.textContent = data.count > 9 ? '9+' : data.count; // Show 9+ for more than 9
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                }).catch(error => console.error('Error updating notification count:', error));
+        }
+        setInterval(updateNotificationCount, 5000); // Interval 5 seconds
+        document.addEventListener('DOMContentLoaded', updateNotificationCount);
+    </script>
 </body>
 </html>

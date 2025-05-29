@@ -1,36 +1,35 @@
 {% load static %}
 
-<div class="card mb-4">
+<div class="card mb-4 border-dark bg-dark text-light">
     <div class="card-body">
-        <!-- في قسم عرض اسم المستخدم في المنشور -->
-<div class="d-flex align-items-center mb-3">
-    <a href="{% url 'profile' post.user.username %}">
-        <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2 border" alt="User avatar" 
-            onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
-            style="width: 50px; height: 50px; object-fit: cover;">
-    </a>
-    <div>
-        <a href="{% url 'profile' post.user.username %}" class="text-decoration-none text-dark">
-            <h5 class="mb-0">@{{ post.user.username }}
-                {% if post.user.has_blue_badge %}
-                    <i class="fas fa-check-circle text-primary" style="font-size: 0.8em;" title="حساب موثوق"></i>
-                {% endif %}
-            </h5>
-        </a>
-        <small class="text-muted">{{ post.created_at|timesince }} مضت</small>
-    </div>
-           {% if post.user == request.user %}
-<div class="dropdown ms-auto">
-    <button class="btn btn-sm btn-light" type="button" id="postOptionsDropdown-{{ post.id }}" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="fas fa-ellipsis-v"></i>
-    </button>
-    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="postOptionsDropdown-{{ post.id }}">
-        <li><a class="dropdown-item" href="{% url 'edit_post' post.id %}"><i class="fas fa-edit me-2"></i>تعديل</a></li>
-        <li><a class="dropdown-item text-danger" href="{% url 'delete_post' post.id %}"><i class="fas fa-trash-alt me-2"></i>حذف</a></li>
-    </ul>
-</div>
-{% endif %}
-
+        <!-- قسم عرض اسم المستخدم في المنشور -->
+        <div class="d-flex align-items-center mb-3">
+            <a href="{% url 'profile' post.user.username %}">
+                <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2 border border-secondary" alt="User avatar" 
+                    onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
+                    style="width: 50px; height: 50px; object-fit: cover;">
+            </a>
+            <div>
+                <a href="{% url 'profile' post.user.username %}" class="text-decoration-none text-light">
+                    <h5 class="mb-0">@{{ post.user.username }}
+                        {% if post.user.has_blue_badge %}
+                            <i class="fas fa-check-circle text-primary" style="font-size: 0.8em;" title="حساب موثوق"></i>
+                        {% endif %}
+                    </h5>
+                </a>
+                <small class="text-muted">{{ post.created_at|timesince }} مضت</small>
+            </div>
+            {% if post.user == request.user %}
+            <div class="dropdown ms-auto">
+                <button class="btn btn-sm btn-dark border border-secondary" type="button" id="postOptionsDropdown-{{ post.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end bg-dark border border-secondary" aria-labelledby="postOptionsDropdown-{{ post.id }}">
+                    <li><a class="dropdown-item text-light bg-dark" href="{% url 'edit_post' post.id %}"><i class="fas fa-edit me-2"></i>تعديل</a></li>
+                    <li><a class="dropdown-item text-danger bg-dark" href="{% url 'delete_post' post.id %}"><i class="fas fa-trash-alt me-2"></i>حذف</a></li>
+                </ul>
+            </div>
+            {% endif %}
         </div>
         
         <p class="card-text mb-3">{{ post.content }}</p>
@@ -62,84 +61,80 @@
         
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-    <a href="#" data-bs-toggle="modal" data-bs-target="#likesModal-{{ post.id }}">
-        <span class="likes-count-{{ post.id }}">{{ post.likes.count }}</span> اعجابات
-    </a>
-</div>
-
-
+                <a href="#" class="text-decoration-none text-light" data-bs-toggle="modal" data-bs-target="#likesModal-{{ post.id }}">
+                    <span class="likes-count-{{ post.id }}">{{ post.likes.count }}</span> اعجابات
+                </a>
+            </div>
             <div>
-                <h7 href="#" data-bs-toggle="modal" data-bs-target="#commentsModal-{{ post.id }}">
+                <a href="#" class="text-decoration-none text-light" data-bs-toggle="modal" data-bs-target="#commentsModal-{{ post.id }}">
                     {{ post.comments.count }} تعليقات
-                </h7>
+                </a>
             </div>
         </div>
         
-        <hr>
+        <hr class="border-secondary">
         
         <div class="post-actions d-flex justify-content-around">
-            <a href="#" class="like-btn" data-post-id="{{ post.id }}">
-                <i class="like-icon-{{ post.id }} {% if post.is_liked %}fas fa-heart text-danger{% else %}far fa-heart{% endif %}"></i>
-            </a>
-            <a href="#" data-bs-toggle="modal" data-bs-target="#commentsModal-{{ post.id }}">
-                <i class="far fa-comment"></i>
-            </a>
-            <a href="#" class="save-btn" data-post-id="{{ post.id }}">
-                <i class="save-icon-{{ post.id }} {% if post.is_saved %}fas text-warning{% else %}far{% endif %} fa-bookmark"></i>
-            </a>
-        </div>
+    <a href="#" class="like-btn text-light" data-post-id="{{ post.id }}">
+        <i class="like-icon-{{ post.id }} {% if post.is_liked %}fas fa-heart text-danger{% else %}far fa-heart text-white-80{% endif %} fa-lg"></i>
+    </a>
+    <a href="#" class="text-light" data-bs-toggle="modal" data-bs-target="#commentsModal-{{ post.id }}">
+        <i class="far fa-comment text-white-80 fa-lg"></i>
+    </a>
+    <a href="#" class="save-btn text-light" data-post-id="{{ post.id }}">
+        <i class="save-icon-{{ post.id }} {% if post.is_saved %}fas fa-bookmark text-warning{% else %}far fa-bookmark text-white-80{% endif %} fa-lg"></i>
+    </a>
+</div>
     </div>
 </div>
-
 
 <!-- Modal للتعليقات -->
 <div class="modal fade" id="commentsModal-{{ post.id }}" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
+        <div class="modal-content bg-dark text-light border border-secondary">
+            <div class="modal-header border-secondary">
                 <h5 class="modal-title" id="commentsModalLabel">التعليقات</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="comments-container" style="max-height: 400px; overflow-y: auto;">
-                    <!-- داخل قسم التعليقات في المودال -->
-{% for comment in post.comments.all %}
-<div class="d-flex mb-3">
-    <a href="{% url 'profile' comment.user.username %}">
-        <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle me-2 border" 
-            style="width: 40px; height: 40px; object-fit: cover;"
-            onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
-            alt="{{ comment.user.username }}">
-    </a>
-    <div class="flex-grow-1">
-        <div class="d-flex align-items-center">
-            <a href="{% url 'profile' comment.user.username %}" class="text-decoration-none text-dark me-2">
-                <strong>@{{ comment.user.username }}</strong>
-            </a>
-            <small class="text-muted">{{ comment.created_at|timesince }} مضت</small>
-            
-            {% if comment.user == request.user or post.user == request.user %}
-            <div class="dropdown ms-auto">
-                <button class="btn btn-sm btn-link text-muted" type="button" id="commentDropdown-{{ comment.id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-ellipsis-h"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="commentDropdown-{{ comment.id }}">
-                    <li><a class="dropdown-item text-danger delete-comment-btn" href="#" data-comment-id="{{ comment.id }}">حذف التعليق</a></li>
-                </ul>
-            </div>
-            {% endif %}
-        </div>
-        <p class="mb-0">{{ comment.content }}</p>
-    </div>
-</div>
-{% empty %}
-<p class="text-muted text-center">لا توجد تعليقات حتى الآن</p>
-{% endfor %}
+                    {% for comment in post.comments.all %}
+                    <div class="d-flex mb-3">
+                        <a href="{% url 'profile' comment.user.username %}">
+                            <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle me-2 border border-secondary" 
+                                style="width: 40px; height: 40px; object-fit: cover;"
+                                onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
+                                alt="{{ comment.user.username }}">
+                        </a>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center">
+                                <a href="{% url 'profile' comment.user.username %}" class="text-decoration-none text-light me-2">
+                                    <strong>@{{ comment.user.username }}</strong>
+                                </a>
+                                <small class="text-muted">{{ comment.created_at|timesince }} مضت</small>
+                                
+                                {% if comment.user == request.user or post.user == request.user %}
+                                <div class="dropdown ms-auto">
+                                    <button class="btn btn-sm btn-link text-muted" type="button" id="commentDropdown-{{ comment.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end bg-dark border border-secondary" aria-labelledby="commentDropdown-{{ comment.id }}">
+                                        <li><a class="dropdown-item text-danger bg-dark delete-comment-btn" href="#" data-comment-id="{{ comment.id }}">حذف التعليق</a></li>
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <p class="mb-0 text-light">{{ comment.content }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center">لا توجد تعليقات حتى الآن</p>
+                    {% endfor %}
                 </div>
                 <form id="comment-form-{{ post.id }}" class="comment-form mt-3" action="{% url 'add_comment' post.id %}" method="POST">
                     {% csrf_token %}
                     <div class="input-group">
-                        <input type="text" class="form-control bg-light text-dark" name="content" placeholder="أكتب تعليقا...">
+                        <input type="text" class="form-control bg-secondary text-light border border-secondary" name="content" placeholder="أكتب تعليقا...">
                         <button class="btn btn-outline-primary" type="submit">نشر</button>
                     </div>
                 </form>
@@ -162,13 +157,67 @@
     </div>
 </div>
 
+<!-- Modal لعرض المعجبين -->
+<div class="modal fade" id="likesModal-{{ post.id }}" tabindex="-1" aria-labelledby="likesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light border border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="likesModalLabel">المعجبون</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body">
+                {% if post.likes.all %}
+                    <ul class="list-group">
+                        {% for like in post.likes.all %}
+                            {% if like.user.username %}
+                                <li class="list-group-item bg-dark text-light border-secondary d-flex align-items-center">
+                                    <a href="{% url 'profile' like.user.username %}">
+                                        <img src="{{ like.user.profile_picture.url }}" class="rounded-circle me-2 border border-secondary"
+                                             style="width: 40px; height: 40px; object-fit: cover;"
+                                             onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
+                                             alt="{{ like.user.username }}">
+                                    </a>
+                                    <a href="{% url 'profile' like.user.username %}" class="text-decoration-none text-light">
+                                        @{{ like.user.username }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted text-center">لا يوجد معجبون حتى الآن</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
+    /* أنماط التصميم الغامق */
+    .card.bg-dark {
+        background-color: #1a1a1a !important;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-content.bg-dark {
+        background-color: #1e1e1e !important;
+    }
+    
+    .list-group-item.bg-dark {
+        background-color: #252525 !important;
+    }
+    
+    .form-control.bg-secondary {
+        background-color: #2d2d2d !important;
+        color: #ffffff !important;
+    }
+    
     /* تحسينات الصور والفيديوهات للهواتف */
     .post-media-container {
         margin-bottom: 1rem;
         border-radius: 0.5rem;
         overflow: hidden;
-        background-color: #f8f9fa;
+        background-color: #121212;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -205,7 +254,7 @@
     
     /* تحسينات لمودال الصورة المكبرة */
     #imageModal .modal-content {
-        background-color: rgba(0, 0, 0, 0.8);
+        background-color: rgba(0, 0, 0, 0.9);
     }
     
     #imageModal .btn-close {
@@ -216,6 +265,59 @@
         filter: invert(1);
     }
     
+    /* تحسينات للأزرار والروابط */
+    .btn-outline-primary {
+        color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: #0d6efd;
+        color: #fff;
+    }
+    
+    /* إضافة أنماط جديدة للتوست */
+    .toast {
+        min-width: 250px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .bg-success {
+        background-color: #28a745 !important;
+    }
+    
+    .bg-info {
+        background-color: #17a2b8 !important;
+    }
+    
+    .bg-error {
+        background-color: #dc3545 !important;
+    }
+    
+    /* تحسينات لأيقونة الحفظ */
+    .fa-bookmark {
+        transition: all 0.3s ease;
+    }
+    
+    .fa-bookmark:hover {
+        transform: scale(1.1);
+    }
+    
+    /* تأثيرات عند التحويم */
+    a.text-light:hover {
+        color: #ffffff !important;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    }
+    
+    /* تعديلات للهواتف */
     @media (max-width: 768px) {
         .post-image {
             max-height: 350px;
@@ -249,42 +351,44 @@
             max-height: 250px;
         }
     }
-    /* إضافة أنماط جديدة للتوست */
-    .toast {
-        min-width: 250px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        animation: fadeIn 0.3s ease-in-out;
+</style>
+<style>
+    /* تحسينات الأيقونات */
+    .fa-lg {
+        font-size: 1.25rem;
     }
     
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+    .text-white-80 {
+        color: rgba(255, 255, 255, 0.8) !important;
     }
     
-    .bg-success {
-        background-color: #28a745 !important;
+    .post-actions a:hover i {
+        transform: scale(1.15);
+        opacity: 1;
     }
     
-    .bg-info {
-        background-color: #17a2b8 !important;
+    .post-actions i {
+        transition: all 0.2s ease-in-out;
+        opacity: 0.9;
     }
     
-    .bg-error {
-        background-color: #dc3545 !important;
+    /* تحسينات لأيقونات القوائم */
+    .dropdown-item i {
+        width: 20px;
+        text-align: center;
+        margin-right: 8px;
     }
     
-    /* تحسينات لأيقونة الحفظ */
-    .fa-bookmark {
-        transition: all 0.3s ease;
+    /* تحسينات للأيقونات في الوضع الغامق */
+    .bg-dark .text-muted {
+        color: #aaa !important;
     }
     
-    .fa-bookmark:hover {
-        transform: scale(1.1);
+    /* تحسينات للوضع المضيء عند التحويم */
+    .dropdown-item:hover i {
+        opacity: 1;
     }
 </style>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // تعطيل المعالجات السابقة لمنع التكرار
@@ -334,7 +438,7 @@ function handleCommentSubmit(e) {
             body: formData,
             headers: {
                 'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
-                'X-Requested-With': 'XMLHttpRequest' // إضافة هذا الهيدر
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
         .then(response => response.json())
@@ -352,19 +456,19 @@ function handleCommentSubmit(e) {
                 commentDiv.className = 'd-flex mb-3';
                 commentDiv.innerHTML = `
                     <a href="/profile/${data.username}/">
-                        <img src="${data.profile_picture}" class="rounded-circle me-2 border" 
+                        <img src="${data.profile_picture}" class="rounded-circle me-2 border border-secondary" 
                             style="width: 40px; height: 40px; object-fit: cover;"
                             onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
                             alt="${data.username}">
                     </a>
                     <div>
                         <div class="d-flex align-items-center">
-                            <a href="/profile/${data.username}/" class="text-decoration-none text-dark me-2">
+                            <a href="/profile/${data.username}/" class="text-decoration-none text-light me-2">
                                 <strong>@${data.username}</strong>
                             </a>
                             <small class="text-muted">الآن</small>
                         </div>
-                        <p class="mb-0">${data.content}</p>
+                        <p class="mb-0 text-light">${data.content}</p>
                     </div>
                 `;
                 
@@ -401,6 +505,7 @@ function handleCommentSubmit(e) {
         });
     }
 }
+
 // حذف التعليق
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.delete-comment-btn').forEach(btn => {
@@ -445,37 +550,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-<!-- Modal لعرض المعجبين -->
-<div class="modal fade" id="likesModal-{{ post.id }}" tabindex="-1" aria-labelledby="likesModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="likesModalLabel">المعجبون</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
-            </div>
-            <div class="modal-body">
-                {% if post.likes.all %}
-                    <ul class="list-group">
-                        {% for like in post.likes.all %}
-                            {% if like.user.username %}
-                                <li class="list-group-item d-flex align-items-center">
-                                    <a href="{% url 'profile' like.user.username %}">
-                                        <img src="{{ like.user.profile_picture.url }}" class="rounded-circle me-2 border"
-                                             style="width: 40px; height: 40px; object-fit: cover;"
-                                             onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
-                                             alt="{{ like.user.username }}">
-                                    </a>
-                                    <a href="{% url 'profile' like.user.username %}" class="text-decoration-none text-dark">
-                                        @{{ like.user.username }}
-                                    </a>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="text-muted text-center">لا يوجد معجبون حتى الآن</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>

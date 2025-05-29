@@ -1,63 +1,117 @@
 {% extends 'social/base.html' %}
 {% load static %}
 {% block content %}
-<div class="row">
-    <div class="col-md-8 mx-auto">
-        <!-- نموذج إنشاء منشور -->
-        <div class="card mb-4">
-            <div class="card mb-4" onclick="window.location.href='{% url 'create_post' %}'" style="cursor: pointer;">
-    <div class="card-body">
-        <form method="POST" action="{% url 'create_post' %}" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group mb-3">
-                <textarea class="form-control bg-light text-dark" name="content" rows="3" placeholder="بماذا تفكر؟" onclick="event.stopPropagation()"></textarea>
-            </div>
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <label for="image-upload" class="btn btn-sm btn-outline-primary me-2" onclick="event.stopPropagation()">
-                        <i class="fas fa-image"></i> صورة
-                    </label>
-                    <input id="image-upload" type="file" name="image" accept="image/*" style="display: none;" onclick="event.stopPropagation()">
-                    
-                    <label for="video-upload" class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation()">
-                        <i class="fas fa-video"></i> فيديو
-                    </label>
-                    <input id="video-upload" type="file" name="video" accept="video/*" style="display: none;" onclick="event.stopPropagation()">
+<style>
+    .dark-home {
+        background-color: #121212;
+        color: #e0e0e0;
+        min-height: 100vh;
+        padding-top: 20px;
+    }
+    .dark-card {
+        background-color: #1e1e1e;
+        border-color: #333;
+        margin-bottom: 20px;
+    }
+    .dark-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .post-form {
+        background-color: #252525;
+        border-color: #333;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .post-form:hover {
+        background-color: #2d2d2d;
+        transform: translateY(-2px);
+    }
+    .form-control-dark {
+        background-color: #2d2d2d !important;
+        border-color: #444 !important;
+        color: #e0e0e0 !important;
+    }
+    .form-control-dark::placeholder {
+        color: #9e9e9e !important;
+    }
+    .btn-outline-primary {
+        color: #4a6bff;
+        border-color: #4a6bff;
+    }
+    .btn-outline-primary:hover {
+        background-color: #4a6bff;
+        color: #fff;
+    }
+    .btn-primary {
+        background-color: #4a6bff;
+        border-color: #4a6bff;
+    }
+    .btn-primary:hover {
+        background-color: #3a5bef;
+        border-color: #3a5bef;
+    }
+    .floating-chat-button {
+        position: fixed;
+        bottom: 30px;
+        left: 30px;
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        background-color: #4a6bff;
+        border: none;
+    }
+    .floating-chat-button:hover {
+        background-color: #3a5bef;
+        transform: scale(1.05);
+    }
+    .badge-danger {
+        background-color: #ff4757;
+    }
+</style>
+
+<div class="dark-home">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- نموذج إنشاء منشور -->
+                <div class="dark-card card post-form mb-4" onclick="window.location.href='{% url 'create_post' %}'">
+                    <div class="card-body">
+                        <form method="POST" action="{% url 'create_post' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="form-group mb-3">
+                                <textarea class="form-control form-control-dark" name="content" rows="3" 
+                                          placeholder="بماذا تفكر؟" onclick="event.stopPropagation()"></textarea>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <label for="image-upload" class="btn btn-sm btn-outline-primary me-2" onclick="event.stopPropagation()">
+                                        <i class="fas fa-image"></i> صورة
+                                    </label>
+                                    <input id="image-upload" type="file" name="image" accept="image/*" style="display: none;" onclick="event.stopPropagation()">
+                                    
+                                    <label for="video-upload" class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation()">
+                                        <i class="fas fa-video"></i> فيديو
+                                    </label>
+                                    <input id="video-upload" type="file" name="video" accept="video/*" style="display: none;" onclick="event.stopPropagation()">
+                                </div>
+                                <button type="submit" class="btn btn-primary" onclick="event.stopPropagation()">نشر</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary" onclick="event.stopPropagation()">نشر</button>
+
+                <!-- تغذية المنشورات -->
+                {% for post in posts %}
+                    {% include 'social/post_template.html' with post=post %}
+                {% endfor %}
             </div>
-        </form>
+        </div>
     </div>
 </div>
-        </div>
 
-        <!-- تغذية المنشورات -->
-    {% for post in posts %}
-                {% include 'social/post_template.html' with post=post %}
-            {% endfor %}
-<!-- في نهاية ملف base.html قبل غلق body -->
-<a href="{% url 'chat_list' request.user.username %}" class="btn btn-primary rounded-circle floating-chat-button">
-    <i class="fas fa-comments"></i>
-    {% if unread_messages_count > 0 %}
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-            {{ unread_messages_count }}
-        </span>
-    {% endif %}
-</a>
-
-<style>
-.floating-chat-button {
-    position: fixed;
-    bottom: 30px;
-    left: 30px;
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-</style>
 {% endblock %}

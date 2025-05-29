@@ -578,3 +578,6 @@ def delete_comment(request, comment_id):
         return JsonResponse({'success': True, 'post_id': post_id})
     
     return JsonResponse({'success': False, 'error': 'طريقة غير مسموحة'}, status=405)
+
+def game_view(request):
+    return render(request, 'game.html')

@@ -1,0 +1,218 @@
+{% extends 'social/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card mt-4">
+                <div class="card-header text-center">
+                    <h4 style="color: #ffffff;">لعبة الذاكرة</h4>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted">اختبر ذاكرتك بمطابقة الأزواج!</p>
+                    
+                    <div class="game-container mb-4">
+                        <div class="game-board" id="gameBoard"></div>
+                    </div>
+                    
+                    <div class="game-info">
+                        <p style="color: #ffffff;">الوقت : <span id="time">00:00</span></p>
+                        <p style="color: #ffffff;">المحاولات : <span id="moves">0</span></p>
+                        <button id="restartBtn" class="btn btn-primary mt-3">إعادة البدء</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .game-container {
+        display: flex;
+        justify-content: center;
+    }
+    
+    .game-board {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        max-width: 300px;
+    }
+    
+    .card-game {
+        width: 60px;
+        height: 60px;
+        background-color: var(--bg-darker);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid var(--border);
+    }
+    
+    .card-game.flipped {
+        background-color: var(--primary);
+        color: var(--bg-light);
+        transform: rotateY(180deg);
+    }
+    
+    .card-game.matched {
+        background-color: #198754;
+        cursor: default;
+    }
+    
+    .game-info {
+        margin-top: 20px;
+    }
+    
+    @media (max-width: 576px) {
+        .game-board {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        
+        .card-game {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const gameBoard = document.getElementById('gameBoard');
+        const timeDisplay = document.getElementById('time');
+        const movesDisplay = document.getElementById('moves');
+        const restartBtn = document.getElementById('restartBtn');
+        
+        const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
+        let cards = [...emojis, ...emojis];
+        let flippedCards = [];
+        let matchedCards = [];
+        let moves = 0;
+        let seconds = 0;
+        let timer;
+        let gameStarted = false;
+        
+        // خلط الأوراق
+        function shuffleCards() {
+            for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+        }
+        
+        // إنشاء لوحة اللعبة
+        function createBoard() {
+            gameBoard.innerHTML = '';
+            shuffleCards();
+            
+            cards.forEach((emoji, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card-game');
+                card.dataset.index = index;
+                card.textContent = emoji;
+                card.addEventListener('click', flipCard);
+                gameBoard.appendChild(card);
+            });
+        }
+        
+        // قلب الورقة
+        function flipCard() {
+            if (!gameStarted) {
+                startTimer();
+                gameStarted = true;
+            }
+            
+            const selectedCard = this;
+            
+            // منع قلب ورقة مقلوبة أو متطابقة
+            if (flippedCards.includes(selectedCard) || selectedCard.classList.contains('matched')) {
+                return;
+            }
+            
+            // قلب الورقة
+            selectedCard.classList.add('flipped');
+            flippedCards.push(selectedCard);
+            
+            // التحقق من التطابق عند قلب ورقتين
+            if (flippedCards.length === 2) {
+                moves++;
+                movesDisplay.textContent = moves;
+                
+                const [firstCard, secondCard] = flippedCards;
+                
+                if (firstCard.textContent === secondCard.textContent) {
+                    // تطابق ناجح
+                    firstCard.classList.add('matched');
+                    secondCard.classList.add('matched');
+                    matchedCards.push(firstCard, secondCard);
+                    flippedCards = [];
+                    
+                    // التحقق من فوز اللاعب
+                    if (matchedCards.length === cards.length) {
+                        clearInterval(timer);
+                        setTimeout(() => {
+                            alert(`مبروك! لقد فزت بـ ${moves} محاولة وفي ${formatTime(seconds)}!`);
+                        }, 500);
+                    }
+                } else {
+                    // عدم تطابق
+                    setTimeout(() => {
+                        firstCard.classList.remove('flipped');
+                        secondCard.classList.remove('flipped');
+                        flippedCards = [];
+                    }, 1000);
+                }
+            }
+        }
+        
+        // بدء المؤقت
+        function startTimer() {
+            clearInterval(timer);
+            seconds = 0;
+            updateTimer();
+            timer = setInterval(() => {
+                seconds++;
+                updateTimer();
+            }, 1000);
+        }
+        
+        // تحديث عرض المؤقت
+        function updateTimer() {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            timeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+        
+        // تنسيق الوقت
+        function formatTime(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${minutes} دقيقة و ${seconds} ثانية`;
+        }
+        
+        // إعادة بدء اللعبة
+        function restartGame() {
+            flippedCards = [];
+            matchedCards = [];
+            moves = 0;
+            gameStarted = false;
+            movesDisplay.textContent = moves;
+            clearInterval(timer);
+            timeDisplay.textContent = '00:00';
+            createBoard();
+        }
+        
+        // إضافة حدث لإعادة البدء
+        restartBtn.addEventListener('click', restartGame);
+        
+        // بدء اللعبة لأول مرة
+        createBoard();
+    });
+</script>
+{% endblock %}
