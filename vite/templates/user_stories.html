@@ -1,0 +1,174 @@
+{% extends 'social/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .story-viewer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #000;
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .story-content {
+        max-width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+    }
+    .story-nav {
+        position: absolute;
+        top: 50%;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 20px;
+        z-index: 2001;
+    }
+    .story-nav-btn {
+        background: rgba(255,255,255,0.3);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        font-size: 20px;
+        cursor: pointer;
+    }
+    .story-header {
+        position: absolute;
+        top: 20px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        z-index: 2001;
+    }
+    .story-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    .story-progress {
+        position: absolute;
+        top: 70px;
+        width: 100%;
+        padding: 0 20px;
+        z-index: 2001;
+    }
+    .progress-container {
+        display: flex;
+        gap: 5px;
+    }
+    .progress-bar {
+        height: 3px;
+        background: rgba(255,255,255,0.3);
+        flex-grow: 1;
+    }
+    .progress-fill {
+        height: 100%;
+        background: white;
+        width: 0%;
+    }
+</style>
+
+<div class="story-viewer">
+    <div class="story-header">
+        <img src="{{ story_user.profile_picture.url }}" alt="صورة الملف الشخصي">
+        <span style="color: white;">{{ story_user.username }}</span>
+    </div>
+    
+    <div class="story-progress">
+        <div class="progress-container">
+            {% for story in stories %}
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-{{ forloop.counter0 }}"></div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="story-nav">
+        <button class="story-nav-btn" onclick="prevStory()">&#10094;</button>
+        <button class="story-nav-btn" onclick="nextStory()">&#10095;</button>
+    </div>
+    
+    {% for story in stories %}
+    <div id="story-{{ forloop.counter0 }}" class="story-content" style="display: none;">
+        {% if story.is_video %}
+        <video controls autoplay class="story-content">
+            <source src="{{ story.media_url }}" type="video/mp4">
+        </video>
+        {% else %}
+        <img src="{{ story.media_url }}" class="story-content" alt="قصة">
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    let currentStory = 0;
+    const totalStories = {{ stories|length }};
+    let progressInterval;
+    
+    function showStory(index) {
+        // إخفاء جميع القصص
+        document.querySelectorAll('.story-content').forEach(el => {
+            el.style.display = 'none';
+        });
+        
+        // إظهار القصة الحالية
+        document.getElementById(`story-${index}`).style.display = 'block';
+        
+        // إعادة تعيين التقدم
+        document.querySelectorAll('.progress-fill').forEach(el => {
+            el.style.width = '0%';
+        });
+        
+        // بدء تقدم القصة
+        clearInterval(progressInterval);
+        startProgress(index);
+    }
+    
+    function startProgress(index) {
+        const progressBar = document.getElementById(`progress-${index}`);
+        let width = 0;
+        const duration = 5000; // 5 ثواني لكل قصة
+        
+        progressInterval = setInterval(() => {
+            width += 1;
+            progressBar.style.width = `${width}%`;
+            
+            if (width >= 100) {
+                clearInterval(progressInterval);
+                nextStory();
+            }
+        }, duration / 100);
+    }
+    
+    function nextStory() {
+        if (currentStory < totalStories - 1) {
+            currentStory++;
+            showStory(currentStory);
+        } else {
+            window.location.href = "{% url 'home' %}";
+        }
+    }
+    
+    function prevStory() {
+        if (currentStory > 0) {
+            currentStory--;
+            showStory(currentStory);
+        }
+    }
+    
+    // بدء عرض القصص
+    showStory(0);
+</script>
+{% endblock %}
