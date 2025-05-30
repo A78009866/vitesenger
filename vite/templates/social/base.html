@@ -153,7 +153,7 @@
         }
         
         .post-actions i.liked {
-            color: #ff4757;
+            color: #ff4757; /* This is the red color for liked icon */
         }
         
         .post-actions i.saved {
@@ -662,7 +662,6 @@
             </div>
         </div>
         
-        <!-- شريط البحث الجديد مع زر البحث -->
         <div class="navbar-search-container">
             <form class="navbar-search-form" action="{% url 'search_users' %}" method="get">
                 <input type="search" class="navbar-search" name="q" placeholder="ابحث عن مستخدمين..." value="{{ request.GET.q }}">
@@ -760,7 +759,7 @@
         });
 
 
-        // AJAX for like and save actions (يبقى كما هو)
+        // AJAX for like and save actions
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.like-btn').forEach(button => {
                 button.addEventListener('click', function(e) {
@@ -775,25 +774,45 @@
                         },
                         credentials: 'same-origin'
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            // Try to get error message from response if server sends one
+                            return response.json().then(err => { throw err; }).catch(() => { throw new Error(`HTTP error! status: ${response.status}`); });
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         const likeIcon = document.querySelector(`.like-icon-${postId}`);
                         const likesCount = document.querySelector(`.likes-count-${postId}`);
                         
-                        if (data.is_liked) {
-                            likeIcon.classList.add('liked');
+                        if (!likeIcon) {
+                            console.error(`Like icon for post ${postId} not found.`);
+                            return;
+                        }
+
+                        // Remove potentially conflicting color classes before applying new state
+                        likeIcon.classList.remove('text-danger', 'text-white-80');
+
+                        if (data.liked) { // **MODIFIED**: Changed data.is_liked to data.liked
+                            likeIcon.classList.add('liked'); // This class makes it red (e.g. color: #ff4757;)
                             likeIcon.classList.remove('far');
                             likeIcon.classList.add('fas');
+                            
                             likeIcon.style.transform = 'scale(1.2)';
                             setTimeout(() => {
                                 likeIcon.style.transform = 'scale(1)';
                             }, 200);
                         } else {
-                            likeIcon.classList.remove('liked');
+                            likeIcon.classList.remove('liked'); // Remove the red color class
                             likeIcon.classList.remove('fas');
                             likeIcon.classList.add('far');
+                            likeIcon.classList.add('text-white-80'); // Add back default non-liked color
                         }
                         if(likesCount) likesCount.textContent = data.likes_count;
+                    })
+                    .catch(error => {
+                        console.error('Error liking post:', error);
+                        // Optionally display a user-friendly error message
                     });
                 });
             });
@@ -802,7 +821,7 @@
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
                     const postId = this.dataset.postId;
-                    fetch(`/post/${postId}/save/`, {
+                    fetch(`/post/${postId}/save/`, { // Ensure you have a /post/<id>/save/ URL and view
                         method: 'POST',
                         headers: {
                             'X-CSRFToken': '{{ csrf_token }}',
@@ -811,12 +830,22 @@
                         },
                         credentials: 'same-origin'
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                             return response.json().then(err => { throw err; }).catch(() => { throw new Error(`HTTP error! status: ${response.status}`); });
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         const saveIcon = document.querySelector(`.save-icon-${postId}`);
+                         if (!saveIcon) {
+                            console.error(`Save icon for post ${postId} not found.`);
+                            return;
+                        }
                         
+                        // Assuming your save view returns { 'is_saved': boolean }
                         if (data.is_saved) {
-                            saveIcon.classList.add('saved');
+                            saveIcon.classList.add('saved'); // This class makes it yellow (e.g. color: #ffa502;)
                             saveIcon.classList.remove('far');
                             saveIcon.classList.add('fas');
                             saveIcon.style.transform = 'scale(1.2)';
@@ -828,6 +857,9 @@
                             saveIcon.classList.remove('fas');
                             saveIcon.classList.add('far');
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error saving post:', error);
                     });
                 });
             });
@@ -835,12 +867,13 @@
 
         // تحديث المحادثة تلقائياً (يبقى كما هو)
         function updateChat() {
-            if (window.location.pathname.includes('/messages/')) {
+            if (window.location.pathname.includes('/messages/')) { // Check if this path is correct for your chat
                 const pathParts = window.location.pathname.split('/');
-                const chatIdIndex = pathParts.indexOf('messages') + 1; // chat_id should be after 'messages'
+                const chatIdIndex = pathParts.indexOf('messages') + 1; 
                 if (chatIdIndex < pathParts.length && pathParts[chatIdIndex]) {
                     const chatId = pathParts[chatIdIndex];
-                    fetch(`/messages/update/${chatId}/`)
+                    // Ensure this URL is correct and returns JSON with a 'new_messages' field or similar
+                    fetch(`/messages/update/${chatId}/`) 
                         .then(response => response.json())
                         .then(data => {
                             if (data.new_messages) {
@@ -850,7 +883,8 @@
                 }
             }
         }
-        setInterval(updateChat, 5000); // Increased interval to 5 seconds
+        // Consider if chat update is needed on all pages or only chat page
+        // setInterval(updateChat, 5000); 
 
         // تحديث عدد الإشعارات غير المقروءة (يبقى كما هو)
         function updateNotificationCount() {
@@ -860,7 +894,7 @@
                     const badge = document.querySelector('.notification-badge');
                     if (badge) {
                         if (data.count > 0) {
-                            badge.textContent = data.count > 9 ? '9+' : data.count; // Show 9+ for more than 9
+                            badge.textContent = data.count > 9 ? '9+' : data.count; 
                             badge.style.display = 'inline-block';
                         } else {
                             badge.style.display = 'none';
@@ -868,7 +902,7 @@
                     }
                 }).catch(error => console.error('Error updating notification count:', error));
         }
-        setInterval(updateNotificationCount, 5000); // Interval 5 seconds
+        setInterval(updateNotificationCount, 5000); 
         document.addEventListener('DOMContentLoaded', updateNotificationCount);
     </script>
 </body>
