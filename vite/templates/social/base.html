@@ -883,27 +883,29 @@
                 }
             }
         }
-        // Consider if chat update is needed on all pages or only chat page
-        // setInterval(updateChat, 5000); 
+// تحديث عدد الإشعارات غير المقروءة
+function updateNotificationCount() {
+    fetch('{% url "unread_notifications_count" %}')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.querySelector('.notification-badge');
+            if (badge) {
+                if (data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        });
+}
 
-        // تحديث عدد الإشعارات غير المقروءة (يبقى كما هو)
-        function updateNotificationCount() {
-            fetch('{% url "unread_notifications_count" %}')
-                .then(response => response.json())
-                .then(data => {
-                    const badge = document.querySelector('.notification-badge');
-                    if (badge) {
-                        if (data.count > 0) {
-                            badge.textContent = data.count > 9 ? '9+' : data.count; 
-                            badge.style.display = 'inline-block';
-                        } else {
-                            badge.style.display = 'none';
-                        }
-                    }
-                }).catch(error => console.error('Error updating notification count:', error));
-        }
-        setInterval(updateNotificationCount, 5000); 
-        document.addEventListener('DOMContentLoaded', updateNotificationCount);
-    </script>
+// تحديث كل 30 ثانية
+setInterval(updateNotificationCount, 1000);
+
+// تشغيل عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', updateNotificationCount);
+</script>
+
 </body>
 </html>
