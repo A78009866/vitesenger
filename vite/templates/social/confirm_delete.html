@@ -10,13 +10,13 @@
             <div class="card-body">
                 <p>هل أنت متأكد أنك تريد حذف هذا المنشور؟</p>
                 <div class="alert alert-warning">
-    <i class="fas fa-exclamation-triangle"></i>
-    سيتم خصم 10 نقاط من رصيدك عند حذف هذا المنشور
-</div>
-                <form method="POST">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    سيتم خصم 10 نقاط من رصيدك عند حذف هذا المنشور
+                </div>
+                <form method="POST" id="deletePostForm">
                     {% csrf_token %}
                     <div class="d-flex justify-content-between">
-                        <button type="submit" class="btn btn-danger">نعم، احذف</button>
+                        <button type="submit" class="btn btn-danger" id="deleteButton">نعم، احذف</button>
                         <a href="{% url 'profile' request.user.username %}" class="btn btn-outline-secondary">إلغاء</a>
                     </div>
                 </form>
@@ -24,4 +24,12 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('deletePostForm').addEventListener('submit', function() {
+    var deleteButton = document.getElementById('deleteButton');
+    deleteButton.disabled = true;
+    deleteButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري الحذف...';
+});
+</script>
 {% endblock %}
