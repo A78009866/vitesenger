@@ -409,23 +409,25 @@ def splash(request): # Ensure this template name is correct
 
 @login_required
 def notifications(request):
-    notifications_qs = Notification.objects.filter(recipient=request.user).order_by('-created_at') # Renamed
-    unread_count = notifications_qs.filter(is_read=False).count()
-    # Consider marking as read in a separate view or upon interaction, not just on GET
-    # if request.method == 'GET':
-    #     notifications_qs.filter(is_read=False).update(is_read=True) # More efficient update
+    # قم بتعليم جميع الإشعارات غير المقروءة للمستخدم الحالي كـ "مقروءة"
+    # بمجرد دخوله إلى صفحة الإشعارات.
+    Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True) #
+
+    # ثم قم بجلب جميع إشعارات المستخدم (بما في ذلك التي تم تعليمها كمقروءة للتو) لعرضها.
+    notifications_qs = Notification.objects.filter(recipient=request.user).order_by('-created_at') #
+    
     return render(request, 'social/notifications.html', {
         'notifications': notifications_qs,
-        'unread_count': unread_count # This will be the count *before* marking them read if done above
     })
 
 @login_required
 def mark_notification_as_read(request, notification_id):
-    notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
-    if not notification.is_read:
+    if request.method == 'POST':
+        notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
         notification.is_read = True
         notification.save()
-    return JsonResponse({'success': True})
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=400)
 
 @login_required
 def get_unread_notifications_count(request):

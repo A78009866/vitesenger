@@ -153,7 +153,7 @@
         }
         
         .post-actions i.liked {
-            color: #ff4757; /* This is the red color for liked icon */
+            color: #ff4757;
         }
         
         .post-actions i.saved {
@@ -662,6 +662,7 @@
             </div>
         </div>
         
+        <!-- شريط البحث الجديد مع زر البحث -->
         <div class="navbar-search-container">
             <form class="navbar-search-form" action="{% url 'search_users' %}" method="get">
                 <input type="search" class="navbar-search" name="q" placeholder="ابحث عن مستخدمين..." value="{{ request.GET.q }}">
@@ -817,11 +818,12 @@
                 });
             });
 
+
             document.querySelectorAll('.save-btn').forEach(button => {
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
                     const postId = this.dataset.postId;
-                    fetch(`/post/${postId}/save/`, { // Ensure you have a /post/<id>/save/ URL and view
+                    fetch(`/post/${postId}/save/`, {
                         method: 'POST',
                         headers: {
                             'X-CSRFToken': '{{ csrf_token }}',
@@ -830,22 +832,12 @@
                         },
                         credentials: 'same-origin'
                     })
-                    .then(response => {
-                        if (!response.ok) {
-                             return response.json().then(err => { throw err; }).catch(() => { throw new Error(`HTTP error! status: ${response.status}`); });
-                        }
-                        return response.json();
-                    })
+                    .then(response => response.json())
                     .then(data => {
                         const saveIcon = document.querySelector(`.save-icon-${postId}`);
-                         if (!saveIcon) {
-                            console.error(`Save icon for post ${postId} not found.`);
-                            return;
-                        }
                         
-                        // Assuming your save view returns { 'is_saved': boolean }
                         if (data.is_saved) {
-                            saveIcon.classList.add('saved'); // This class makes it yellow (e.g. color: #ffa502;)
+                            saveIcon.classList.add('saved');
                             saveIcon.classList.remove('far');
                             saveIcon.classList.add('fas');
                             saveIcon.style.transform = 'scale(1.2)';
@@ -857,9 +849,6 @@
                             saveIcon.classList.remove('fas');
                             saveIcon.classList.add('far');
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error saving post:', error);
                     });
                 });
             });
@@ -867,13 +856,12 @@
 
         // تحديث المحادثة تلقائياً (يبقى كما هو)
         function updateChat() {
-            if (window.location.pathname.includes('/messages/')) { // Check if this path is correct for your chat
+            if (window.location.pathname.includes('/messages/')) {
                 const pathParts = window.location.pathname.split('/');
-                const chatIdIndex = pathParts.indexOf('messages') + 1; 
+                const chatIdIndex = pathParts.indexOf('messages') + 1; // chat_id should be after 'messages'
                 if (chatIdIndex < pathParts.length && pathParts[chatIdIndex]) {
                     const chatId = pathParts[chatIdIndex];
-                    // Ensure this URL is correct and returns JSON with a 'new_messages' field or similar
-                    fetch(`/messages/update/${chatId}/`) 
+                    fetch(`/messages/update/${chatId}/`)
                         .then(response => response.json())
                         .then(data => {
                             if (data.new_messages) {
@@ -883,29 +871,26 @@
                 }
             }
         }
-// تحديث عدد الإشعارات غير المقروءة
-function updateNotificationCount() {
-    fetch('{% url "unread_notifications_count" %}')
-        .then(response => response.json())
-        .then(data => {
-            const badge = document.querySelector('.notification-badge');
-            if (badge) {
-                if (data.count > 0) {
-                    badge.textContent = data.count;
-                    badge.style.display = 'inline-block';
-                } else {
-                    badge.style.display = 'none';
-                }
-            }
-        });
-}
+        setInterval(updateChat, 5000); // Increased interval to 5 seconds
 
-// تحديث كل 30 ثانية
-setInterval(updateNotificationCount, 1000);
-
-// تشغيل عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', updateNotificationCount);
-</script>
-
+        // تحديث عدد الإشعارات غير المقروءة (يبقى كما هو)
+        function updateNotificationCount() {
+            fetch('{% url "unread_notifications_count" %}')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.querySelector('.notification-badge');
+                    if (badge) {
+                        if (data.count > 0) {
+                            badge.textContent = data.count > 9 ? '9+' : data.count; // Show 9+ for more than 9
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                }).catch(error => console.error('Error updating notification count:', error));
+        }
+        setInterval(updateNotificationCount, 5000); // Interval 5 seconds
+        document.addEventListener('DOMContentLoaded', updateNotificationCount);
+    </script>
 </body>
 </html>
