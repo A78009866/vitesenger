@@ -640,8 +640,7 @@
     }
 }
 </style>
-
-</head>
+{% load static %} </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light">
     <div class="container">
@@ -662,7 +661,6 @@
             </div>
         </div>
         
-        <!-- شريط البحث الجديد مع زر البحث -->
         <div class="navbar-search-container">
             <form class="navbar-search-form" action="{% url 'search_users' %}" method="get">
                 <input type="search" class="navbar-search" name="q" placeholder="ابحث عن مستخدمين..." value="{{ request.GET.q }}">
@@ -873,24 +871,58 @@
         }
         setInterval(updateChat, 5000); // Increased interval to 5 seconds
 
-        // تحديث عدد الإشعارات غير المقروءة (يبقى كما هو)
+        // --- بداية تعديل كود الإشعارات ---
+        let currentNotificationCount = 0; // متغير لتخزين العدد الحالي للإشعارات
+        const notificationSound = new Audio("{% static 'sounds/notification.mp3' %}"); // تأكد من صحة المسار لتطبيقك
+
         function updateNotificationCount() {
-            fetch('{% url "unread_notifications_count" %}')
+            fetch("{% url 'unread_notifications_count' %}")
                 .then(response => response.json())
                 .then(data => {
                     const badge = document.querySelector('.notification-badge');
                     if (badge) {
+                        const newCount = data.count;
+                        if (newCount > 0) {
+                            badge.textContent = newCount > 9 ? '9+' : newCount;
+                            badge.style.display = 'inline-block';
+                            
+                            // تشغيل الصوت إذا كان عدد الإشعارات الجديدة أكبر من العدد السابق
+                            if (newCount > currentNotificationCount) {
+                                notificationSound.play().catch(error => {
+                                    // قد تحتاج المتصفحات إلى تفاعل المستخدم أولاً لتشغيل الصوت
+                                    console.warn("لم يتم تشغيل صوت الإشعار، قد يتطلب تفاعل المستخدم:", error);
+                                });
+                            }
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                        currentNotificationCount = newCount; // تحديث العدد الحالي
+                    }
+                }).catch(error => console.error('Error updating notification count:', error));
+        }
+
+        // عند تحميل الصفحة، قم بتعيين العدد الأولي للإشعارات بدون تشغيل الصوت
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch("{% url 'unread_notifications_count' %}")
+                .then(response => response.json())
+                .then(data => {
+                    currentNotificationCount = data.count; // تعيين العدد الأولي
+                    const badge = document.querySelector('.notification-badge');
+                    if (badge) {
                         if (data.count > 0) {
-                            badge.textContent = data.count > 9 ? '9+' : data.count; // Show 9+ for more than 9
+                            badge.textContent = data.count > 9 ? '9+' : data.count;
                             badge.style.display = 'inline-block';
                         } else {
                             badge.style.display = 'none';
                         }
                     }
-                }).catch(error => console.error('Error updating notification count:', error));
-        }
-        setInterval(updateNotificationCount, 5000); // Interval 5 seconds
-        document.addEventListener('DOMContentLoaded', updateNotificationCount);
+                }).catch(error => console.error('Error getting initial notification count:', error));
+            
+            // بدء التحديث الدوري بعد تحميل الصفحة
+            setInterval(updateNotificationCount, 5000); // Interval 5 seconds
+            // updateNotificationCount(); // استدعاء فوري لتحديث الـ badge عند التحميل (اختياري إذا لم يتم تعيينه أعلاه)
+        });
+        // --- نهاية تعديل كود الإشعارات ---
     </script>
 </body>
 </html>
