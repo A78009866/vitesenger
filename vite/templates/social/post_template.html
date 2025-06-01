@@ -1,8 +1,7 @@
 {% load static %}
 
-<div class="card mb-4 border-dark bg-dark text-light">
+<div class="card mb-4 border-dark bg-dark text-light" id="post-{{ post.id }}">
     <div class="card-body">
-        <!-- قسم عرض اسم المستخدم في المنشور -->
         <div class="d-flex align-items-center mb-3">
             <a href="{% url 'profile' post.user.username %}">
                 <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2 border border-secondary" alt="User avatar" 
@@ -75,25 +74,24 @@
         <hr class="border-secondary">
         
         <div class="post-actions d-flex justify-content-around">
-    <a href="#" class="like-btn text-light" data-post-id="{{ post.id }}">
-        <i class="like-icon-{{ post.id }} {% if post.is_liked %}fas fa-heart text-danger{% else %}far fa-heart text-white-80{% endif %} fa-lg"></i>
-    </a>
-    <a href="#" class="text-light" data-bs-toggle="modal" data-bs-target="#commentsModal-{{ post.id }}">
-        <i class="far fa-comment text-white-80 fa-lg"></i>
-    </a>
-    <a href="#" class="save-btn text-light" data-post-id="{{ post.id }}">
-        <i class="save-icon-{{ post.id }} {% if post.is_saved %}fas fa-bookmark text-warning{% else %}far fa-bookmark text-white-80{% endif %} fa-lg"></i>
-    </a>
-</div>
+            <a href="#" class="like-btn text-light" data-post-id="{{ post.id }}">
+                <i class="like-icon-{{ post.id }} {% if post.is_liked %}fas fa-heart text-danger{% else %}far fa-heart text-white-80{% endif %} fa-lg"></i>
+            </a>
+            <a href="#" class="text-light" data-bs-toggle="modal" data-bs-target="#commentsModal-{{ post.id }}">
+                <i class="far fa-comment text-white-80 fa-lg"></i>
+            </a>
+            <a href="#" class="copy-link-btn text-light" data-post-url="{{ request.scheme }}://{{ request.get_host }}{% url 'profile' post.user.username %}#post-{{ post.id }}" title="نسخ رابط المنشور">
+                <i class="fas fa-link text-white-80 fa-lg"></i>
+            </a>
+        </div>
     </div>
 </div>
 
-<!-- Modal للتعليقات -->
-<div class="modal fade" id="commentsModal-{{ post.id }}" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true">
+<div class="modal fade" id="commentsModal-{{ post.id }}" tabindex="-1" aria-labelledby="commentsModalLabel-{{ post.id }}" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-dark text-light border border-secondary">
             <div class="modal-header border-secondary">
-                <h5 class="modal-title" id="commentsModalLabel">التعليقات</h5>
+                <h5 class="modal-title" id="commentsModalLabel-{{ post.id }}">التعليقات</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -143,7 +141,6 @@
     </div>
 </div>
 
-<!-- Modal لعرض الصورة مكبرة -->
 <div class="modal fade" id="imageModal-{{ post.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content bg-transparent border-0">
@@ -157,12 +154,11 @@
     </div>
 </div>
 
-<!-- Modal لعرض المعجبين -->
-<div class="modal fade" id="likesModal-{{ post.id }}" tabindex="-1" aria-labelledby="likesModalLabel" aria-hidden="true">
+<div class="modal fade" id="likesModal-{{ post.id }}" tabindex="-1" aria-labelledby="likesModalLabel-{{ post.id }}" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-dark text-light border border-secondary">
             <div class="modal-header border-secondary">
-                <h5 class="modal-title" id="likesModalLabel">المعجبون</h5>
+                <h5 class="modal-title" id="likesModalLabel-{{ post.id }}">المعجبون</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
             <div class="modal-body">
@@ -301,16 +297,7 @@
     .bg-error {
         background-color: #dc3545 !important;
     }
-    
-    /* تحسينات لأيقونة الحفظ */
-    .fa-bookmark {
-        transition: all 0.3s ease;
-    }
-    
-    .fa-bookmark:hover {
-        transform: scale(1.1);
-    }
-    
+        
     /* تأثيرات عند التحويم */
     a.text-light:hover {
         color: #ffffff !important;
@@ -391,43 +378,108 @@
 </style>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // تعطيل المعالجات السابقة لمنع التكرار
-    document.body.removeEventListener('submit', handleCommentSubmit);
+    // تعطيل المعالجات السابقة لمنع التكرار (إذا كان هذا يسبب مشاكل، يمكن إزالته إذا كان الربط لمرة واحدة مضمونًا)
+    // document.body.removeEventListener('submit', handleCommentSubmit); // Consider if this is still needed or if event delegation handles it well
     
-    // ربط المعالج الجديد
-    document.body.addEventListener('submit', handleCommentSubmit);
+    // ربط المعالج الجديد لإرسال التعليقات (يفضل استخدام تفويض الحدث إذا كان المحتوى ديناميكيًا)
+    // إذا كان هذا القالب يُعاد استخدامه عدة مرات في الصفحة، تأكد من أن معالجات الأحداث لا تتراكم أو تستهدف عناصر بشكل خاطئ.
+    // استخدام تفويض الحدث من مستمع واحد أعلى في DOM قد يكون أفضل.
+    // For now, assuming this script is loaded once or comment forms are distinct enough.
+    document.body.addEventListener('submit', handleCommentSubmit); // Kept as is, ensure it works in your context
     
     // تحميل متأخر للفيديوهات
     const lazyVideos = document.querySelectorAll('.lazy-video');
     lazyVideos.forEach(video => {
-        if (video.dataset.src) {
+        if (video.dataset.src && !video.src) { // Load only if not already loaded
             video.src = video.dataset.src;
         }
     });
     
-    // إضافة تأثير التكبير للصور عند النقر
+    // إضافة تأثير التكبير للصور عند النقر (No changes needed here from original)
     document.querySelectorAll('.clickable-image').forEach(img => {
         img.addEventListener('click', function(e) {
             e.stopPropagation();
         });
     });
+
+    // --- START: New/Modified JavaScript ---
+
+    // 1. Handle Copy Link Button
+    document.querySelectorAll('.copy-link-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const postUrl = this.dataset.postUrl;
+            navigator.clipboard.writeText(postUrl).then(() => {
+                if (typeof showToast === 'function') {
+                    showToast('تم نسخ رابط المنشور!', 'info');
+                } else {
+                    alert('تم نسخ رابط المنشور!'); // Fallback
+                }
+            }).catch(err => {
+                console.error('Failed to copy link: ', err);
+                if (typeof showToast === 'function') {
+                    showToast('فشل نسخ الرابط.', 'error');
+                } else {
+                    alert('فشل نسخ الرابط.'); // Fallback
+                }
+            });
+        });
+    });
+
+    // 2. Handle URL parameters for scrolling to post and opening comments modal
+    // This logic should run once per page load.
+    // Using a flag on document.body to ensure it runs only once.
+    if (!document.body.hasAttribute('data-url-handler-applied')) {
+        document.body.setAttribute('data-url-handler-applied', 'true');
+
+        const currentUrlParams = new URLSearchParams(window.location.search);
+        const openCommentsForPostId = currentUrlParams.get('open_comments_for_post');
+        const currentHash = window.location.hash; // e.g., #post-123
+
+        let targetPostId = null;
+
+        if (openCommentsForPostId) {
+            targetPostId = openCommentsForPostId;
+        } else if (currentHash && currentHash.startsWith('#post-')) {
+            targetPostId = currentHash.substring(1).split('-')[1]; // Extract ID from #post-ID
+        }
+
+        if (targetPostId) {
+            const postElementToScroll = document.getElementById(`post-${targetPostId}`);
+            if (postElementToScroll) {
+                setTimeout(() => {
+                    postElementToScroll.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100); // Small delay for rendering
+            }
+
+            // If specifically asked to open comments
+            if (openCommentsForPostId && openCommentsForPostId === targetPostId) {
+                const commentsModalElement = document.getElementById(`commentsModal-${openCommentsForPostId}`);
+                if (commentsModalElement) {
+                    if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
+                        setTimeout(() => { // Delay modal opening slightly
+                            var modalInstance = new bootstrap.Modal(commentsModalElement);
+                            modalInstance.show();
+                        }, 400); // Adjust delay as needed if scroll/render interferes
+                    } else {
+                        console.warn('Bootstrap Modal JS not found, cannot open comments modal programmatically.');
+                    }
+                }
+            }
+        }
+    }
+    // --- END: New/Modified JavaScript ---
 });
 
-// دالة معالجة الإرسال المعدلة
+// دالة معالجة الإرسال المعدلة (Kept as is from your provided code)
 function handleCommentSubmit(e) {
-    // التحقق مما إذا كان الحدث من نموذج تعليق
     if (e.target.classList.contains('comment-form')) {
         e.preventDefault();
         const form = e.target;
-        
-        // التحقق مما إذا كان النموذج قيد المعالجة بالفعل
         if (form.dataset.processing === 'true') return;
         form.dataset.processing = 'true';
-        
         const postId = form.id.split('-')[2];
         const formData = new FormData(form);
-        
-        // تعطيل الزر أثناء الإرسال
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalBtnText = submitBtn.innerHTML;
         submitBtn.disabled = true;
@@ -443,15 +495,11 @@ function handleCommentSubmit(e) {
         })
         .then(response => response.json())
         .then(data => {
-            // إعادة تمكين الزر
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalBtnText;
             form.dataset.processing = 'false';
-            
             if (data.success) {
-                // إنشاء عنصر التعليق الجديد
                 const commentsContainer = form.closest('.modal-body').querySelector('.comments-container');
-                
                 const commentDiv = document.createElement('div');
                 commentDiv.className = 'd-flex mb-3';
                 commentDiv.innerHTML = `
@@ -471,28 +519,26 @@ function handleCommentSubmit(e) {
                         <p class="mb-0 text-light">${data.content}</p>
                     </div>
                 `;
-                
-                // إضافة التعليق الجديد في الأعلى
                 if (commentsContainer.firstChild) {
                     commentsContainer.insertBefore(commentDiv, commentsContainer.firstChild);
                 } else {
                     commentsContainer.appendChild(commentDiv);
                 }
-                
-                // تحديث عدد التعليقات
                 const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`);
                 if (commentsCountElement) {
                     const currentCount = parseInt(commentsCountElement.textContent.trim().split(' ')[0]);
                     commentsCountElement.textContent = `${currentCount + 1} تعليقات`;
                 }
-                
-                // مسح حقل الإدخال
                 form.querySelector('input[name="content"]').value = '';
-                
-                // إخفاء رسالة "لا توجد تعليقات" إذا كانت موجودة
-                const noCommentsMsg = commentsContainer.querySelector('.text-center');
+                const noCommentsMsg = commentsContainer.querySelector('.text-muted.text-center');
                 if (noCommentsMsg) {
                     noCommentsMsg.remove();
+                }
+            } else {
+                 if (typeof showToast === 'function' && data.error) {
+                    showToast(data.error, 'error');
+                } else if (data.error) {
+                    alert(data.error);
                 }
             }
         })
@@ -501,14 +547,22 @@ function handleCommentSubmit(e) {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalBtnText;
             form.dataset.processing = 'false';
-            showToast('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى', 'error');
+            if (typeof showToast === 'function') {
+                showToast('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى', 'error');
+            } else {
+                alert('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى');
+            }
         });
     }
 }
 
-// حذف التعليق
-document.addEventListener('DOMContentLoaded', function() {
+// حذف التعليق (Kept as is from your provided code)
+document.addEventListener('DOMContentLoaded', function() { // This will run again, consider structuring JS differently if this becomes an issue.
     document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+        // To prevent attaching multiple listeners if this script is re-evaluated.
+        if (btn.hasAttribute('data-listener-attached')) return;
+        btn.setAttribute('data-listener-attached', 'true');
+
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             const commentId = this.dataset.commentId;
@@ -517,7 +571,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 fetch(`/comment/${commentId}/delete/`, {
                     method: 'POST',
                     headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-CSRFToken': '{{ csrf_token }}', // Ensure this token is available and correct
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
@@ -526,24 +580,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // إزالة عنصر التعليق من DOM
-                        const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`).closest('.d-flex.mb-3');
-                        commentElement.remove();
-                        
-                        // تحديث عدد التعليقات
-                        const postId = commentElement.closest('.modal').id.split('-')[2];
-                        const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`);
-                        if (commentsCountElement) {
-                            const currentCount = parseInt(commentsCountElement.textContent.trim().split(' ')[0]);
-                            commentsCountElement.textContent = `${currentCount - 1} تعليقات`;
+                        const commentElement = this.closest('.d-flex.mb-3');
+                        if (commentElement) {
+                             commentElement.remove();
                         }
                         
-                        showToast('تم حذف التعليق بنجاح', 'success');
+                        const modalElement = this.closest('.modal');
+                        if (modalElement) {
+                            const postId = modalElement.id.split('-')[1]; // Assuming modal id is "commentsModal-POSTID"
+                             const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`);
+                            if (commentsCountElement) {
+                                const currentCount = parseInt(commentsCountElement.textContent.trim().split(' ')[0]);
+                                commentsCountElement.textContent = `${Math.max(0, currentCount - 1)} تعليقات`;
+                            }
+                        }
+                        if (typeof showToast === 'function') {
+                            showToast('تم حذف التعليق بنجاح', 'success');
+                        } else {
+                            alert('تم حذف التعليق بنجاح');
+                        }
+                    } else {
+                         if (typeof showToast === 'function' && data.error) {
+                            showToast(data.error, 'error');
+                        } else if (data.error) {
+                            alert(data.error);
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    showToast('حدث خطأ أثناء حذف التعليق', 'error');
+                     if (typeof showToast === 'function') {
+                        showToast('حدث خطأ أثناء حذف التعليق', 'error');
+                    } else {
+                        alert('حدث خطأ أثناء حذف التعليق');
+                    }
                 });
             }
         });

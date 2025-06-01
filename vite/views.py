@@ -31,9 +31,12 @@ def create_post(request):
             post = form.save(commit=False)
             post.user = request.user
             if 'image' in request.FILES:
-                post.image = cloudinary.uploader.upload(request.FILES['image'])['url']
+                # Ensure Cloudinary is configured to return URLs directly or adjust accordingly
+                upload_result = cloudinary.uploader.upload(request.FILES['image'])
+                post.image = upload_result.get('secure_url', upload_result.get('url'))
             if 'video' in request.FILES:
-                post.video = cloudinary.uploader.upload(request.FILES['video'], resource_type="video")['url']
+                upload_result = cloudinary.uploader.upload(request.FILES['video'], resource_type="video")
+                post.video = upload_result.get('secure_url', upload_result.get('url'))
             post.save()
             request.user.points += 10
             request.user.save()
@@ -42,14 +45,16 @@ def create_post(request):
         form = PostForm()
     return render(request, 'social/create_post.html', {'form': form})
 
-@login_required
-def saved_posts(request):
-    saved_posts_qs = SavedPost.objects.filter(user=request.user).select_related('post').order_by('-saved_at')
-    posts = [saved.post for saved in saved_posts_qs]
-    for post in posts:
-        post.is_liked = post.likes.filter(user=request.user).exists()
-        post.is_saved = True
-    return render(request, 'social/saved_posts.html', {'posts': posts})
+# Removed saved_posts view
+# @login_required
+# def saved_posts(request):
+#     saved_posts_qs = SavedPost.objects.filter(user=request.user).select_related('post').order_by('-saved_at')
+#     posts = [saved.post for saved in saved_posts_qs]
+#     for post in posts:
+#         post.is_liked = post.likes.filter(user=request.user).exists()
+#         post.is_saved = True # This logic is removed
+#     return render(request, 'social/saved_posts.html', {'posts': posts})
+
 
 @login_required
 def like_post(request, post_id):
@@ -62,7 +67,7 @@ def like_post(request, post_id):
                 sender=request.user,
                 notification_type='like',
                 content=f"{request.user.username} أعجب بمنشورك",
-                related_id=post.id
+                related_id=post.id # This is the post_id
             )
     else:
         like.delete()
@@ -72,27 +77,60 @@ def like_post(request, post_id):
         'post_id': post_id
     })
 
+@login_required # Ensure add_comment requires login if it's not already
 def add_comment(request, post_id):
     if request.method == 'POST':
         content = request.POST.get('content', '').strip()
-        if content:
-            post = get_object_or_404(Post, id=post_id)
-            comment = Comment.objects.create(user=request.user, post=post, content=content)
-            if request.user != post.user:
-                Notification.objects.create(
-                    recipient=post.user,
-                    sender=request.user,
-                    notification_type='comment',
-                    content=f"{request.user.username} علق على منشورك",
-                    related_id=post.id
-                )
-            return JsonResponse({
-                'success': True,
-                'username': request.user.username,
-                'content': comment.content,
-                'profile_picture': request.user.profile_picture.url if request.user.profile_picture else '/media/profile_pics/default_profile.png'
-            })
-    return JsonResponse({'success': False})
+        if not content: # Basic validation
+            return JsonResponse({'success': False, 'error': 'التعليق لا يمكن أن يكون فارغًا.'})
+        
+        post = get_object_or_404(Post, id=post_id)
+        comment = Comment.objects.create(user=request.user, post=post, content=content)
+        
+        if request.user != post.user:
+            Notification.objects.create(
+                recipient=post.user,
+                sender=request.user,
+                notification_type='comment',
+                content=f"{request.user.username} علق على منشورك",
+                related_id=post.id # This is the post_id
+            )
+        return JsonResponse({
+            'success': True,
+            'username': request.user.username,
+            'content': comment.content,
+            'profile_picture': request.user.profile_picture.url if request.user.profile_picture else '/media/profile_pics/default_profile.png'
+        })
+    return JsonResponse({'success': False, 'error': 'طلب غير صالح.'})
+
+
+# ... (other views remain largely the same, except for 'home' view)
+
+@login_required
+def home(request):
+    blocked_users = request.user.blocked_users.all()
+    posts = Post.objects.exclude(user__in=blocked_users).order_by('-created_at')
+    for post in posts:
+        post.is_liked = post.likes.filter(user=request.user).exists()
+        post.is_saved = SavedPost.objects.filter(user=request.user, post=post).exists()
+    
+    unread_messages_count = Message.objects.filter(
+        receiver=request.user,
+        is_read=False
+    ).count()
+    
+    unread_notifications_count = Notification.objects.filter(
+        recipient=request.user,
+        is_read=False
+    ).count()
+    
+    context = {
+        'posts': posts,
+        'unread_messages_count': unread_messages_count,
+        'unread_count': unread_notifications_count,
+    }
+    return render(request, 'social/home.html', context)
+
 
 @login_required
 def send_friend_request(request, username):
@@ -448,32 +486,3 @@ def delete_comment(request, comment_id):
 def game_view(request): # Ensure this template name is correct
     return render(request, 'game.html')
 
-# Removed upload_story and user_stories views
-# Removed imports like 'timedelta' and 'defaultdict' if they were exclusively for stories
-
-@login_required
-def home(request):
-    blocked_users = request.user.blocked_users.all()
-    posts = Post.objects.exclude(user__in=blocked_users).order_by('-created_at')
-
-    for post in posts:
-        post.is_liked = post.likes.filter(user=request.user).exists()
-        post.is_saved = SavedPost.objects.filter(user=request.user, post=post).exists()
-
-    unread_messages_count = Message.objects.filter(
-        receiver=request.user,
-        is_read=False
-    ).count()
-
-    unread_notifications_count = Notification.objects.filter(
-        recipient=request.user,
-        is_read=False
-    ).count()
-
-    context = {
-        'posts': posts,
-        'unread_messages_count': unread_messages_count,
-        'unread_count': unread_notifications_count,
-        # Removed 'grouped_stories'
-    }
-    return render(request, 'social/home.html', context)

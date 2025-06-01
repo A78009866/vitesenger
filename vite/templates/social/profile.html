@@ -174,18 +174,19 @@
         justify-content: center;
     }
 
+
     .btn-primary {
-        background: var(--accent-color);
+        background: var(--accent-hover); /* كان var(--accent-color), الآن #2563eb */
         color: white;
     }
 
     .btn-primary:hover {
-        background: var(--accent-hover);
+        background: #1d4ed8; /* درجة أغمق من الأزرق للـ hover */
         color: white;
         transform: translateY(-1px);
     }
 
-    .btn-secondary {
+    .btn-secondary { /* هذا الزر مناسب بالفعل للوضع الداكن، لا تغييرات كبيرة هنا */
         background: var(--bg-secondary);
         color: var(--text-primary);
         border: 1px solid var(--border-color);
@@ -198,50 +199,50 @@
     }
 
     .btn-success {
-        background: #059669;
+        background: #047857; /* كان #059669 */
         color: white;
     }
 
     .btn-success:hover {
-        background: #047857;
+        background: #065f46; /* درجة أغمق من الأخضر للـ hover */
         color: white;
         transform: translateY(-1px);
     }
 
     .btn-danger {
-        background: #dc2626;
+        background: #b91c1c; /* كان #dc2626 */
         color: white;
     }
 
     .btn-danger:hover {
-        background: #b91c1c;
+        background: #991b1b; /* درجة أغمق من الأحمر للـ hover */
         color: white;
         transform: translateY(-1px);
     }
 
     .btn-warning {
-        background: #d97706;
+        background: #b45309; /* كان #d97706 */
         color: white;
     }
 
     .btn-warning:hover {
-        background: #b45309;
+        background: #92400e; /* درجة أغمق من البرتقالي/الأصفر للـ hover */
         color: white;
         transform: translateY(-1px);
     }
 
     .btn-info {
-        background: #0891b2;
+        background: #0e7490; /* كان #0891b2 */
         color: white;
     }
 
     .btn-info:hover {
-        background: #0e7490;
+        background: #115e75; /* درجة أغمق من السماوي/الأزرق للـ hover */
         color: white;
         transform: translateY(-1px);
     }
 
-    .btn-disabled {
+    .btn-disabled { /* هذا الزر مناسب بالفعل للوضع الداكن */
         background: var(--bg-secondary);
         color: var(--text-secondary);
         cursor: not-allowed;
@@ -323,16 +324,15 @@
 <div class="container-custom">
     <div class="cover-section">
     {% if profile_user.cover_photo and profile_user.cover_photo.url %}
-    <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}"
+        <img src="{{ profile_user.cover_photo.url }}" alt="{{ profile_user.username }}"
              class="w-full h-full object-cover"
              onerror="this.onerror=null; this.src='/media/cover_photos/default_cover.jpg';">
     {% else %}
-        <img src='/media/cover_photos/default_cover.jpg' alt="صورة البروفايل الافتراضية"
+        <img src='/media/cover_photos/default_cover.jpg' alt="صورة الغلاف الافتراضية"
              class="w-full h-full object-cover"
              onerror="this.onerror=null; this.src='/media/cover_photos/default_cover.jpg';">
-             {% endif %}
+    {% endif %}
 </div>
-
 <!-- في قسم صورة البروفايل -->
 <div class="profile-avatar">
     {% if profile_user.profile_picture and profile_user.profile_picture.url %}
