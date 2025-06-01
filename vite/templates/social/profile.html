@@ -323,19 +323,27 @@
 <div class="container-custom">
     <div class="cover-section">
     {% if profile_user.cover_photo and profile_user.cover_photo.url %}
-        <img src="{{ profile_user.cover_photo.url }}" alt="صورة الغلاف">
+    <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}"
+             class="w-full h-full object-cover"
+             onerror="this.onerror=null; this.src='/media/cover_photos/default_cover.jpg';">
     {% else %}
-        <img src="https://flowbite.com/docs/images/examples/image-3@2x.jpg" alt="صورة الغلاف الافتراضية" class="w-full h-full object-cover">
-    {% endif %}
+        <img src='/media/cover_photos/default_cover.jpg' alt="صورة البروفايل الافتراضية"
+             class="w-full h-full object-cover"
+             onerror="this.onerror=null; this.src='/media/cover_photos/default_cover.jpg';">
+             {% endif %}
 </div>
 
 <!-- في قسم صورة البروفايل -->
 <div class="profile-avatar">
     {% if profile_user.profile_picture and profile_user.profile_picture.url %}
-        <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}">
+        <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}"
+             class="w-full h-full object-cover"
+             onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';">
     {% else %}
-        <img src="https://static.vecteezy.com/system/resources/thumbnails/035/857/753/small/people-face-avatar-icon-cartoon-character-png.png" alt="صورة البروفايل الافتراضية" class="w-full h-full object-cover">
-    {% endif %}
+        <img src="/media/profile_pics/default_profile.png" alt="صورة البروفايل الافتراضية"
+             class="w-full h-full object-cover"
+             onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';">
+             {% endif %}
 </div>
 
 
