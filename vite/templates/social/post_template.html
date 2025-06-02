@@ -4,7 +4,7 @@
     <div class="card-body">
         <div class="d-flex align-items-center mb-3">
             <a href="{% url 'profile' post.user.username %}">
-                <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2 border border-secondary" alt="User avatar" 
+                <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2 border border-secondary" alt="User avatar"
                     onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
                     style="width: 50px; height: 50px; object-fit: cover;">
             </a>
@@ -30,23 +30,21 @@
             </div>
             {% endif %}
         </div>
-        
-        <p class="card-text mb-3">{{ post.content }}</p>
-        
-        {% if post.image %}
+
+        <p class="card-text mb-3">{{ post.content }}</p> {% if post.image %}
         <div class="post-media-container">
             <img src="{{ post.image.url }}" class="img-fluid rounded post-image clickable-image" alt="Post image" loading="lazy"
                  data-bs-toggle="modal" data-bs-target="#imageModal-{{ post.id }}">
         </div>
         {% endif %}
-        
+
         {% if post.video %}
         <div class="post-media-container">
             <div class="ratio ratio-16x9 video-container">
-                <video 
-                    controls 
-                    playsinline 
-                    preload="metadata" 
+                <video
+                    controls
+                    playsinline
+                    preload="metadata"
                     poster="{% if post.image %}{{ post.image.url }}{% else %}{% static 'default-video-thumbnail.jpg' %}{% endif %}"
                     class="lazy-video"
                     data-src="{{ post.video.url }}"
@@ -57,7 +55,7 @@
             </div>
         </div>
         {% endif %}
-        
+
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <a href="#" class="text-decoration-none text-light" data-bs-toggle="modal" data-bs-target="#likesModal-{{ post.id }}">
@@ -70,9 +68,9 @@
                 </a>
             </div>
         </div>
-        
+
         <hr class="border-secondary">
-        
+
         <div class="post-actions d-flex justify-content-around">
             <a href="#" class="like-btn text-light" data-post-id="{{ post.id }}">
                 <i class="like-icon-{{ post.id }} {% if post.is_liked %}fas fa-heart text-danger{% else %}far fa-heart text-white-80{% endif %} fa-lg"></i>
@@ -99,7 +97,7 @@
                     {% for comment in post.comments.all %}
                     <div class="d-flex mb-3">
                         <a href="{% url 'profile' comment.user.username %}">
-                            <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle me-2 border border-secondary" 
+                            <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle me-2 border border-secondary"
                                 style="width: 40px; height: 40px; object-fit: cover;"
                                 onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
                                 alt="{{ comment.user.username }}">
@@ -110,7 +108,7 @@
                                     <strong>@{{ comment.user.username }}</strong>
                                 </a>
                                 <small class="text-muted">{{ comment.created_at|timesince }} مضت</small>
-                                
+
                                 {% if comment.user == request.user or post.user == request.user %}
                                 <div class="dropdown ms-auto">
                                     <button class="btn btn-sm btn-link text-muted" type="button" id="commentDropdown-{{ comment.id }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -122,8 +120,7 @@
                                 </div>
                                 {% endif %}
                             </div>
-                            <p class="mb-0 text-light">{{ comment.content }}</p>
-                        </div>
+                            <p class="mb-0 text-light">{{ comment.content }}</p> </div>
                     </div>
                     {% empty %}
                     <p class="text-muted text-center">لا توجد تعليقات حتى الآن</p>
@@ -189,25 +186,26 @@
 </div>
 
 <style>
+    /* Styles remain the same as provided in file_content_1.html */
     /* أنماط التصميم الغامق */
     .card.bg-dark {
         background-color: #1a1a1a !important;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     }
-    
+
     .modal-content.bg-dark {
         background-color: #1e1e1e !important;
     }
-    
+
     .list-group-item.bg-dark {
         background-color: #252525 !important;
     }
-    
+
     .form-control.bg-secondary {
         background-color: #2d2d2d !important;
         color: #ffffff !important;
     }
-    
+
     /* تحسينات الصور والفيديوهات للهواتف */
     .post-media-container {
         margin-bottom: 1rem;
@@ -219,7 +217,7 @@
         align-items: center;
         cursor: pointer;
     }
-    
+
     .post-image {
         max-height: 500px;
         width: auto;
@@ -228,31 +226,31 @@
         object-fit: contain;
         transition: transform 0.3s ease;
     }
-    
+
     .post-image:hover {
         transform: scale(1.02);
     }
-    
+
     .clickable-image {
         cursor: zoom-in;
     }
-    
+
     .video-container {
         width: 100%;
         background-color: #000;
     }
-    
+
     .video-container video {
         width: 100%;
         height: auto;
         max-height: 500px;
     }
-    
+
     /* تحسينات لمودال الصورة المكبرة */
     #imageModal .modal-content {
         background-color: rgba(0, 0, 0, 0.9);
     }
-    
+
     #imageModal .btn-close {
         position: absolute;
         top: 15px;
@@ -260,18 +258,18 @@
         z-index: 10;
         filter: invert(1);
     }
-    
+
     /* تحسينات للأزرار والروابط */
     .btn-outline-primary {
         color: #0d6efd;
         border-color: #0d6efd;
     }
-    
+
     .btn-outline-primary:hover {
         background-color: #0d6efd;
         color: #fff;
     }
-    
+
     /* إضافة أنماط جديدة للتوست */
     .toast {
         min-width: 250px;
@@ -280,60 +278,71 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         animation: fadeIn 0.3s ease-in-out;
     }
-    
+
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    
+
     .bg-success {
         background-color: #28a745 !important;
     }
-    
+
     .bg-info {
         background-color: #17a2b8 !important;
     }
-    
+
     .bg-error {
         background-color: #dc3545 !important;
     }
-        
+
     /* تأثيرات عند التحويم */
     a.text-light:hover {
         color: #ffffff !important;
         text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
     }
     
+    /* Style for auto-generated links for better visibility and behavior */
+    .card-text a, .comments-container a {
+        /* text-decoration: underline !important; /* Ensure underline if not already styled by text-decoration-underline */
+        /* color: #your_link_color_for_dark_theme !important; /* Optional: customize link color */
+    }
+    .text-break { /* Bootstrap class, ensures long links break nicely */
+        word-wrap: break-word !important; /* Fallback */
+        overflow-wrap: break-word !important;
+    }
+
+
     /* تعديلات للهواتف */
     @media (max-width: 768px) {
         .post-image {
             max-height: 350px;
         }
-        
+
         .video-container {
             max-height: 300px;
         }
-        
+
         .video-container video {
             max-height: 300px;
         }
-        
+
         .post-media-container {
             margin-left: -15px;
             margin-right: -15px;
             border-radius: 0;
         }
     }
-    
+
     @media (max-width: 576px) {
         .post-image {
             max-height: 280px;
         }
-        
+
         .video-container {
             max-height: 250px;
         }
-        
+
         .video-container video {
             max-height: 250px;
         }
@@ -344,275 +353,371 @@
     .fa-lg {
         font-size: 1.25rem;
     }
-    
+
     .text-white-80 {
         color: rgba(255, 255, 255, 0.8) !important;
     }
-    
+
     .post-actions a:hover i {
         transform: scale(1.15);
         opacity: 1;
     }
-    
+
     .post-actions i {
         transition: all 0.2s ease-in-out;
         opacity: 0.9;
     }
-    
+
     /* تحسينات لأيقونات القوائم */
     .dropdown-item i {
         width: 20px;
         text-align: center;
         margin-right: 8px;
     }
-    
+
     /* تحسينات للأيقونات في الوضع الغامق */
     .bg-dark .text-muted {
         color: #aaa !important;
     }
-    
+
     /* تحسينات للوضع المضيء عند التحويم */
     .dropdown-item:hover i {
         opacity: 1;
     }
 </style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // تعطيل المعالجات السابقة لمنع التكرار (إذا كان هذا يسبب مشاكل، يمكن إزالته إذا كان الربط لمرة واحدة مضمونًا)
-    // document.body.removeEventListener('submit', handleCommentSubmit); // Consider if this is still needed or if event delegation handles it well
-    
-    // ربط المعالج الجديد لإرسال التعليقات (يفضل استخدام تفويض الحدث إذا كان المحتوى ديناميكيًا)
-    // إذا كان هذا القالب يُعاد استخدامه عدة مرات في الصفحة، تأكد من أن معالجات الأحداث لا تتراكم أو تستهدف عناصر بشكل خاطئ.
-    // استخدام تفويض الحدث من مستمع واحد أعلى في DOM قد يكون أفضل.
-    // For now, assuming this script is loaded once or comment forms are distinct enough.
-    document.body.addEventListener('submit', handleCommentSubmit); // Kept as is, ensure it works in your context
-    
-    // تحميل متأخر للفيديوهات
-    const lazyVideos = document.querySelectorAll('.lazy-video');
-    lazyVideos.forEach(video => {
-        if (video.dataset.src && !video.src) { // Load only if not already loaded
-            video.src = video.dataset.src;
+
+    // START: Custom Toast Notification Functions (from previous modification)
+    function showCustomToast(message, type = 'info', duration = 3000) {
+        const toastId = 'custom-copy-action-toast';
+        const existingToast = document.getElementById(toastId);
+        if (existingToast) {
+            existingToast.remove();
+        }
+        const toastElement = document.createElement('div');
+        toastElement.id = toastId;
+        toastElement.textContent = message;
+        let backgroundColor = '#17a2b8';
+        if (type === 'success') backgroundColor = '#28a745';
+        else if (type === 'error') backgroundColor = '#dc3545';
+        toastElement.style.position = 'fixed';
+        toastElement.style.bottom = '20px';
+        toastElement.style.right = '20px';
+        toastElement.style.backgroundColor = backgroundColor;
+        toastElement.style.color = 'white';
+        toastElement.style.padding = '15px 20px';
+        toastElement.style.borderRadius = '8px';
+        toastElement.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+        toastElement.style.zIndex = '1055';
+        toastElement.style.opacity = '0';
+        toastElement.style.transition = 'opacity 0.5s ease-in-out, transform 0.5s ease-in-out';
+        toastElement.style.transform = 'translateY(20px)';
+        document.body.appendChild(toastElement);
+        void toastElement.offsetWidth;
+        toastElement.style.opacity = '1';
+        toastElement.style.transform = 'translateY(0)';
+        setTimeout(() => {
+            toastElement.style.opacity = '0';
+            toastElement.style.transform = 'translateY(20px)';
+            toastElement.addEventListener('transitionend', () => {
+                if (toastElement.parentNode) {
+                    toastElement.parentNode.removeChild(toastElement);
+                }
+            }, { once: true });
+        }, duration);
+    }
+    // END: Custom Toast Notification Functions
+
+    // START: Linkify Content Function
+    function linkifyContent(plainText) {
+        const segments = [];
+        const combinedRegex = /(\b(?:https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(?<!\w)@([a-zA-Z0-9_]{1,50})(?!\w)/ig;
+        const escapeDiv = document.createElement('div');
+        let lastIndex = 0;
+        let match;
+
+        while ((match = combinedRegex.exec(plainText)) !== null) {
+            const url = match[1];
+            const mentionUsername = match[2];
+            const startIndex = match.index;
+
+            if (startIndex > lastIndex) {
+                escapeDiv.textContent = plainText.substring(lastIndex, startIndex);
+                segments.push(escapeDiv.innerHTML);
+            }
+
+            if (url) {
+                escapeDiv.textContent = url;
+                segments.push(`<a href="${encodeURI(url)}" target="_blank" rel="noopener noreferrer" class="text-decoration-underline text-break">${escapeDiv.innerHTML}</a>`);
+            } else if (mentionUsername) {
+                escapeDiv.textContent = `@${mentionUsername}`;
+                segments.push(`<a href="/profile/${encodeURIComponent(mentionUsername)}/" class="text-decoration-underline">${escapeDiv.innerHTML}</a>`);
+            }
+            lastIndex = combinedRegex.lastIndex;
+        }
+
+        if (lastIndex < plainText.length) {
+            escapeDiv.textContent = plainText.substring(lastIndex);
+            segments.push(escapeDiv.innerHTML);
+        }
+        return segments.join('');
+    }
+    // END: Linkify Content Function
+
+    // START: Process Existing Content for Links
+    function processAllLinkifiableContent() {
+        // Linkify post content
+        document.querySelectorAll('div.card-body > p.card-text.mb-3').forEach(contentElement => { //
+            if (!contentElement.hasAttribute('data-linkified')) {
+                const originalText = contentElement.textContent;
+                contentElement.innerHTML = linkifyContent(originalText);
+                contentElement.setAttribute('data-linkified', 'true');
+            }
+        });
+
+        // Linkify existing comment content
+        document.querySelectorAll('.comments-container .flex-grow-1 > p.mb-0.text-light').forEach(commentElement => { //
+            if (!commentElement.hasAttribute('data-linkified')) {
+                const originalText = commentElement.textContent;
+                commentElement.innerHTML = linkifyContent(originalText);
+                commentElement.setAttribute('data-linkified', 'true');
+            }
+        });
+    }
+    // END: Process Existing Content for Links
+
+    // Initial processing of content on page load
+    processAllLinkifiableContent();
+
+
+    // Event listener for comment submission (ensure it's only bound once)
+    if (!document.body.hasAttribute('data-comment-submit-handler-applied')) { //
+        document.body.addEventListener('submit', handleCommentSubmit);
+        document.body.setAttribute('data-comment-submit-handler-applied', 'true'); //
+    }
+
+    // Lazy loading for videos
+    const lazyVideos = document.querySelectorAll('.lazy-video'); //
+    lazyVideos.forEach(video => { //
+        if (video.dataset.src && !video.src) { //
+            video.src = video.dataset.src; //
         }
     });
-    
-    // إضافة تأثير التكبير للصور عند النقر (No changes needed here from original)
-    document.querySelectorAll('.clickable-image').forEach(img => {
-        img.addEventListener('click', function(e) {
-            e.stopPropagation();
+
+    // Clickable images (no change needed here)
+    document.querySelectorAll('.clickable-image').forEach(img => { //
+        img.addEventListener('click', function(e) { //
+            e.stopPropagation(); //
         });
     });
 
-    // --- START: New/Modified JavaScript ---
+    // Handle Copy Link Button
+    document.querySelectorAll('.copy-link-btn').forEach(btn => { //
+        if (btn.hasAttribute('data-copy-listener-attached')) return; //
+        btn.setAttribute('data-copy-listener-attached', 'true'); //
 
-    // 1. Handle Copy Link Button
-    document.querySelectorAll('.copy-link-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const postUrl = this.dataset.postUrl;
-            navigator.clipboard.writeText(postUrl).then(() => {
-                if (typeof showToast === 'function') {
-                    showToast('تم نسخ رابط المنشور!', 'info');
-                } else {
-                    alert('تم نسخ رابط المنشور!'); // Fallback
-                }
-            }).catch(err => {
-                console.error('Failed to copy link: ', err);
-                if (typeof showToast === 'function') {
-                    showToast('فشل نسخ الرابط.', 'error');
-                } else {
-                    alert('فشل نسخ الرابط.'); // Fallback
-                }
+        btn.addEventListener('click', function(e) { //
+            e.preventDefault(); //
+            const postUrl = this.dataset.postUrl; //
+            navigator.clipboard.writeText(postUrl).then(() => { //
+                showCustomToast('تم نسخ الرابط بنجاح! جاهز للمشاركة 🎉', 'success'); //
+            }).catch(err => { //
+                console.error('Failed to copy link: ', err); //
+                showCustomToast('فشل نسخ الرابط. حاول مرة أخرى!', 'error'); //
             });
         });
     });
 
-    // 2. Handle URL parameters for scrolling to post and opening comments modal
-    // This logic should run once per page load.
-    // Using a flag on document.body to ensure it runs only once.
-    if (!document.body.hasAttribute('data-url-handler-applied')) {
-        document.body.setAttribute('data-url-handler-applied', 'true');
-
-        const currentUrlParams = new URLSearchParams(window.location.search);
-        const openCommentsForPostId = currentUrlParams.get('open_comments_for_post');
-        const currentHash = window.location.hash; // e.g., #post-123
-
-        let targetPostId = null;
-
-        if (openCommentsForPostId) {
-            targetPostId = openCommentsForPostId;
-        } else if (currentHash && currentHash.startsWith('#post-')) {
-            targetPostId = currentHash.substring(1).split('-')[1]; // Extract ID from #post-ID
+    // Handle URL parameters for scrolling and opening comments modal
+    if (!document.body.hasAttribute('data-url-handler-applied')) { //
+        document.body.setAttribute('data-url-handler-applied', 'true'); //
+        const currentUrlParams = new URLSearchParams(window.location.search); //
+        const openCommentsForPostId = currentUrlParams.get('open_comments_for_post'); //
+        const currentHash = window.location.hash; //
+        let targetPostId = null; //
+        if (openCommentsForPostId) { //
+            targetPostId = openCommentsForPostId; //
+        } else if (currentHash && currentHash.startsWith('#post-')) { //
+            targetPostId = currentHash.substring(1).split('-')[1]; //
         }
-
-        if (targetPostId) {
-            const postElementToScroll = document.getElementById(`post-${targetPostId}`);
-            if (postElementToScroll) {
-                setTimeout(() => {
-                    postElementToScroll.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100); // Small delay for rendering
+        if (targetPostId) { //
+            const postElementToScroll = document.getElementById(`post-${targetPostId}`); //
+            if (postElementToScroll) { //
+                setTimeout(() => { //
+                    postElementToScroll.scrollIntoView({ behavior: 'smooth', block: 'center' }); //
+                }, 100); //
             }
-
-            // If specifically asked to open comments
-            if (openCommentsForPostId && openCommentsForPostId === targetPostId) {
-                const commentsModalElement = document.getElementById(`commentsModal-${openCommentsForPostId}`);
-                if (commentsModalElement) {
-                    if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
-                        setTimeout(() => { // Delay modal opening slightly
-                            var modalInstance = new bootstrap.Modal(commentsModalElement);
-                            modalInstance.show();
-                        }, 400); // Adjust delay as needed if scroll/render interferes
+            if (openCommentsForPostId && openCommentsForPostId === targetPostId) { //
+                const commentsModalElement = document.getElementById(`commentsModal-${openCommentsForPostId}`); //
+                if (commentsModalElement) { //
+                    if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') { //
+                        setTimeout(() => { //
+                            var modalInstance = new bootstrap.Modal(commentsModalElement); //
+                            modalInstance.show(); //
+                        }, 400); //
                     } else {
-                        console.warn('Bootstrap Modal JS not found, cannot open comments modal programmatically.');
+                        console.warn('Bootstrap Modal JS not found, cannot open comments modal programmatically.'); //
                     }
                 }
             }
         }
     }
-    // --- END: New/Modified JavaScript ---
 });
 
-// دالة معالجة الإرسال المعدلة (Kept as is from your provided code)
-function handleCommentSubmit(e) {
-    if (e.target.classList.contains('comment-form')) {
-        e.preventDefault();
-        const form = e.target;
-        if (form.dataset.processing === 'true') return;
-        form.dataset.processing = 'true';
-        const postId = form.id.split('-')[2];
-        const formData = new FormData(form);
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري الإرسال...';
-        
-        fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
-                'X-Requested-With': 'XMLHttpRequest'
+function handleCommentSubmit(e) { //
+    if (e.target.classList.contains('comment-form')) { //
+        e.preventDefault(); //
+        const form = e.target; //
+        if (form.dataset.processing === 'true') return; //
+        form.dataset.processing = 'true'; //
+        const postId = form.id.split('-')[2]; //
+        const formData = new FormData(form); //
+        const submitBtn = form.querySelector('button[type="submit"]'); //
+        const originalBtnText = submitBtn.innerHTML; //
+        submitBtn.disabled = true; //
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري الإرسال...'; //
+
+        fetch(form.action, { //
+            method: 'POST', //
+            body: formData, //
+            headers: { //
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'), //
+                'X-Requested-With': 'XMLHttpRequest' //
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnText;
-            form.dataset.processing = 'false';
-            if (data.success) {
-                const commentsContainer = form.closest('.modal-body').querySelector('.comments-container');
-                const commentDiv = document.createElement('div');
-                commentDiv.className = 'd-flex mb-3';
+        .then(response => response.json()) //
+        .then(data => { //
+            submitBtn.disabled = false; //
+            submitBtn.innerHTML = originalBtnText; //
+            form.dataset.processing = 'false'; //
+            if (data.success) { //
+                const commentsContainer = form.closest('.modal-body').querySelector('.comments-container'); //
+                const commentDiv = document.createElement('div'); //
+                commentDiv.className = 'd-flex mb-3'; //
+
+                // MODIFICATION: Linkify new comment content
+                const linkedContent = linkifyContent(data.content); // Process content for links
+
                 commentDiv.innerHTML = `
                     <a href="/profile/${data.username}/">
-                        <img src="${data.profile_picture}" class="rounded-circle me-2 border border-secondary" 
+                        <img src="${data.profile_picture}" class="rounded-circle me-2 border border-secondary"
                             style="width: 40px; height: 40px; object-fit: cover;"
                             onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
                             alt="${data.username}">
                     </a>
-                    <div>
+                    <div class="flex-grow-1">
                         <div class="d-flex align-items-center">
                             <a href="/profile/${data.username}/" class="text-decoration-none text-light me-2">
                                 <strong>@${data.username}</strong>
                             </a>
                             <small class="text-muted">الآن</small>
-                        </div>
-                        <p class="mb-0 text-light">${data.content}</p>
+                            </div>
+                        <p class="mb-0 text-light comment-content-text" data-linkified="true">${linkedContent}</p>
                     </div>
-                `;
-                if (commentsContainer.firstChild) {
-                    commentsContainer.insertBefore(commentDiv, commentsContainer.firstChild);
+                `; //
+                if (commentsContainer.firstChild) { //
+                    commentsContainer.insertBefore(commentDiv, commentsContainer.firstChild); //
                 } else {
-                    commentsContainer.appendChild(commentDiv);
+                    commentsContainer.appendChild(commentDiv); //
                 }
-                const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`);
-                if (commentsCountElement) {
-                    const currentCount = parseInt(commentsCountElement.textContent.trim().split(' ')[0]);
-                    commentsCountElement.textContent = `${currentCount + 1} تعليقات`;
+                const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`); //
+                if (commentsCountElement) { //
+                    const currentCount = parseInt(commentsCountElement.textContent.trim().split(' ')[0]); //
+                    commentsCountElement.textContent = `${currentCount + 1} تعليقات`; //
                 }
-                form.querySelector('input[name="content"]').value = '';
-                const noCommentsMsg = commentsContainer.querySelector('.text-muted.text-center');
-                if (noCommentsMsg) {
-                    noCommentsMsg.remove();
+                form.querySelector('input[name="content"]').value = ''; //
+                const noCommentsMsg = commentsContainer.querySelector('.text-muted.text-center'); //
+                if (noCommentsMsg) { //
+                    noCommentsMsg.remove(); //
                 }
-            } else {
-                 if (typeof showToast === 'function' && data.error) {
+                // Optionally show a success toast for new comment
+                // showCustomToast('تم نشر التعليق بنجاح', 'success');
+            } else { //
+                 if (typeof showCustomToast === 'function' && data.error) { //
+                    showCustomToast(data.error, 'error'); //
+                } else if (typeof showToast === 'function' && data.error) { // // Fallback, showToast is not defined in this snippet
                     showToast(data.error, 'error');
-                } else if (data.error) {
-                    alert(data.error);
+                } else if (data.error) { //
+                    alert(data.error); //
                 }
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnText;
-            form.dataset.processing = 'false';
-            if (typeof showToast === 'function') {
-                showToast('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى', 'error');
-            } else {
-                alert('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى');
+        .catch(error => { //
+            console.error('Error:', error); //
+            submitBtn.disabled = false; //
+            submitBtn.innerHTML = originalBtnText; //
+            form.dataset.processing = 'false'; //
+            if (typeof showCustomToast === 'function') { //
+                showCustomToast('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى', 'error'); //
+            } else { //
+                alert('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى'); //
             }
         });
     }
 }
 
-// حذف التعليق (Kept as is from your provided code)
-document.addEventListener('DOMContentLoaded', function() { // This will run again, consider structuring JS differently if this becomes an issue.
-    document.querySelectorAll('.delete-comment-btn').forEach(btn => {
-        // To prevent attaching multiple listeners if this script is re-evaluated.
-        if (btn.hasAttribute('data-listener-attached')) return;
-        btn.setAttribute('data-listener-attached', 'true');
+// Delete comment function (ensure DOMContentLoaded is handled well if multiple)
+// This second DOMContentLoaded might be better merged into the first one or use event delegation.
+// For now, keeping structure from file_content_1.html
+document.addEventListener('DOMContentLoaded', function() { //
+    document.querySelectorAll('.delete-comment-btn').forEach(btn => { //
+        if (btn.hasAttribute('data-delete-comment-listener-attached')) return; //
+        btn.setAttribute('data-delete-comment-listener-attached', 'true'); //
 
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const commentId = this.dataset.commentId;
-            
-            if (confirm('هل أنت متأكد من حذف هذا التعليق؟')) {
-                fetch(`/comment/${commentId}/delete/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}', // Ensure this token is available and correct
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
+        btn.addEventListener('click', function(e) { //
+            e.preventDefault(); //
+            const commentId = this.dataset.commentId; //
+            const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]'); //
+
+            if (confirm('هل أنت متأكد من حذف هذا التعليق؟')) { //
+                fetch(`/comment/${commentId}/delete/`, { //
+                    method: 'POST', //
+                    headers: { //
+                        'X-CSRFToken': csrfToken ? csrfToken.value : '{{ csrf_token }}', // Fallback to template var if needed //
+                        'Accept': 'application/json', //
                     },
-                    credentials: 'same-origin'
+                    credentials: 'same-origin' //
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const commentElement = this.closest('.d-flex.mb-3');
-                        if (commentElement) {
-                             commentElement.remove();
+                .then(response => response.json()) //
+                .then(data => { //
+                    if (data.success) { //
+                        const commentElement = this.closest('.d-flex.mb-3'); //
+                        if (commentElement) { //
+                             commentElement.remove(); //
                         }
-                        
-                        const modalElement = this.closest('.modal');
-                        if (modalElement) {
-                            const postId = modalElement.id.split('-')[1]; // Assuming modal id is "commentsModal-POSTID"
-                             const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`);
-                            if (commentsCountElement) {
-                                const currentCount = parseInt(commentsCountElement.textContent.trim().split(' ')[0]);
-                                commentsCountElement.textContent = `${Math.max(0, currentCount - 1)} تعليقات`;
+                        const modalElement = this.closest('.modal'); //
+                        if (modalElement) { //
+                            const postId = modalElement.id.split('-')[1]; //
+                             const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`); //
+                            if (commentsCountElement) { //
+                                const currentCountText = commentsCountElement.textContent.trim().split(' ')[0]; //
+                                const currentCount = parseInt(currentCountText); //
+                                if (!isNaN(currentCount)) { //
+                                   commentsCountElement.textContent = `${Math.max(0, currentCount - 1)} تعليقات`; //
+                                }
                             }
                         }
-                        if (typeof showToast === 'function') {
-                            showToast('تم حذف التعليق بنجاح', 'success');
-                        } else {
-                            alert('تم حذف التعليق بنجاح');
+                        if (typeof showCustomToast === 'function') { //
+                            showCustomToast('تم حذف التعليق بنجاح', 'success'); //
+                        } else { //
+                            alert('تم حذف التعليق بنجاح'); //
                         }
-                    } else {
-                         if (typeof showToast === 'function' && data.error) {
-                            showToast(data.error, 'error');
-                        } else if (data.error) {
-                            alert(data.error);
+                    } else { //
+                        if (typeof showCustomToast === 'function' && data.error) { //
+                            showCustomToast(data.error, 'error'); //
+                        } else if (data.error) { //
+                            alert(data.error); //
                         }
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                     if (typeof showToast === 'function') {
-                        showToast('حدث خطأ أثناء حذف التعليق', 'error');
-                    } else {
-                        alert('حدث خطأ أثناء حذف التعليق');
+                .catch(error => { //
+                    console.error('Error:', error); //
+                     if (typeof showCustomToast === 'function') { //
+                        showCustomToast('حدث خطأ أثناء حذف التعليق', 'error'); //
+                    } else { //
+                        alert('حدث خطأ أثناء حذف التعليق'); //
                     }
                 });
             }
