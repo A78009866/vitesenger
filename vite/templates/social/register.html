@@ -9,169 +9,248 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --bg-light: #ffffff;
-            --primary: #4a6bff;
-            --primary-light: #7a8fff;
-            --text: #212529;
-            --text-muted: #6c757d;
-            --border: #dee2e6;
-            --input-bg: #f8f9fa;
-            --error-bg: #ffebee;
+            --bg-dark: #18191a; /* Slightly darker base */
+            --bg-darker: #242526;
+            --bg-light: #3a3b3c; /* Card background */
+            --primary: #e4e6eb;   /* Primary text color */
+            --secondary: #b0b3b8; /* Secondary text color */
+            --border: #3e4042;
+            --input-bg: var(--bg-darker);
+            --input-focus-border: #3982f7; /* More vibrant focus */
+            --button-primary-bg: #3982f7;
+            --button-primary-hover-bg: #3071e2;
+            --button-primary-text: var(--primary);
+            --error-bg: #f7d1d1;
+            --error-text: #e3405f;
+            --link-color: #3982f7;
         }
-        
+
         body {
-            background-color: #f5f5f5;
-            color: var(--text);
-            min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             padding: 20px;
+            line-height: 1.6;
         }
-        
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-img {
+            height: 45px;
+            margin-left: 15px;
+            filter: brightness(0) invert(1);
+        }
+
+        .brand-text {
+            color: var(--primary) !important;
+            font-size: 2.2rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .brand-text:hover {
+            color: var(--secondary) !important;
+        }
+
         .card {
             background-color: var(--bg-light);
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 450px;
+            padding: 30px;
         }
-        
-        .card-header {
-            background-color: transparent;
-            border-bottom: 1px solid var(--border);
-            padding: 20px;
-        }
-        
-        .card-header h3 {
-            color: var(--primary);
-            font-weight: 600;
+
+        .card-title {
             text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 600;
         }
-        
-        .card-body {
-            padding: 25px;
+
+        .form-group {
+            margin-bottom: 22px;
+            position: relative;
         }
-        
+
         .form-label {
-            font-weight: 500;
+            display: block;
             margin-bottom: 8px;
-            color: var(--text);
-        }
-        
-        .form-control {
-            background-color: var(--input-bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 15px;
-            transition: all 0.3s;
-        }
-        
-        .form-control:focus {
-            background-color: var(--bg-light);
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(74, 107, 255, 0.2);
-        }
-        
-        .btn-primary {
-            background-color: var(--primary);
-            border-color: var(--primary);
-            padding: 12px;
             font-weight: 500;
-            border-radius: 8px;
-            transition: all 0.3s;
+            color: var(--secondary);
         }
-        
+
+        .form-control {
+            width: 100%;
+            padding: 12px 40px 12px 15px; /* Space for eye icon */
+            border: 1px solid var(--border);
+            background-color: var(--input-bg);
+            color: var(--primary);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--input-focus-border);
+            outline: none;
+            box-shadow: 0 0 5px rgba(57, 130, 247, 0.5);
+        }
+
+        .form-control::placeholder {
+            color: var(--secondary);
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            left: 12px; /* Adjusted for better visual balance in RTL */
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--secondary);
+            font-size: 18px; /* Slightly larger icon */
+            z-index: 10;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--button-primary-bg);
+            border: none;
+            border-radius: 8px;
+            color: var(--button-primary-text);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
         .btn-primary:hover {
-            background-color: var(--primary-light);
+            background-color: var(--button-primary-hover-bg);
             transform: translateY(-2px);
         }
-        
-        .alert-danger {
+
+        .error-message {
+            color: var(--error-text);
             background-color: var(--error-bg);
-            border-color: transparent;
-            color: #d32f2f;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 20px;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.9em;
         }
-        
+
+        .text-center {
+            margin-top: 20px;
+            color: var(--secondary);
+            font-size: 0.95em;
+        }
+
         .text-center a {
-            color: var(--primary);
+            color: var(--link-color);
             text-decoration: none;
             font-weight: 500;
         }
-        
+
         .text-center a:hover {
             text-decoration: underline;
         }
-        
-        /* تحسينات للهواتف */
-        @media (max-width: 576px) {
+
+        /* Small adjustments for mobile */
+        @media (max-width: 480px) {
             .card {
-                border-radius: 10px;
-            }
-            
-            .card-body {
                 padding: 20px;
             }
-            
+            .card-title {
+                font-size: 1.6rem;
+                margin-bottom: 20px;
+            }
             .form-control {
-                padding: 10px 12px;
+                font-size: 15px;
+            }
+            .btn-primary {
+                font-size: 15px;
+            }
+            .toggle-password {
+                font-size: 16px;
+                left: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3>إنشاء حساب جديد</h3>
-                </div>
-                <div class="card-body">
-                    {% if form.errors %}
-                        <div class="alert alert-danger">
-                            {% for field, errors in form.errors.items %}
-                                {% for error in errors %}
-                                    <p>{{ error }}</p>
-                                {% endfor %}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
+    <div class="logo-container">
+        <a class="brand-text" href="#"> <img src="https://upload.wikimedia.org/wikipedia/commons/4/46/1000084215-removebg-preview.png" class="logo-img" alt="شعار Trimer">
+            Trimer
+        </a>
+    </div>
 
-                    <form method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="id_username" class="form-label">اسم المستخدم</label>
-                            <input type="text" name="username" class="form-control" required id="id_username">
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_full_name" class="form-label">الاسم الكامل</label>
-                            <input type="text" name="full_name" class="form-control" required id="id_full_name">
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_email" class="form-label">البريد الإلكتروني</label>
-                            <input type="email" name="email" class="form-control" required id="id_email">
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_password1" class="form-label">كلمة المرور</label>
-                            <input type="password" name="password1" class="form-control" required id="id_password1">
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_password2" class="form-label">تأكيد كلمة المرور</label>
-                            <input type="password" name="password2" class="form-control" required id="id_password2">
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_profile_picture" class="form-label">صورة الملف الشخصي</label>
-                            <input type="file" name="profile_picture" class="form-control" id="id_profile_picture" accept="image/*">
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">إنشاء حساب</button>
-                    </form>
-
-                    <div class="text-center mt-3">
-                        لديك حساب بالفعل؟ <a href="{% url 'login' %}">تسجيل الدخول</a>
-                    </div>
+    <div class="card">
+        <h2 class="card-title">إنشاء حساب جديد</h2>
+        {% if form.errors %}
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <div class="error-message">{{ error }}</div>
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_username" class="form-label">اسم المستخدم</label>
+                <input type="text" name="username" class="form-control" required id="id_username">
+            </div>
+            <div class="form-group">
+                <label for="id_full_name" class="form-label">الاسم الكامل</label>
+                <input type="text" name="full_name" class="form-control" required id="id_full_name">
+            </div>
+            <div class="form-group">
+                <label for="id_password1" class="form-label">كلمة المرور</label>
+                <div style="position: relative;">
+                    <input type="password" name="password1" class="form-control" required id="id_password1">
+                    <i class="fas fa-eye toggle-password" data-target="id_password1"></i>
                 </div>
             </div>
+            <div class="form-group">
+                <label for="id_password2" class="form-label">تأكيد كلمة المرور</label>
+                <div style="position: relative;">
+                    <input type="password" name="password2" class="form-control" required id="id_password2">
+                    <i class="fas fa-eye toggle-password" data-target="id_password2"></i>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="id_profile_picture" class="form-label">صورة الملف الشخصي</label>
+                <input type="file" name="profile_picture" class="form-control" id="id_profile_picture" accept="image/*">
+            </div>
+            <button type="submit" class="btn-primary">إنشاء حساب</button>
+        </form>
+        <div class="text-center">
+            لديك حساب بالفعل؟ <a href="{% url 'login' %}">تسجيل الدخول</a>
         </div>
     </div>
+    <script>
+        document.querySelectorAll('.toggle-password').forEach(item => {
+            item.addEventListener('click', function () {
+                const targetId = this.getAttribute('data-target');
+                const passwordField = document.getElementById(targetId);
+                if (passwordField.type === "password") {
+                    passwordField.type = "text";
+                    this.classList.remove('fa-eye');
+                    this.classList.add('fa-eye-slash');
+                } else {
+                    passwordField.type = "password";
+                    this.classList.remove('fa-eye-slash');
+                    this.classList.add('fa-eye');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
