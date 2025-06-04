@@ -12,11 +12,30 @@ from django.core.files import File
 # from datetime import timedelta # Remove if Story was the only user
 
 class CustomUser(AbstractUser):
+    GENDER_CHOICES = [
+        ('male', 'ذكر'),
+        ('female', 'أنثى'),
+        ('other', 'آخر'),
+        ('', 'أفضل عدم القول'),
+    ]
+    RELATIONSHIP_STATUS_CHOICES = [
+        ('single', 'أعزب/عزباء'),
+        ('in_relationship', 'في علاقة'),
+        ('engaged', 'مخطوب/مخطوبة'),
+        ('married', 'متزوج/متزوجة'),
+        ('complicated', 'معقد'),
+        ('open_relationship', 'علاقة مفتوحة'),
+        ('', 'أفضل عدم القول'),
+    ]
+
     is_verified = models.BooleanField(default=False)
     full_name = models.CharField(max_length=100, blank=True)
     profile_picture = CloudinaryField('image', blank=True, null=True, default='profile_pics/default_profile.png')
     cover_photo = CloudinaryField('image', blank=True, null=True, default='cover_photos/default_cover.jpg')
     bio = models.TextField(blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True, default='')
+    relationship_status = models.CharField(max_length=20, choices=RELATIONSHIP_STATUS_CHOICES, blank=True, default='')
     friends = models.ManyToManyField('self', symmetrical=False, blank=True)
     friend_requests = models.ManyToManyField('self', symmetrical=False, blank=True,
                                            related_name='received_friend_requests')

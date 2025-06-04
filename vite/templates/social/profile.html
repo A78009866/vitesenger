@@ -8,12 +8,23 @@
         --bg-primary: #0f0f0f;
         --bg-secondary: #1a1a1a;
         --bg-card: #222222;
-        --bg-hover: #2a2a2a;
+        --bg-item-box: #282828;
+        --bg-hover: #313131; /* Slightly lighter hover for general items */
+        --button-hover-bg: #383838; /* Specific hover for buttons if needed */
         --accent-color: #3b82f6;
-        --accent-hover: #2563eb;
+        --accent-hover: #2563eb; /* Used for solid hover fill */
         --text-primary: #ffffff;
         --text-secondary: #9ca3af;
         --border-color: #333333;
+        --border-item-box: #404040;
+        --danger-color: #ef4444; /* Slightly brighter red */
+        --danger-hover-bg: #dc2626;
+        --success-color: #22c55e; /* Slightly brighter green */
+        --success-hover-bg: #16a34a;
+        --warning-color: #f97316; /* Slightly brighter orange */
+        --warning-hover-bg: #ea580c;
+        --info-color: #0ea5e9; /* Slightly brighter cyan/blue */
+        --info-hover-bg: #0284c7;
         --shadow-light: rgba(59, 130, 246, 0.1);
         --shadow-dark: rgba(0, 0, 0, 0.5);
     }
@@ -30,7 +41,6 @@
         border-radius: 16px;
         overflow: hidden;
         box-shadow: 0 4px 20px var(--shadow-dark);
-        transition: all 0.2s ease;
     }
 
     .cover-section {
@@ -43,404 +53,436 @@
         justify-content: center;
     }
 
-    .cover-section .default-cover {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #3b82f6, #1e40af);
-        color: rgba(255, 255, 255, 0.2);
-    }
+    .cover-section img { width: 100%; height: 100%; object-fit: cover; }
 
-    .cover-section .default-cover i {
-        font-size: 4rem;
-    }
-
-    .cover-section img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .profile-content {
-        padding: 0 2rem 2rem 2rem;
-        position: relative;
-    }
+    .profile-content { padding: 0 2rem 2rem 2rem; position: relative; }
 
     .profile-avatar {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        border: 4px solid var(--bg-card);
-        margin: -60px auto 0;
-        position: relative;
-        display: block;
-        background: var(--bg-secondary);
+        width: 120px; height: 120px; border-radius: 50%;
+        border: 4px solid var(--bg-card); margin: -60px auto 0;
+        position: relative; display: block; background: var(--bg-secondary);
         overflow: hidden;
     }
 
-    .profile-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-info { text-align: center; margin-top: 1.5rem; }
+    .profile-name { font-size: 1.75rem; font-weight: 700; margin: 0 0 0.25rem 0; color: var(--text-primary); }
+    .profile-username { font-size: 1rem; color: var(--text-secondary); margin: 0 0 1rem 0; }
+    .verified-badge { color: var(--accent-color); margin-left: 0.5rem; font-size: 1.2rem; }
+    [dir="rtl"] .verified-badge { margin-right: 0.5rem; margin-left: 0; }
 
-    .profile-avatar .default-avatar {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--accent-color);
-        color: white;
-        font-size: 2.5rem;
-    }
-
-    .profile-info {
-        text-align: center;
-        margin-top: 1.5rem;
-    }
-
-    .profile-name {
-        font-size: 1.75rem;
-        font-weight: 700;
-        margin: 0 0 0.25rem 0;
-        color: var(--text-primary);
-    }
-
-    .profile-username {
-        font-size: 1rem;
-        color: var(--text-secondary);
-        margin: 0 0 1rem 0;
-    }
-
-    .verified-badge {
-        color: var(--accent-color);
-        margin-left: 0.5rem;
-        font-size: 1.2rem;
-    }
 
     .points-display {
-        display: inline-flex;
-        align-items: center;
-        background: var(--bg-secondary);
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-        border: 1px solid var(--border-color);
+        display: inline-flex; align-items: center; background: var(--bg-secondary);
+        padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;
+        margin-bottom: 1.5rem; border: 1px solid var(--border-color);
     }
+    .points-display i { color: #fbbf24; }
+    [dir="rtl"] .points-display i { margin-left: 0.5rem; }
+    [dir="ltr"] .points-display i { margin-right: 0.5rem; }
 
-    .points-display i {
-        color: #fbbf24;
-        margin-right: 0.5rem;
-    }
 
-    .bio-section {
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 1.25rem;
-        margin: 1.5rem 0;
-        text-align: right;
-    }
-
-    .bio-text {
-        color: var(--text-secondary);
-        line-height: 1.6;
-        margin: 0;
-    }
-
+    /* Updated Action Buttons Layout */
     .action-buttons {
         display: flex;
-        gap: 0.75rem;
+        gap: 0.6rem; /* Slightly reduced gap */
         justify-content: center;
-        flex-wrap: wrap;
+        flex-wrap: wrap; /* Allow buttons to wrap to next line */
         margin-top: 1.5rem;
     }
 
+    /* Updated Button Styles */
     .btn-custom {
-        padding: 0.75rem 1.25rem;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        border: none;
+        padding: 0.5rem 0.85rem; /* Further reduced padding for a slimmer look */
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.8rem; /* Further reduced font size */
         text-decoration: none;
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.35rem; /* Further reduced gap */
         transition: all 0.2s ease;
         cursor: pointer;
-        min-width: 120px;
+        min-width: auto; /* Allow natural width based on content and padding */
         justify-content: center;
+        background-color: transparent;
+        border: 1px solid var(--border-color); /* Default border */
+        color: var(--text-secondary); /* Default text color */
+    }
+    .btn-custom:hover {
+        background-color: var(--button-hover-bg); /* Subtle background on hover */
+        color: var(--text-primary);
+        border-color: var(--text-secondary); /* Slightly highlight border on hover */
     }
 
+    /* Icons margin in buttons (RTL/LTR) */
+    [dir="rtl"] .btn-custom i { margin-left: 0.4rem; margin-right: 0; }
+    [dir="ltr"] .btn-custom i { margin-right: 0.4rem; margin-left: 0; }
 
+    /* Specific Button Color Overrides */
     .btn-primary {
-        background: var(--accent-hover); /* كان var(--accent-color), الآن #2563eb */
-        color: white;
+        border-color: var(--accent-color);
+        color: var(--accent-color);
     }
-
     .btn-primary:hover {
-        background: #1d4ed8; /* درجة أغمق من الأزرق للـ hover */
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
         color: white;
-        transform: translateY(-1px);
     }
 
-    .btn-secondary { /* هذا الزر مناسب بالفعل للوضع الداكن، لا تغييرات كبيرة هنا */
-        background: var(--bg-secondary);
+    .btn-secondary { /* This is a good candidate for a more subtle default dark theme button */
+        background-color: var(--bg-item-box); /* Use item box bg for a very subtle fill */
+        border-color: var(--border-item-box);
         color: var(--text-primary);
-        border: 1px solid var(--border-color);
     }
-
     .btn-secondary:hover {
-        background: var(--bg-hover);
+        background-color: var(--button-hover-bg);
+        border-color: var(--text-secondary);
         color: var(--text-primary);
-        transform: translateY(-1px);
-    }
-
-    .btn-success {
-        background: #047857; /* كان #059669 */
-        color: white;
-    }
-
-    .btn-success:hover {
-        background: #065f46; /* درجة أغمق من الأخضر للـ hover */
-        color: white;
-        transform: translateY(-1px);
     }
 
     .btn-danger {
-        background: #b91c1c; /* كان #dc2626 */
-        color: white;
+        border-color: var(--danger-color);
+        color: var(--danger-color);
     }
-
     .btn-danger:hover {
-        background: #991b1b; /* درجة أغمق من الأحمر للـ hover */
+        background-color: var(--danger-color); /* Fill with danger color on hover */
+        border-color: var(--danger-color);
         color: white;
-        transform: translateY(-1px);
     }
 
+    .btn-success {
+        border-color: var(--success-color);
+        color: var(--success-color);
+    }
+    .btn-success:hover {
+        background-color: var(--success-color); /* Fill with success color on hover */
+        border-color: var(--success-color);
+        color: white;
+    }
+    
     .btn-warning {
-        background: #b45309; /* كان #d97706 */
-        color: white;
+        border-color: var(--warning-color);
+        color: var(--warning-color);
     }
-
     .btn-warning:hover {
-        background: #92400e; /* درجة أغمق من البرتقالي/الأصفر للـ hover */
+        background-color: var(--warning-color); /* Fill with warning color on hover */
+        border-color: var(--warning-color);
         color: white;
-        transform: translateY(-1px);
     }
 
     .btn-info {
-        background: #0e7490; /* كان #0891b2 */
-        color: white;
+        border-color: var(--info-color);
+        color: var(--info-color);
     }
-
     .btn-info:hover {
-        background: #115e75; /* درجة أغمق من السماوي/الأزرق للـ hover */
+        background-color: var(--info-color); /* Fill with info color on hover */
+        border-color: var(--info-color);
         color: white;
-        transform: translateY(-1px);
     }
 
-    .btn-disabled { /* هذا الزر مناسب بالفعل للوضع الداكن */
-        background: var(--bg-secondary);
+    .btn-disabled {
+        background-color: transparent;
+        border-color: var(--border-color);
         color: var(--text-secondary);
+        opacity: 0.5;
         cursor: not-allowed;
-        border: 1px solid var(--border-color);
+    }
+    .btn-disabled:hover { /* No hover effect for disabled */
+        background-color: transparent;
+        color: var(--text-secondary);
+        border-color: var(--border-color);
     }
 
-    .btn-disabled:hover {
-        transform: none;
-    }
 
-    .posts-section {
-        margin-top: 2rem;
-    }
+    .container-custom { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
 
-    .container-custom {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 2rem 1rem;
+    /* Tab Styles */
+    .profile-tabs-container {
+        margin-top: 2rem; background: var(--bg-card);
+        border: 1px solid var(--border-color); border-radius: 12px;
+        overflow: hidden;
     }
+    .tabs-navigation { display: flex; background-color: var(--bg-secondary); }
+    .tab-link {
+        flex-grow: 1; padding: 0.9rem 1.2rem; text-align: center;
+        background-color: transparent; color: var(--text-secondary);
+        border: none; cursor: pointer; font-size: 0.95rem; font-weight: 600;
+        transition: color 0.2s ease, background-color 0.2s ease, border-bottom-color 0.2s ease;
+        border-bottom: 3px solid transparent; position: relative; outline: none;
+    }
+    [dir="rtl"] .tab-link:not(:last-child) { border-left: 1px solid var(--border-color); }
+    [dir="ltr"] .tab-link:not(:last-child) { border-right: 1px solid var(--border-color); }
+    [dir="rtl"] .tab-link i { margin-left: 6px; }
+    [dir="ltr"] .tab-link i { margin-right: 6px; }
+    .tab-link:hover { color: var(--text-primary); background-color: var(--bg-hover); }
+    .tab-link.active { color: var(--accent-color); border-bottom-color: var(--accent-color); background-color: var(--bg-secondary); }
+    .tab-content { padding: 1.5rem; }
+    .tab-pane { display: none; animation: fadeIn 0.4s ease-in-out; }
+    .tab-pane.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* "About" Section Item Styles */
+    .about-section-content { display: grid; gap: 1rem; }
+    .about-item {
+        background-color: var(--bg-item-box); border: 1px solid var(--border-item-box);
+        border-radius: 8px; padding: 0.9rem 1.1rem; display: flex;
+        align-items: center; font-size: 0.9rem; transition: background-color 0.2s ease;
+    }
+    .about-item:hover { background-color: var(--bg-hover); }
+    .about-item i.fas {
+        color: var(--accent-color); margin-left: 0.8rem; width: 22px;
+        text-align: center; flex-shrink: 0; font-size: 1.1em;
+    }
+    [dir="rtl"] .about-item i.fas { margin-right: 0.8rem; margin-left: 0; }
+
+
+    .about-item-label {
+        color: var(--text-secondary); font-weight: 500; min-width: 95px;
+        flex-shrink: 0;
+    }
+    [dir="rtl"] .about-item-label { margin-left: 0.6rem; margin-right: 0; }
+    [dir="ltr"] .about-item-label { margin-right: 0.6rem; margin-left: 0; }
+
+    .about-item-value, .about-item-placeholder { color: var(--text-primary); flex-grow: 1; word-break: break-word; }
+    .about-item-placeholder { font-style: italic; color: var(--text-secondary); }
+
+    .about-item-bio {
+        background-color: var(--bg-item-box); border: 1px solid var(--border-item-box);
+        border-radius: 8px; padding: 0.9rem 1.1rem; margin-bottom: 0;
+        display: flex; flex-direction: column; align-items: flex-start;
+    }
+    .about-item-bio:hover { background-color: var(--bg-hover); }
+    .bio-label-container { display: flex; align-items: center; margin-bottom: 0.6rem; }
+    .bio-label-container i.fas {
+        color: var(--accent-color); width: 22px; text-align: center;
+        flex-shrink: 0; font-size: 1.1em;
+    }
+    [dir="rtl"] .bio-label-container i.fas { margin-left: 0.8rem; margin-right: 0;}
+    [dir="ltr"] .bio-label-container i.fas { margin-right: 0.8rem; margin-left: 0;}
+
+
+    .bio-label-container .about-item-label { color: var(--text-secondary); font-weight: 500; margin: 0; }
+    .bio-text-value { color: var(--text-primary); line-height: 1.7; white-space: pre-wrap; width: 100%; font-size: 0.9rem; }
+    
+    .posts-section-content h4 { text-align: center; margin-bottom: 1.5rem; font-size: 1.15rem; color: var(--text-primary); }
 
     @media (max-width: 768px) {
-        .container-custom {
-            padding: 1rem 0.5rem;
-        }
-
-        .profile-content {
-            padding: 0 1rem 1.5rem 1rem;
-        }
-
-        .profile-name {
-            font-size: 1.5rem;
-        }
-
-        .action-buttons {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .btn-custom {
-            width: 100%;
-            min-width: auto;
-        }
-
-        .cover-section {
-            height: 150px;
-        }
-
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            margin-top: -50px;
-        }
-
-        .profile-avatar .default-avatar {
-            font-size: 2rem;
-        }
-
-        .cover-section .default-cover i {
-            font-size: 3rem;
-        }
+        .container-custom { padding: 1rem 0.5rem; }
+        .profile-content { padding: 0 1rem 1.5rem 1rem; }
+        .profile-name { font-size: 1.5rem; }
+        /* Ensure action buttons wrap and center, not stack column by default */
+        .action-buttons { justify-content: center; }
+        .cover-section { height: 150px; }
+        .profile-avatar { width: 100px; height: 100px; margin-top: -50px; }
+        .tab-link { font-size: 0.9rem; padding: 0.8rem 1rem; }
+        .about-section-content { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 480px) {
-        .action-buttons {
-            gap: 0.5rem;
-        }
-
-        .btn-custom {
-            padding: 0.6rem 1rem;
-            font-size: 0.85rem;
+        .tabs-navigation { flex-direction: column; }
+        .tab-link { border-bottom: 1px solid var(--border-color); border-left: none !important; border-right: none !important;}
+        .tab-link.active { border-bottom-color: var(--accent-color); border-left: 3px solid var(--accent-color); border-bottom-width: 1px;}
+        [dir="rtl"] .tab-link.active { border-left: none; border-right: 3px solid var(--accent-color); }
+        /* For very small screens, allow buttons to take full width if they wrap to new lines */
+        .action-buttons .btn-custom { 
+            flex-grow: 1; /* Allow buttons to grow if space allows or if they are few */
+            /* Consider min-width for very small buttons if content is too short */
         }
     }
-    .posts-section {
-    margin-top: 2rem;
-    margin-bottom: 80px; /* يمكنك تعديل القيمة حسب ارتفاع النافبار السفلي */
-}
+    .posts-container-in-tab { margin-bottom: 60px; }
 </style>
 
-<div class="container-custom">
-    <div class="cover-section">
-    {% if profile_user.cover_photo and profile_user.cover_photo.url %}
-        <img src="{{ profile_user.cover_photo.url }}" alt="{{ profile_user.username }}"
-             class="w-full h-full object-cover"
-             onerror="this.onerror=null; this.src='/media/cover_photos/default_cover.jpg';">
-    {% else %}
-        <img src='/media/cover_photos/default_cover.jpg' alt="صورة الغلاف الافتراضية"
-             class="w-full h-full object-cover"
-             onerror="this.onerror=null; this.src='/media/cover_photos/default_cover.jpg';">
-    {% endif %}
-</div>
-<!-- في قسم صورة البروفايل -->
-<div class="profile-avatar">
-    {% if profile_user.profile_picture and profile_user.profile_picture.url %}
-        <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}"
-             class="w-full h-full object-cover"
-             onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';">
-    {% else %}
-        <img src="/media/profile_pics/default_profile.png" alt="صورة البروفايل الافتراضية"
-             class="w-full h-full object-cover"
-             onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';">
-             {% endif %}
-</div>
+<div class="container-custom" dir="rtl">
+    <div class="profile-card">
+        <div class="cover-section">
+        {% if profile_user.cover_photo and profile_user.cover_photo.url %}
+            <img src="{{ profile_user.cover_photo.url }}" alt="{{ profile_user.username }}'s cover photo"
+                 onerror="this.onerror=null; this.src='/media/cover_photos/default_cover.jpg';">
+        {% else %}
+            <img src='/media/cover_photos/default_cover.jpg' alt="صورة الغلاف الافتراضية"
+                 onerror="this.onerror=null; this.src='/media/cover_photos/default_cover.jpg';">
+        {% endif %}
+    </div>
+    <div class="profile-avatar">
+        {% if profile_user.profile_picture and profile_user.profile_picture.url %}
+            <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}'s profile picture"
+                 onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';">
+        {% else %}
+            <img src="/media/profile_pics/default_profile.png" alt="صورة البروفايل الافتراضية"
+                 onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';">
+        {% endif %}
+    </div>
 
+    <div class="profile-content">
+        <div class="profile-info">
+            <h1 class="profile-name">
+                {{ profile_user.full_name }}
+                {% if profile_user.has_blue_badge %}
+                    <i class="fas fa-check-circle verified-badge" title="حساب موثوق"></i>
+                {% endif %}
+            </h1>
+            <p class="profile-username">@{{ profile_user.username }}</p>
+            <div class="points-display">
+                <i class="fas fa-star"></i>
+                <span>{{ profile_user.points }} نقطة</span>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            {% if profile_user == request.user %}
+                <a href="{% url 'edit_profile' request.user.username %}" class="btn-custom btn-secondary"><i class="fas fa-edit"></i><span>تعديل الملف</span></a>
+                <a href="{% url 'create_post' %}" class="btn-custom btn-primary"><i class="fas fa-plus"></i><span>منشور جديد</span></a>
+                <a href="{% url 'qr_code_view' request.user.username %}" class="btn-custom btn-info"><i class="fas fa-qrcode"></i><span>كود QR</span></a>
+            {% else %}
+                {% if is_friend %}
+                    <button class="btn-custom btn-disabled" disabled><i class="fas fa-check"></i><span>أصدقاء</span></button>
+                    <a href="{% url 'chat' profile_user.username %}" class="btn-custom btn-primary"><i class="fas fa-comment"></i><span>مراسلة</span></a>
+                {% elif has_sent_request %}
+                    <button class="btn-custom btn-disabled" disabled><i class="fas fa-clock"></i><span>تم الإرسال</span></button>
+                {% elif has_received_request %}
+                    <a href="{% url 'accept_friend_request' profile_user.username %}" class="btn-custom btn-success"><i class="fas fa-check"></i><span>قبول</span></a>
+                    <a href="{% url 'reject_friend_request' profile_user.username %}" class="btn-custom btn-danger"><i class="fas fa-times"></i><span>رفض</span></a>
+                {% else %}
+                    <a href="{% url 'send_friend_request' profile_user.username %}" class="btn-custom btn-primary"><i class="fas fa-user-plus"></i><span>إضافة صديق</span></a>
+                {% endif %}
+                {% if profile_user in request.user.blocked_users.all %}
+                    <a href="{% url 'unblock_user' profile_user.username %}" class="btn-custom btn-warning"><i class="fas fa-unlock"></i><span>إلغاء الحظر</span></a>
+                {% else %}
+                    <a href="{% url 'block_user' profile_user.username %}" class="btn-custom btn-danger"><i class="fas fa-ban"></i><span>حظر</span></a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    </div> <div class="profile-tabs-container">
+        <div class="tabs-navigation">
+            <button class="tab-link active" data-tab="posts"><i class="fas fa-stream"></i>منشورات المستخدم</button>
+            <button class="tab-link" data-tab="about"><i class="fas fa-user-circle"></i>حول</button>
+        </div>
 
-            <!-- Profile Info -->
-            <div class="profile-info">
-                <h1 class="profile-name">
-                    {{ profile_user.full_name }}
-                    {% if profile_user.has_blue_badge %}
-                        <i class="fas fa-check-circle verified-badge" title="حساب موثوق"></i>
+        <div class="tab-content">
+            <div id="posts" class="tab-pane active">
+                <div class="posts-section-content posts-container-in-tab">
+                    {% if posts %}
+                        {% for post in posts %}
+                            {% include 'social/post_template.html' with post=post %}
+                        {% endfor %}
+                    {% else %}
+                        <p style="text-align: center; color: var(--text-secondary); padding: 2rem 0;">لا توجد منشورات لعرضها حالياً.</p>
                     {% endif %}
-                </h1>
-                
-                <p class="profile-username">@{{ profile_user.username }}</p>
-                
-                <!-- Points -->
-                <div class="points-display">
-                    <i class="fas fa-star"></i>
-                    <span>{{ profile_user.points }} نقطة</span>
                 </div>
             </div>
-            
-            <!-- Bio -->
-            {% if profile_user.bio %}
-                <div class="bio-section">
-                    <p class="bio-text">{{ profile_user.bio }}</p>
-                </div>
-            {% endif %}
-            
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                {% if profile_user == request.user %}
-                    <a href="{% url 'edit_profile' request.user.username %}" class="btn-custom btn-secondary">
-                        <i class="fas fa-edit"></i>
-                        <span>تعديل الملف</span>
-                    </a>
-                    <a href="{% url 'create_post' %}" class="btn-custom btn-primary">
-                        <i class="fas fa-plus"></i>
-                        <span>منشور جديد</span>
-                    </a>
-                    <a href="{% url 'qr_code_view' request.user.username %}" class="btn-custom btn-info">
-                        <i class="fas fa-qrcode"></i>
-                        <span>كود QR</span>
-                    </a>
-                {% else %}
-                    {% if is_friend %}
-                        <button class="btn-custom btn-disabled" disabled>
-                            <i class="fas fa-check"></i>
-                            <span>أصدقاء</span>
-                        </button>
-                        <a href="{% url 'chat' profile_user.username %}" class="btn-custom btn-primary">
-                            <i class="fas fa-comment"></i>
-                            <span>مراسلة</span>
-                        </a>
-                    {% elif has_sent_request %}
-                        <button class="btn-custom btn-disabled" disabled>
-                            <i class="fas fa-clock"></i>
-                            <span>تم الإرسال</span>
-                        </button>
-                    {% elif has_received_request %}
-                        <a href="{% url 'accept_friend_request' profile_user.username %}" class="btn-custom btn-success">
-                            <i class="fas fa-check"></i>
-                            <span>قبول</span>
-                        </a>
-                        <a href="{% url 'reject_friend_request' profile_user.username %}" class="btn-custom btn-danger">
-                            <i class="fas fa-times"></i>
-                            <span>رفض</span>
-                        </a>
+
+            <div id="about" class="tab-pane">
+                <div class="about-section-content">
+                    <div class="about-item">
+                        <i class="fas fa-user"></i>
+                        <span class="about-item-label">الاسم الكامل:</span>
+                        <span class="about-item-value">{{ profile_user.full_name|default:"لم يحدد" }}</span>
+                    </div>
+                    <div class="about-item">
+                        <i class="fas fa-at"></i>
+                        <span class="about-item-label">اسم المستخدم:</span>
+                        <span class="about-item-value">@{{ profile_user.username }}</span>
+                    </div>
+
+                    {% if profile_user.bio %}
+                        <div class="about-item-bio">
+                            <div class="bio-label-container">
+                                <i class="fas fa-quote-right"></i>
+                                <span class="about-item-label">نبذة تعريفية:</span>
+                            </div>
+                            <p class="bio-text-value">{{ profile_user.bio }}</p>
+                        </div>
                     {% else %}
-                        <a href="{% url 'send_friend_request' profile_user.username %}" class="btn-custom btn-primary">
-                            <i class="fas fa-user-plus"></i>
-                            <span>إضافة صديق</span>
-                        </a>
+                        <div class="about-item">
+                            <i class="fas fa-quote-right"></i>
+                            <span class="about-item-label">نبذة تعريفية:</span>
+                            <span class="about-item-placeholder">لا يوجد نبذة تعريفية.</span>
+                        </div>
                     {% endif %}
 
-                    {% if profile_user in request.user.blocked_users.all %}
-                        <a href="{% url 'unblock_user' profile_user.username %}" class="btn-custom btn-warning">
-                            <i class="fas fa-unlock"></i>
-                            <span>إلغاء الحظر</span>
-                        </a>
-                    {% else %}
-                        <a href="{% url 'block_user' profile_user.username %}" class="btn-custom btn-danger">
-                            <i class="fas fa-ban"></i>
-                            <span>حظر</span>
-                        </a>
-                    {% endif %}
-                {% endif %}
+                    <div class="about-item">
+                        <i class="fas fa-birthday-cake"></i>
+                        <span class="about-item-label">تاريخ الميلاد:</span>
+                        {% if profile_user.date_of_birth %}
+                            <span class="about-item-value">{{ profile_user.date_of_birth|date:"d F Y" }}</span>
+                        {% else %}
+                            <span class="about-item-placeholder">لم يحدد</span>
+                        {% endif %}
+                    </div>
+                    <div class="about-item">
+                        <i class="fas fa-venus-mars"></i>
+                        <span class="about-item-label">الجنس:</span>
+                        {% if profile_user.gender %}
+                            <span class="about-item-value">{{ profile_user.get_gender_display }}</span>
+                        {% else %}
+                            <span class="about-item-placeholder">لم يحدد</span>
+                        {% endif %}
+                    </div>
+                    <div class="about-item">
+                        <i class="fas fa-heart"></i>
+                        <span class="about-item-label">الحالة الاجتماعية:</span>
+                        {% if profile_user.relationship_status %}
+                            <span class="about-item-value">{{ profile_user.get_relationship_status_display }}</span>
+                        {% else %}
+                            <span class="about-item-placeholder">لم تحدد</span>
+                        {% endif %}
+                    </div>
+                    <div class="about-item">
+                        <i class="fas fa-calendar-check"></i>
+                        <span class="about-item-label">تاريخ الانضمام:</span>
+                        <span class="about-item-value">{{ profile_user.date_joined|date:"d F Y" }}</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Posts Section -->
-    <div class="posts-section">
-        {% for post in posts %}
-            {% include 'social/post_template.html' with post=post %}
-        {% endfor %}
-    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    const lastActiveTab = localStorage.getItem('profileActiveTab-{{ profile_user.username }}');
+
+    function activateTab(tabId) {
+        tabLinks.forEach(l => {
+            if (l.getAttribute('data-tab') === tabId) {
+                l.classList.add('active');
+            } else {
+                l.classList.remove('active');
+            }
+        });
+
+        tabPanes.forEach(pane => {
+            if (pane.id === tabId) {
+                pane.classList.add('active');
+            } else {
+                pane.classList.remove('active');
+            }
+        });
+        localStorage.setItem('profileActiveTab-{{ profile_user.username }}', tabId);
+    }
+
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function (event) {
+            event.preventDefault();
+            const tabId = this.getAttribute('data-tab');
+            activateTab(tabId);
+        });
+    });
+
+    if (lastActiveTab) {
+        const lastTabExists = Array.from(tabLinks).some(link => link.getAttribute('data-tab') === lastActiveTab);
+        if (lastTabExists) {
+            activateTab(lastActiveTab);
+        } else {
+            activateTab(tabLinks[0].getAttribute('data-tab'));
+        }
+    } else if (tabLinks.length > 0) {
+        activateTab(tabLinks[0].getAttribute('data-tab'));
+    }
+});
+</script>
 {% endblock %}

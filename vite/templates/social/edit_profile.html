@@ -77,7 +77,7 @@
     .edit-form input[type="url"],
     .edit-form input[type="password"],
     .edit-form textarea,
-    .edit-form select {
+    .edit-form select { /* Applied to select as well */
         width: 100%;
         padding: 0.8rem 1rem;
         background-color: var(--bg-secondary);
@@ -94,7 +94,7 @@
     .edit-form input[type="url"]:focus,
     .edit-form input[type="password"]:focus,
     .edit-form textarea:focus,
-    .edit-form select:focus {
+    .edit-form select:focus { /* Applied to select as well */
         outline: none;
         border-color: var(--accent-color);
         box-shadow: 0 0 0 3px var(--shadow-light);
@@ -104,6 +104,28 @@
         min-height: 120px;
         resize: vertical;
     }
+     /* Styling for SelectDateWidget in edit form */
+    .select-date-widget-edit select {
+        display: inline-block;
+        width: calc(33.33% - 10px); /* Adjust width as needed */
+        margin-left: 5px; /* Spacing between selects */
+        margin-bottom: 5px;
+        padding: 0.7rem 0.9rem; /* Match other inputs a bit closer */
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 0.95rem; /* Match other inputs */
+    }
+    .select-date-widget-edit select:last-child {
+        margin-left: 0;
+    }
+    .select-date-widget-edit select:focus {
+        border-color: var(--accent-color);
+        outline: none;
+        box-shadow: 0 0 0 3px var(--shadow-light);
+    }
+
 
     .form-text.text-secondary { /* Help text */
         font-size: 0.8rem;
@@ -238,6 +260,11 @@
         .edit-profile-actions { flex-direction: column; }
         .btn-custom-edit { width: 100%; }
         .cover-image-preview { aspect-ratio: 16 / 7; } /* Adjust for smaller screens */
+        .select-date-widget-edit select {
+            width: 100%; /* Full width on small screens */
+            margin-left: 0;
+            margin-bottom: 10px;
+        }
     }
 </style>
 
@@ -272,6 +299,10 @@
                                     {{ field }} {# Renders 'Currently:', 'Clear', and the actual file input #}
                                 </div>
                             </div>
+                        {% elif field.name == 'date_of_birth' %}
+                             <div class="select-date-widget-edit">
+                                {{ field }}
+                             </div>
                         {% else %}
                             {{ field }} {# Default rendering for other fields, CSS above will style them #}
                         {% endif %}
@@ -297,17 +328,12 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.image-editor-field').forEach(fieldWrapper => {
-        // Find the actual file input rendered by Django within this field's widget area
-        // Django's ClearableFileInput nests the input type="file"
         const fileInput = fieldWrapper.querySelector('.django-field-widgets input[type="file"]');
-        const previewImg = fieldWrapper.querySelector('.editable-image'); // The <img> tag we added for preview
-        const changeButtonTextSpan = fieldWrapper.querySelector('.change-image-btn'); // The button that says "تغيير الصورة" or "اختيار صورة"
+        const previewImg = fieldWrapper.querySelector('.editable-image');
+        const changeButtonTextSpan = fieldWrapper.querySelector('.change-image-btn');
 
         if (fileInput && previewImg) {
-            // Hide the Django's actual file input element (the "Choose File" button part)
-            // The "Currently: ..." and "Clear" checkbox will remain visible as they are separate elements.
             fileInput.style.display = 'none';
-
             fileInput.addEventListener('change', function(event) {
                 const file = event.target.files[0];
                 if (file) {
@@ -316,26 +342,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         previewImg.src = e.target.result;
                     }
                     reader.readAsDataURL(file);
-                    if (changeButtonTextSpan) { // Update button text if it exists
-                         // Reconstruct button text maintaining icon
+                    if (changeButtonTextSpan) {
                         changeButtonTextSpan.innerHTML = '<i class="fas fa-camera"></i> تغيير الصورة';
                     }
                 }
             });
-        }
-
-        // Style the "Currently: ..." link and "Clear" checkbox if they exist
-        const djangoWidgetsContainer = fieldWrapper.querySelector('.django-field-widgets');
-        if (djangoWidgetsContainer) {
-            // The CSS already targets elements within .django-field-widgets
-            // For example, to style the label for the clear checkbox:
-            const clearCheckbox = djangoWidgetsContainer.querySelector('input[type="checkbox"]');
-            if (clearCheckbox) {
-                const clearLabel = djangoWidgetsContainer.querySelector('label[for="' + clearCheckbox.id + '"]');
-                if (clearLabel) {
-                    // clearLabel.classList.add('my-custom-clear-label-class'); // Add class for specific styling if needed
-                }
-            }
         }
     });
 });

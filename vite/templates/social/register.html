@@ -88,9 +88,9 @@
             color: var(--secondary);
         }
 
-        .form-control {
+        .form-control, .form-select { /* Added .form-select */
             width: 100%;
-            padding: 12px 40px 12px 15px; /* Space for eye icon */
+            padding: 12px 15px;
             border: 1px solid var(--border);
             background-color: var(--input-bg);
             color: var(--primary);
@@ -98,8 +98,12 @@
             font-size: 16px;
             transition: border-color 0.3s;
         }
+        .form-control.password-field { /* Specific for password to keep eye icon space */
+             padding: 12px 40px 12px 15px;
+        }
 
-        .form-control:focus {
+
+        .form-control:focus, .form-select:focus { /* Added .form-select */
             border-color: var(--input-focus-border);
             outline: none;
             box-shadow: 0 0 5px rgba(57, 130, 247, 0.5);
@@ -107,6 +111,25 @@
 
         .form-control::placeholder {
             color: var(--secondary);
+        }
+         /* Styling for SelectDateWidget */
+        .select-date-widget select {
+            display: inline-block;
+            width: calc(33.33% - 10px); /* Adjust width as needed */
+            margin-left: 5px; /* Spacing between selects */
+            margin-bottom: 5px; /* Spacing if they wrap */
+            padding: 10px;
+            background-color: var(--input-bg);
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .select-date-widget select:last-child {
+            margin-left: 0;
+        }
+        .select-date-widget select:focus {
+            border-color: var(--input-focus-border);
+            outline: none;
         }
 
         .toggle-password {
@@ -146,6 +169,12 @@
             margin-top: 10px;
             font-size: 0.9em;
         }
+         .field-error {
+            color: var(--error-text);
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
 
         .text-center {
             margin-top: 20px;
@@ -172,7 +201,7 @@
                 font-size: 1.6rem;
                 margin-bottom: 20px;
             }
-            .form-control {
+            .form-control, .form-select { /* Added .form-select */
                 font-size: 15px;
             }
             .btn-primary {
@@ -181,6 +210,11 @@
             .toggle-password {
                 font-size: 16px;
                 left: 10px;
+            }
+            .select-date-widget select {
+                width: 100%; /* Full width on small screens */
+                margin-left: 0;
+                margin-bottom: 10px;
             }
         }
     </style>
@@ -194,41 +228,64 @@
 
     <div class="card">
         <h2 class="card-title">إنشاء حساب جديد</h2>
-        {% if form.errors %}
-            {% for field, errors in form.errors.items %}
-                {% for error in errors %}
-                    <div class="error-message">{{ error }}</div>
-                {% endfor %}
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <div class="error-message">{{ error }}</div>
             {% endfor %}
         {% endif %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                 <div class="error-message">{{ field.label }}: {{ error }}</div>
+            {% endfor %}
+        {% endfor %}
+
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
-                <label for="id_username" class="form-label">اسم المستخدم</label>
-                <input type="text" name="username" class="form-control" required id="id_username">
+                <label for="{{ form.username.id_for_label }}" class="form-label">{{ form.username.label }}</label>
+                {{ form.username }}
             </div>
             <div class="form-group">
-                <label for="id_full_name" class="form-label">الاسم الكامل</label>
-                <input type="text" name="full_name" class="form-control" required id="id_full_name">
+                <label for="{{ form.full_name.id_for_label }}" class="form-label">{{ form.full_name.label }}</label>
+                {{ form.full_name }}
+            </div>
+             <div class="form-group">
+                <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                {{ form.email }}
             </div>
             <div class="form-group">
-                <label for="id_password1" class="form-label">كلمة المرور</label>
+                <label for="{{ form.password1.id_for_label }}" class="form-label">{{ form.password1.label }}</label>
                 <div style="position: relative;">
-                    <input type="password" name="password1" class="form-control" required id="id_password1">
-                    <i class="fas fa-eye toggle-password" data-target="id_password1"></i>
+                    <input type="password" name="{{ form.password1.name }}" class="form-control password-field" required id="{{ form.password1.id_for_label }}">
+                    <i class="fas fa-eye toggle-password" data-target="{{ form.password1.id_for_label }}"></i>
                 </div>
             </div>
             <div class="form-group">
-                <label for="id_password2" class="form-label">تأكيد كلمة المرور</label>
+                <label for="{{ form.password2.id_for_label }}" class="form-label">{{ form.password2.label }}</label>
                 <div style="position: relative;">
-                    <input type="password" name="password2" class="form-control" required id="id_password2">
-                    <i class="fas fa-eye toggle-password" data-target="id_password2"></i>
+                     <input type="password" name="{{ form.password2.name }}" class="form-control password-field" required id="{{ form.password2.id_for_label }}">
+                    <i class="fas fa-eye toggle-password" data-target="{{ form.password2.id_for_label }}"></i>
                 </div>
             </div>
             <div class="form-group">
-                <label for="id_profile_picture" class="form-label">صورة الملف الشخصي</label>
-                <input type="file" name="profile_picture" class="form-control" id="id_profile_picture" accept="image/*">
+                <label for="{{ form.profile_picture.id_for_label }}" class="form-label">{{ form.profile_picture.label }}</label>
+                {{ form.profile_picture }}
             </div>
+            <div class="form-group">
+                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">{{ form.date_of_birth.label }}</label>
+                <div class="select-date-widget">
+                     {{ form.date_of_birth }}
+                </div>
+            </div>
+             <div class="form-group">
+                <label for="{{ form.gender.id_for_label }}" class="form-label">{{ form.gender.label }}</label>
+                {{ form.gender }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.relationship_status.id_for_label }}" class="form-label">{{ form.relationship_status.label }}</label>
+                {{ form.relationship_status }}
+            </div>
+
             <button type="submit" class="btn-primary">إنشاء حساب</button>
         </form>
         <div class="text-center">
@@ -248,6 +305,24 @@
                     passwordField.type = "password";
                     this.classList.remove('fa-eye-slash');
                     this.classList.add('fa-eye');
+                }
+            });
+        });
+
+        // Add class form-control to relevant form fields for styling
+        document.addEventListener('DOMContentLoaded', function() {
+            const fieldsToStyle = ['username', 'full_name', 'email', 'profile_picture'];
+            fieldsToStyle.forEach(fieldName => {
+                const field = document.querySelector(`[name="${fieldName}"]`);
+                if (field && !field.classList.contains('form-control')) {
+                    field.classList.add('form-control');
+                }
+            });
+            const selectFieldsToStyle = ['gender', 'relationship_status'];
+             selectFieldsToStyle.forEach(fieldName => {
+                const field = document.querySelector(`[name="${fieldName}"]`);
+                if (field && !field.classList.contains('form-select')) { // Use form-select for select elements
+                    field.classList.add('form-select');
                 }
             });
         });
