@@ -291,8 +291,66 @@
         }
     }
     .posts-container-in-tab { margin-bottom: 60px; }
+    
 </style>
-
+<style>
+    /* Tab Styles */
+    .profile-tabs-container {
+        margin-top: 2rem; background: var(--bg-card);
+        border: 1px solid var(--border-color); border-radius: 12px;
+        overflow: hidden;
+    }
+    .tabs-navigation { 
+        display: flex; 
+        background-color: var(--bg-secondary);
+        flex-direction: row; /* تأكد من أنها أفقيّة */
+        flex-wrap: nowrap; /* منع الانتقال إلى سطر جديد */
+    }
+    .tab-link {
+        flex-grow: 1; 
+        padding: 0.9rem 1.2rem; 
+        text-align: center;
+        background-color: transparent; 
+        color: var(--text-secondary);
+        border: none; 
+        cursor: pointer; 
+        font-size: 0.95rem; 
+        font-weight: 600;
+        transition: color 0.2s ease, background-color 0.2s ease, border-bottom-color 0.2s ease;
+        border-bottom: 3px solid transparent; 
+        position: relative; 
+        outline: none;
+        white-space: nowrap; /* منع كسر النص إلى سطر جديد */
+    }
+    [dir="rtl"] .tab-link:not(:last-child) { border-left: 1px solid var(--border-color); }
+    [dir="ltr"] .tab-link:not(:last-child) { border-right: 1px solid var(--border-color); }
+    [dir="rtl"] .tab-link i { margin-left: 6px; }
+    [dir="ltr"] .tab-link i { margin-right: 6px; }
+    .tab-link:hover { color: var(--text-primary); background-color: var(--bg-hover); }
+    .tab-link.active { color: var(--accent-color); border-bottom-color: var(--accent-color); background-color: var(--bg-secondary); }
+    .tab-content { padding: 1.5rem; }
+    .tab-pane { display: none; animation: fadeIn 0.4s ease-in-out; }
+    .tab-pane.active { display: block; }
+    
+    @media (max-width: 480px) {
+        .tabs-navigation { 
+            flex-direction: row; /* تغيير من column إلى row */
+            overflow-x: auto; /* إضافة شريط تمرير أفقي إذا لزم الأمر */
+            -webkit-overflow-scrolling: touch; /* لمسة سلسة على الأجهزة المحمولة */
+        }
+        .tab-link { 
+            flex-shrink: 0; /* منع الضغط لتقليل العرض */
+            border-bottom: 3px solid transparent; 
+            border-left: none !important; 
+            border-right: none !important;
+        }
+        .tab-link.active { 
+            border-bottom-color: var(--accent-color); 
+            border-left: none !important; 
+            border-right: none !important;
+        }
+    }
+</style>
 <div class="container-custom" dir="rtl">
     <div class="profile-card">
         <div class="cover-section">
