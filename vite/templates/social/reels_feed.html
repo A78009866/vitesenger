@@ -28,17 +28,18 @@
             position: relative;
         }
         .reel-item {
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            position: relative;
-            scroll-snap-align: start; /* Snap point for each reel */
-            background-color: #000; /* Fallback and color for letterboxing */
-            overflow: hidden;
-            cursor: pointer; /* Indicate video is clickable for play/pause */
-        }
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+    scroll-snap-align: start; /* Snap point for each reel */
+    background-color: #000; /* Fallback and color for letterboxing */
+    overflow: hidden;
+    cursor: pointer; /* Indicate video is clickable for play/pause */
+    -webkit-tap-highlight-color: transparent; /* أضف هذا السطر */
+}
         .reel-item video {
             width: 100%;
             height: 100%;
