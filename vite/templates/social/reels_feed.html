@@ -35,14 +35,15 @@
             justify-content: flex-end;
             position: relative;
             scroll-snap-align: start; /* Snap point for each reel */
-            background-color: #000; /* Fallback */
+            background-color: #000; /* Fallback and color for letterboxing */
             overflow: hidden;
             cursor: pointer; /* Indicate video is clickable for play/pause */
         }
         .reel-item video {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Cover the entire container */
+            /* UPDATED: Changed from 'cover' to 'contain' to add black bars */
+            object-fit: contain; 
             position: absolute;
             top: 0;
             left: 0;
@@ -144,7 +145,6 @@
             text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
             max-width: 75%;
         }
-        /* New styles for user profile info at the bottom */
         .reel-user-profile {
             display: flex;
             align-items: center;
@@ -261,7 +261,7 @@
 
         {% for data in reels_data %}
         <div class="reel-item" data-reel-id="{{ data.reel.id }}">
-            <video class="reel-video" src="{{ data.reel.video.url }}" loop playsinline preload="auto"></video>
+            <video class="reel-video" src="{{ data.reel.video.url }}" loop playsinline preload="auto" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video>
             <div class="play-pause-overlay"><i class="fas fa-play"></i></div>
             <div class="reel-overlay">
                 <div></div>
