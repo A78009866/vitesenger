@@ -42,7 +42,8 @@ urlpatterns = [
     path('reels/<int:reel_id>/comment/', views.add_reel_comment, name='add_reel_comment'),
     # path('reels/comment/<int:comment_id>/delete/', views.delete_reel_comment, name='delete_reel_comment'), # If you implement delete
     # ---------- End of New Reel URLs ----------
-    
+    path('reels/<int:reel_id>/delete/', views.delete_reel, name='delete_reel'),
+
     # Removed story URLs:
     # path('story/upload/', views.upload_story, name='upload_story'),
     # path('stories/<str:username>/', views.user_stories, name='user_stories'),

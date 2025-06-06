@@ -8,6 +8,7 @@ from .models import Post, Like, Comment, SavedPost, CustomUser, Notification, Me
 from django.http import JsonResponse, Http404
 import cloudinary.uploader
 # from .forms import ProfileEditForm, PostEditForm # Already imported
+from django.http import JsonResponse, Http404, HttpResponseForbidden
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -612,3 +613,27 @@ def add_reel_comment(request, reel_id):
 #     return JsonResponse({'success': False, 'error': 'طريقة غير مسموحة'}, status=405)
 
 # ---------- End of New Reel Views ----------
+@login_required
+@require_POST
+def delete_reel(request, reel_id):
+    """
+    View to delete a reel. Only the owner of the reel can delete it.
+    """
+    reel = get_object_or_404(Reel, id=reel_id)
+
+    # Check if the user trying to delete the reel is the owner
+    if reel.user != request.user:
+        return HttpResponseForbidden(json.dumps({'success': False, 'error': 'ليس لديك صلاحية لحذف هذا الريل.'}), content_type='application/json')
+    
+    try:
+        # The CloudinaryField does not automatically delete the file from Cloudinary on model delete.
+        # If you want to delete the video from your Cloudinary storage, you must do it manually.
+        if reel.video and hasattr(reel.video, 'public_id'):
+            cloudinary.uploader.destroy(reel.video.public_id, resource_type="video")
+
+        reel.delete()
+        return JsonResponse({'success': True})
+    except Exception as e:
+        # Log the error for debugging
+        print(f"Error deleting reel {reel_id}: {e}")
+        return JsonResponse({'success': False, 'error': 'حدث خطأ أثناء محاولة حذف الريل.'}, status=500)
