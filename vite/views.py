@@ -2,23 +2,23 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as auth_login
-from .forms import CustomUserCreationForm, PostForm, FriendRequestForm # Removed ProfileEditForm if not used elsewhere, check usage
-from .models import Post, Like, Comment, SavedPost, CustomUser, Notification, Message # Removed Story
-from django.http import JsonResponse, Http404 # Added Http404
+# Ensure all necessary forms are imported
+from .forms import CustomUserCreationForm, PostForm, FriendRequestForm, ProfileEditForm, PostEditForm, ReelForm # Added ReelForm
+from .models import Post, Like, Comment, SavedPost, CustomUser, Notification, Message, Reel, ReelLike, ReelComment # Added Reel models
+from django.http import JsonResponse, Http404
 import cloudinary.uploader
-from .forms import ProfileEditForm, PostEditForm
-# from .models import Notification # Already imported
+# from .forms import ProfileEditForm, PostEditForm # Already imported
 
-from django.contrib.auth import authenticate, login, logout # login was already imported as auth_login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.http import require_POST
-from django.db import models as django_models #renamed to avoid conflict if any
+from django.db import models as django_models
 import json
-from django.utils import timezone # Keep if used by other parts
-import pytz # Keep if used by other parts
-from django.utils.html import strip_tags # Keep
-from django.contrib.auth import get_user_model # Keep
+from django.utils import timezone
+import pytz
+from django.utils.html import strip_tags, escape # Added escape
+from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
@@ -486,3 +486,129 @@ def delete_comment(request, comment_id):
 def game_view(request): # Ensure this template name is correct
     return render(request, 'game.html')
 
+@login_required
+def reels_feed(request):
+    reels_list = Reel.objects.select_related('user').prefetch_related(
+        'reel_likes', 
+        'reel_comments__user' # Prefetch user for each comment as well
+    ).all().order_by('-created_at')
+
+    reels_data = []
+    for reel in reels_list:
+        is_liked_by_user = reel.reel_likes.filter(user=request.user).exists()
+        comments_for_reel = reel.reel_comments.all().order_by('created_at') # Or '-created_at'
+        reels_data.append({
+            'reel': reel,
+            'is_liked_by_user': is_liked_by_user,
+            'comments_list': comments_for_reel,
+        })
+        
+    # Get profile picture URL for the logged-in user for comment submission form
+    user_profile_pic_url = request.user.profile_picture.url if request.user.profile_picture else \
+                           '/static/images/default_profile.png' # Adjust default path as needed
+
+    context = {
+        'reels_data': reels_data,
+        'user_profile_pic_url': user_profile_pic_url,
+    }
+    return render(request, 'social/reels_feed.html', context)
+
+@login_required
+def upload_reel(request):
+    if request.method == 'POST':
+        form = ReelForm(request.POST, request.FILES)
+        if form.is_valid():
+            reel = form.save(commit=False)
+            reel.user = request.user
+            # The CloudinaryField in the model with resource_type="video" should handle the upload correctly.
+            # If you need to set folder or other specific Cloudinary params, you might need explicit upload here:
+            # if 'video' in request.FILES:
+            #     upload_result = cloudinary.uploader.upload(
+            #         request.FILES['video'],
+            #         resource_type="video",
+            #         folder="reels_videos" # Example folder
+            #     )
+            #     reel.video = upload_result.get('secure_url', upload_result.get('url'))
+            reel.save()
+            messages.success(request, 'تم نشر الريل بنجاح!')
+            return redirect('reels_feed')
+        else:
+            messages.error(request, 'حدث خطأ أثناء رفع الريل. يرجى التحقق من النموذج.')
+    else:
+        form = ReelForm()
+    return render(request, 'social/upload_reel.html', {'form': form})
+
+@login_required
+@require_POST
+def like_reel(request, reel_id):
+    reel = get_object_or_404(Reel, id=reel_id)
+    like, created = ReelLike.objects.get_or_create(user=request.user, reel=reel)
+
+    if not created:
+        like.delete()
+        liked = False
+    else:
+        liked = True
+        # Optionally, create notification for reel like
+        # if request.user != reel.user:
+        #     Notification.objects.create(
+        #         recipient=reel.user,
+        #         sender=request.user,
+        #         notification_type='reel_like', # Add this to NOTIFICATION_TYPES
+        #         content=f"{request.user.username} أعجب بالريل الخاص بك.",
+        #         related_id=reel.id
+        #     )
+    return JsonResponse({'liked': liked, 'likes_count': reel.likes_count})
+
+@login_required
+@require_POST
+def add_reel_comment(request, reel_id):
+    reel = get_object_or_404(Reel, id=reel_id)
+    content = request.POST.get('content', '').strip()
+
+    if not content:
+        return JsonResponse({'success': False, 'error': 'التعليق لا يمكن أن يكون فارغًا.'}, status=400)
+
+    comment = ReelComment.objects.create(user=request.user, reel=reel, content=content)
+    
+    # Optionally, create notification for reel comment
+    # if request.user != reel.user:
+    #     Notification.objects.create(
+    #         recipient=reel.user,
+    #         sender=request.user,
+    #         notification_type='reel_comment', # Add this to NOTIFICATION_TYPES
+    #         content=f"{request.user.username} علق على الريل الخاص بك: {content[:50]}",
+    #         related_id=reel.id
+    #     )
+
+    profile_picture_url = request.user.profile_picture.url if request.user.profile_picture else \
+                          '/static/images/default_profile.png' # Adjust as per your static files setup
+
+    return JsonResponse({
+        'success': True,
+        'comment': {
+            'id': comment.id,
+            'user': {
+                'username': comment.user.username,
+                'profile_picture_url': profile_picture_url
+            },
+            'content': escape(comment.content), # Escape content for security
+            'created_at': timezone.localtime(comment.created_at).strftime('%d %b, %Y %H:%M'), # Format as needed
+            'timesince': timezone.now() - comment.created_at # Or use Django's timesince template filter in JS if possible
+        },
+        'comments_count': reel.comments_count
+    })
+
+# Consider adding delete_reel_comment if needed, similar to delete_comment for posts
+# @login_required
+# def delete_reel_comment(request, comment_id):
+#     comment = get_object_or_404(ReelComment, id=comment_id)
+#     if request.user != comment.user and request.user != comment.reel.user: # Or just comment.user
+#         return JsonResponse({'success': False, 'error': 'غير مسموح لك بحذف هذا التعليق'}, status=403)
+#     if request.method == 'POST':
+#         reel_id = comment.reel.id
+#         comment.delete()
+#         return JsonResponse({'success': True, 'reel_id': reel_id, 'comments_count': Reel.objects.get(id=reel_id).comments_count})
+#     return JsonResponse({'success': False, 'error': 'طريقة غير مسموحة'}, status=405)
+
+# ---------- End of New Reel Views ----------

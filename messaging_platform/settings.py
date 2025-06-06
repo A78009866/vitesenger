@@ -39,9 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',  # <--- Add this line
     'vite',  # تحديث هذا السطر
     'cloudinary',
     'cloudinary_storage',
+    'crispy_forms',         # <--- Add this line
     'channels',
 ]
 
@@ -173,3 +175,5 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = 'vite.CustomUser'  # استبدل your_app_name باسم تطبيقك
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5" # Or just "bootstrap5" if it's the only one
+CRISPY_TEMPLATE_PACK = "bootstrap5"

@@ -1,0 +1,552 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الريلز - شورتز</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* Hide scrollbars, allow only reel scrolling */
+        }
+        .reels-container {
+            width: 100%;
+            max-width: 500px; /* Typical phone screen width */
+            height: 100vh;
+            overflow-y: scroll; /* Enable vertical scrolling for reels */
+            scroll-snap-type: y mandatory; /* Snap to each reel */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            position: relative;
+        }
+        .reel-item {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+            scroll-snap-align: start; /* Snap point for each reel */
+            background-color: #000; /* Fallback */
+            overflow: hidden;
+            cursor: pointer; /* Indicate video is clickable for play/pause */
+        }
+        .reel-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover the entire container */
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .play-pause-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            color: rgba(255, 255, 255, 0.7);
+            z-index: 3;
+            display: none; /* Hidden by default */
+            transition: opacity 0.2s ease-in-out;
+        }
+        .play-pause-overlay.visible {
+            display: block;
+            opacity: 1;
+        }
+        .play-pause-overlay.hidden {
+            opacity: 0;
+        }
+
+        .reel-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 30%);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 10px 15px;
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 3; /* Above overlay */
+            background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+        }
+        .top-bar .back-button {
+            color: #fff;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .top-bar .title {
+            color: #fff;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .reel-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            color: #fff;
+        }
+        .action-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .action-button i {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+        .action-button .fas {
+            color: red; /* Liked state */
+        }
+        .reel-details {
+            padding: 0 15px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+            box-sizing: border-box;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+        .reel-info {
+            color: #fff;
+            font-size: 0.95em;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            max-width: 75%;
+        }
+        /* New styles for user profile info at the bottom */
+        .reel-user-profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .reel-user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #fff;
+        }
+        .reel-user-profile .username {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #fff;
+        }
+        .reel-info .caption {
+            margin-bottom: 5px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* Comments Section */
+        .comments-section {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            box-sizing: border-box;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 10;
+        }
+        .comments-section.active {
+            transform: translateY(0);
+        }
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .comments-header i {
+            cursor: pointer;
+        }
+        .comment-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .comment-item img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .comment-content {
+            background-color: #333;
+            padding: 8px 12px;
+            border-radius: 15px;
+            flex-grow: 1;
+            font-size: 0.9em;
+        }
+        .comment-content .comment-username {
+            font-weight: bold;
+            margin-right: 5px;
+            color: #ccc;
+        }
+        .comment-form {
+            display: flex;
+            margin-top: 15px;
+            border-top: 1px solid #444;
+            padding-top: 10px;
+        }
+        .comment-form input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #555;
+            background-color: #222;
+            color: #fff;
+            margin-right: 10px;
+        }
+        .comment-form button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .comment-form button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="reels-container">
+        <div class="top-bar">
+            <i class="fas fa-arrow-left back-button" onclick="window.history.back()"></i>
+            <span class="title">الريلز</span>
+            <span></span> </div>
+
+        {% for data in reels_data %}
+        <div class="reel-item" data-reel-id="{{ data.reel.id }}">
+            <video class="reel-video" src="{{ data.reel.video.url }}" loop playsinline preload="auto"></video>
+            <div class="play-pause-overlay"><i class="fas fa-play"></i></div>
+            <div class="reel-overlay">
+                <div></div>
+                
+                <div class="reel-details">
+                    <div class="reel-info">
+                        <div class="reel-user-profile" data-username="{{ data.reel.user.username }}">
+                            <img src="{{ data.reel.user.profile_picture.url|default:'/static/images/default_profile.png' }}" alt="{{ data.reel.user.username }} Profile Picture">
+                            <span class="username">{{ data.reel.user.username }}</span>
+                        </div>
+                        
+                        {% if data.reel.caption %}
+                            <p class="caption">{{ data.reel.caption }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="reel-actions">
+                        <div class="action-button like-button" data-reel-id="{{ data.reel.id }}">
+                            <i class="{{ data.is_liked_by_user|yesno:'fas,far' }} fa-heart"></i>
+                            <span class="likes-count">{{ data.reel.likes_count }}</span>
+                        </div>
+                        <div class="action-button comment-button" data-reel-id="{{ data.reel.id }}">
+                            <i class="far fa-comment"></i>
+                            <span class="comments-count">{{ data.reel.comments_count }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="comments-section" id="comments-{{ data.reel.id }}">
+                <div class="comments-header">
+                    <span>التعليقات ({{ data.reel.comments_count }})</span>
+                    <i class="fas fa-times close-comments"></i>
+                </div>
+                <div class="comments-list">
+                    {% for comment in data.comments_list %}
+                    <div class="comment-item">
+                        <img src="{{ comment.user.profile_picture.url|default:'/static/images/default_profile.png' }}" alt="{{ comment.user.username }} Profile Picture">
+                        <div class="comment-content">
+                            <span class="comment-username">{{ comment.user.username }}</span>{{ comment.content }}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p style="text-align: center; color: #aaa;">لا توجد تعليقات بعد.</p>
+                    {% endfor %}
+                </div>
+                <form class="comment-form" data-reel-id="{{ data.reel.id }}">
+                    <input type="text" name="content" placeholder="أضف تعليقًا..." required>
+                    <button type="submit">نشر</button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <p style="text-align: center; color: #fff;">لا توجد ريلز لعرضها حاليًا.</p>
+        {% endfor %}
+    </div>
+
+    <script>
+        const reelsContainer = document.querySelector('.reels-container');
+        const reelVideos = document.querySelectorAll('.reel-video');
+        let currentPlayingVideo = null;
+        let playPauseTimeout;
+
+        const observerOptions = {
+            root: reelsContainer,
+            rootMargin: '0px',
+            threshold: 0.75 // Video is 75% visible
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const video = entry.target;
+                const playPauseOverlay = video.nextElementSibling; // The play-pause-overlay
+
+                if (entry.isIntersecting) {
+                    // Pause previously playing video
+                    if (currentPlayingVideo && currentPlayingVideo !== video) {
+                        currentPlayingVideo.pause();
+                        currentPlayingVideo.nextElementSibling.classList.remove('visible'); // Hide overlay
+                    }
+                    // Play current video
+                    video.play().catch(error => {
+                        console.log('Video play interrupted:', error);
+                        // If autoplay is blocked, show play icon
+                        playPauseOverlay.classList.add('visible');
+                        playPauseOverlay.querySelector('i').className = 'fas fa-play';
+                    });
+                    currentPlayingVideo = video;
+                    playPauseOverlay.classList.remove('visible'); // Hide overlay once playing
+                } else {
+                    video.pause();
+                    playPauseOverlay.classList.remove('visible'); // Hide overlay when not in view
+                }
+            });
+        }, observerOptions);
+
+        reelVideos.forEach(video => {
+            observer.observe(video);
+
+            // Add click listener for play/pause
+            video.closest('.reel-item').addEventListener('click', function(event) {
+                // *** UPDATED: Prevent click on action buttons or the new user profile area from toggling video ***
+                if (event.target.closest('.reel-actions') || event.target.closest('.comments-section') || event.target.closest('.reel-user-profile')) {
+                    return;
+                }
+
+                const video = this.querySelector('.reel-video');
+                const playPauseOverlay = this.querySelector('.play-pause-overlay');
+                const icon = playPauseOverlay.querySelector('i');
+
+                clearTimeout(playPauseTimeout); // Clear any existing timeout
+
+                if (video.paused) {
+                    video.play().catch(error => {
+                        console.log('Video play interrupted:', error);
+                        // Still show play icon if it fails
+                        icon.className = 'fas fa-play';
+                        playPauseOverlay.classList.add('visible');
+                    });
+                    icon.className = 'fas fa-pause';
+                } else {
+                    video.pause();
+                    icon.className = 'fas fa-play';
+                }
+
+                playPauseOverlay.classList.add('visible'); // Show overlay
+                playPauseOverlay.classList.remove('hidden'); // Ensure it's not hidden by previous transition
+
+                playPauseTimeout = setTimeout(() => {
+                    playPauseOverlay.classList.add('hidden'); // Start fade out
+                    playPauseOverlay.addEventListener('transitionend', function handler() {
+                        playPauseOverlay.classList.remove('visible', 'hidden'); // Remove classes after transition
+                        playPauseOverlay.removeEventListener('transitionend', handler);
+                    });
+                }, 700); // Show for 0.7 seconds
+            });
+        });
+
+        // Initial play for the first reel if it's in view
+        if (reelVideos.length > 0) {
+            setTimeout(() => {
+                const firstVideo = reelsContainer.querySelector('.reel-video');
+                if (firstVideo && firstVideo.paused) {
+                    firstVideo.play().catch(error => console.log('Initial video play interrupted:', error));
+                    currentPlayingVideo = firstVideo;
+                }
+            }, 100);
+        }
+
+        // Like button functionality (existing)
+        document.querySelectorAll('.like-button').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent reel-item click from firing
+                const reelId = this.dataset.reelId;
+                const icon = this.querySelector('i');
+                const likesCountSpan = this.querySelector('.likes-count');
+
+                fetch(`/reels/${reelId}/like/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.liked) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    } else {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    }
+                    likesCountSpan.textContent = data.likes_count;
+                })
+                .catch(error => console.error('Error liking reel:', error));
+            });
+        });
+
+        // Comment button functionality (existing)
+        document.querySelectorAll('.comment-button').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent reel-item click from firing
+                const reelId = this.dataset.reelId;
+                const commentsSection = document.getElementById(`comments-${reelId}`);
+                if (commentsSection) {
+                    commentsSection.classList.add('active');
+                    // Pause video when comments are open
+                    if (currentPlayingVideo) {
+                        currentPlayingVideo.pause();
+                        currentPlayingVideo.nextElementSibling.classList.add('visible'); // Show play icon
+                        currentPlayingVideo.nextElementSibling.querySelector('i').className = 'fas fa-play';
+                    }
+                }
+            });
+        });
+
+        // Close comments section (existing)
+        document.querySelectorAll('.close-comments').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent click from bubbling up
+                this.closest('.comments-section').classList.remove('active');
+                // Resume video when comments are closed if it was the current playing video
+                if (currentPlayingVideo) {
+                    currentPlayingVideo.play().catch(error => console.log('Video play interrupted after closing comments:', error));
+                    currentPlayingVideo.nextElementSibling.classList.remove('visible'); // Hide play icon
+                }
+            });
+        });
+
+        // Comment form submission (existing)
+        document.querySelectorAll('.comment-form').forEach(form => {
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                event.stopPropagation(); // Prevent reel-item click from firing
+                const reelId = this.dataset.reelId;
+                const commentInput = this.querySelector('input[name="content"]');
+                const commentContent = commentInput.value.trim();
+                const commentsList = this.closest('.comments-section').querySelector('.comments-list');
+                const commentsCountSpan = document.querySelector(`.reel-item[data-reel-id="${reelId}"] .comments-count`);
+
+                if (!commentContent) {
+                    alert('التعليق لا يمكن أن يكون فارغًا.');
+                    return;
+                }
+
+                fetch(`/reels/${reelId}/comment/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `content=${encodeURIComponent(commentContent)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const newCommentHtml = `
+                            <div class="comment-item">
+                                <img src="${data.comment.user.profile_picture_url}" alt="${data.comment.user.username} Profile Picture">
+                                <div class="comment-content">
+                                    <span class="comment-username">${data.comment.user.username}</span>${data.comment.content}
+                                </div>
+                            </div>
+                        `;
+                        commentsList.insertAdjacentHTML('afterbegin', newCommentHtml);
+                        commentsCountSpan.textContent = data.comments_count;
+                        commentInput.value = '';
+                        const noCommentsMessage = commentsList.querySelector('p');
+                        if (noCommentsMessage && noCommentsMessage.textContent === 'لا توجد تعليقات بعد.') {
+                            noCommentsMessage.remove();
+                        }
+                    } else {
+                        alert(data.error || 'حدث خطأ أثناء إضافة التعليق.');
+                    }
+                })
+                .catch(error => console.error('Error adding comment:', error));
+            });
+        });
+
+        // *** UPDATED: Profile navigation using the new class ***
+        document.querySelectorAll('.reel-user-profile').forEach(header => {
+            header.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent reel-item click from firing
+                const username = this.dataset.username;
+                if (username) {
+                    window.location.href = `/profile/${username}/`; // Assuming your profile URL is /profile/<username>/
+                }
+            });
+        });
+
+        // Function to get CSRF token (existing)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

@@ -60,7 +60,8 @@ class CustomUser(AbstractUser):
         )
 
         # تأكد من تحديث هذا الرابط ليعكس نطاقك الفعلي
-        profile_url = f"https://yourdomain.com/profile/{self.username}"
+        # You should replace "yourdomain.com" with your actual domain
+        profile_url = f"https://yourdomain.com/profile/{self.username}" # Replace with your actual domain
         qr.add_data(profile_url)
         qr.make(fit=True)
 
@@ -84,14 +85,20 @@ class CustomUser(AbstractUser):
     def save(self, *args, **kwargs):
         # Check if it's a new user and qr_code is not set
         is_new = not self.pk
+        # Ensure that 'qr_code' is not in update_fields if we are about to generate it.
+        # This helps prevent recursion if generate_qr_code calls save again.
+        generating_qr = is_new and not self.qr_code
+        if 'update_fields' in kwargs and 'qr_code' in kwargs['update_fields'] and generating_qr:
+             # Avoid saving qr_code field if we are just about to generate it after this save.
+             fields = list(kwargs['update_fields'])
+             if 'qr_code' in fields:
+                 fields.remove('qr_code')
+             kwargs['update_fields'] = tuple(fields) if fields else None
+
+
         super().save(*args, **kwargs) # Save first to get an ID
-        if is_new and not self.qr_code:
-            self.generate_qr_code()
-        # To prevent recursion if generate_qr_code calls save again without update_fields
-        elif 'update_fields' not in kwargs and self.pk and not self.qr_code:
-              # This case might indicate a user exists but QR code was removed/missing
-              # and needs regeneration. Handle carefully based on desired logic.
-              pass # Or self.generate_qr_code() if needed, ensuring it won't loop.
+        if generating_qr:
+            self.generate_qr_code() # This will call save() again with update_fields=['qr_code']
 
 
 class Message(models.Model):
@@ -123,7 +130,7 @@ class Post(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='posts')
     content = models.TextField()
     image = CloudinaryField('image', blank=True, null=True)
-    video = CloudinaryField('video', blank=True, null=True)
+    video = CloudinaryField('video', resource_type="video", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -171,6 +178,7 @@ class Notification(models.Model):
         ('comment', 'تعليق'),
         ('friend_request', 'طلب صداقة'),
         ('friend_accept', 'قبول الصداقة'),
+        # You might want to add reel_like and reel_comment here later
     )
 
     recipient = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
@@ -179,7 +187,7 @@ class Notification(models.Model):
     content = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
-    related_id = models.PositiveIntegerField(null=True, blank=True)
+    related_id = models.PositiveIntegerField(null=True, blank=True) # Can be Post ID, User ID, Reel ID etc.
 
     class Meta:
         ordering = ['-created_at']
@@ -187,7 +195,49 @@ class Notification(models.Model):
     def __str__(self):
         return f"{self.get_notification_type_display()} لـ {self.recipient.username}"
 
-# Removed Story model and its related imports like 'random' and 'timedelta' if they were exclusive to it.
-# Ensure 'User' from get_user_model is still defined if used by other parts, or remove the import:
-# from django.contrib.auth import get_user_model
-# User = get_user_model() # Remove if Story was the only model using it.
+
+# ---------- Start of New Reel Models ----------
+class Reel(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reels')
+    video = CloudinaryField('video', resource_type="video") # Ensures Cloudinary treats this as a video
+    caption = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Reel by {self.user.username} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+    @property
+    def likes_count(self):
+        return self.reel_likes.count() # Using related_name from ReelLike
+
+    @property
+    def comments_count(self):
+        return self.reel_comments.count() # Using related_name from ReelComment
+
+class ReelLike(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    reel = models.ForeignKey(Reel, on_delete=models.CASCADE, related_name='reel_likes') # Changed related_name
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'reel')
+
+    def __str__(self):
+        return f"{self.user.username} likes Reel {self.reel.id}"
+
+class ReelComment(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    reel = models.ForeignKey(Reel, on_delete=models.CASCADE, related_name='reel_comments') # Changed related_name
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at'] # Oldest comments first, or '-created_at' for newest
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on Reel {self.reel.id}: {self.content[:20]}"
+# ---------- End of New Reel Models ----------

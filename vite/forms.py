@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, Post
+from .models import CustomUser, Post, Reel
 from django.utils import timezone
 
 class CustomUserCreationForm(UserCreationForm):
@@ -70,3 +70,21 @@ class PostEditForm(forms.ModelForm):
 
 class FriendRequestForm(forms.Form):
     username = forms.CharField(max_length=150)
+
+# ---------- Start of New ReelForm ----------
+class ReelForm(forms.ModelForm):
+    class Meta:
+        model = Reel
+        fields = ['video', 'caption']
+        widgets = {
+            'video': forms.ClearableFileInput(attrs={'accept': 'video/*', 'required': True}),
+            'caption': forms.Textarea(attrs={'rows': 3, 'placeholder': 'اكتب تعليقًا وصفيًا (اختياري)...'}),
+        }
+        labels = {
+            'video': 'اختر مقطع فيديو',
+            'caption': 'الوصف',
+        }
+        help_texts = {
+            'video': 'يجب أن يكون الفيديو بتنسيق مدعوم (مثل MP4, MOV).',
+        }
+# ---------- End of New ReelForm ----------
