@@ -28,22 +28,21 @@
             position: relative;
         }
         .reel-item {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    position: relative;
-    scroll-snap-align: start; /* Snap point for each reel */
-    background-color: #000; /* Fallback and color for letterboxing */
-    overflow: hidden;
-    cursor: pointer; /* Indicate video is clickable for play/pause */
-    -webkit-tap-highlight-color: transparent; /* أضف هذا السطر */
-}
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+            scroll-snap-align: start; /* Snap point for each reel */
+            background-color: #000; /* Fallback and color for letterboxing */
+            overflow: hidden;
+            cursor: pointer; /* Indicate video is clickable for play/pause */
+            -webkit-tap-highlight-color: transparent; /* -- التعديل الأول: إزالة الظل الأزرق -- */
+        }
         .reel-item video {
             width: 100%;
             height: 100%;
-            /* UPDATED: Changed from 'cover' to 'contain' to add black bars */
             object-fit: contain; 
             position: absolute;
             top: 0;
@@ -82,6 +81,10 @@
             justify-content: space-between;
             padding: 15px;
             box-sizing: border-box;
+            pointer-events: none; /* Allow clicks to pass through to video */
+        }
+        .reel-overlay > * {
+            pointer-events: auto; /* Re-enable pointer events for children */
         }
         .top-bar {
             display: flex;
@@ -255,15 +258,19 @@
 </head>
 <body>
     <div class="reels-container">
-        <div class="top-bar">
-            <i class="fas fa-arrow-left back-button" onclick="window.history.back()"></i>
-            <span class="title">الريلز</span>
-            <span></span> </div>
-
+        
         {% for data in reels_data %}
         <div class="reel-item" data-reel-id="{{ data.reel.id }}">
+
+            <div class="top-bar">
+                <i class="fas fa-arrow-left back-button" onclick="window.history.back()"></i>
+                <span class="title">الريلز</span>
+                <span></span> 
+            </div>
+
             <video class="reel-video" src="{{ data.reel.video.url }}" loop playsinline preload="auto" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video>
             <div class="play-pause-overlay"><i class="fas fa-play"></i></div>
+            
             <div class="reel-overlay">
                 <div></div>
                 
@@ -290,6 +297,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="comments-section" id="comments-{{ data.reel.id }}">
                 <div class="comments-header">
                     <span>التعليقات ({{ data.reel.comments_count }})</span>
@@ -314,226 +322,111 @@
             </div>
         </div>
         {% empty %}
-        <p style="text-align: center; color: #fff;">لا توجد ريلز لعرضها حاليًا.</p>
+        <div style="width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+             <div class="top-bar" style="position: absolute; top:0; left: 0; width: 100%;">
+                <i class="fas fa-arrow-left back-button" onclick="window.history.back()"></i>
+                <span class="title">الريلز</span>
+                <span></span> 
+            </div>
+            <p style="text-align: center; color: #fff;">لا توجد ريلز لعرضها حاليًا.</p>
+        </div>
         {% endfor %}
     </div>
 
     <script>
         const reelsContainer = document.querySelector('.reels-container');
-        const reelVideos = document.querySelectorAll('.reel-video');
+        const reelItems = document.querySelectorAll('.reel-item');
         let currentPlayingVideo = null;
         let playPauseTimeout;
+
+        // Stop clicks on overlay elements from triggering video pause/play
+        document.querySelectorAll('.reel-overlay, .reel-actions, .reel-user-profile, .comments-section, .top-bar').forEach(el => {
+            el.addEventListener('click', (event) => {
+                event.stopPropagation();
+            });
+        });
 
         const observerOptions = {
             root: reelsContainer,
             rootMargin: '0px',
-            threshold: 0.75 // Video is 75% visible
+            threshold: 0.75 // Trigger when 75% of the video is visible
         };
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                const video = entry.target;
-                const playPauseOverlay = video.nextElementSibling; // The play-pause-overlay
+                const video = entry.target.querySelector('.reel-video');
+                if (!video) return;
+
+                const playPauseOverlay = entry.target.querySelector('.play-pause-overlay');
 
                 if (entry.isIntersecting) {
-                    // Pause previously playing video
                     if (currentPlayingVideo && currentPlayingVideo !== video) {
                         currentPlayingVideo.pause();
-                        currentPlayingVideo.nextElementSibling.classList.remove('visible'); // Hide overlay
+                        const prevOverlay = currentPlayingVideo.closest('.reel-item').querySelector('.play-pause-overlay');
+                        if (prevOverlay) prevOverlay.classList.remove('visible');
                     }
-                    // Play current video
+                    
                     video.play().catch(error => {
-                        console.log('Video play interrupted:', error);
-                        // If autoplay is blocked, show play icon
-                        playPauseOverlay.classList.add('visible');
-                        playPauseOverlay.querySelector('i').className = 'fas fa-play';
+                        console.log('Autoplay was prevented:', error);
+                        if (playPauseOverlay) {
+                            playPauseOverlay.classList.add('visible');
+                            playPauseOverlay.querySelector('i').className = 'fas fa-play';
+                        }
                     });
                     currentPlayingVideo = video;
-                    playPauseOverlay.classList.remove('visible'); // Hide overlay once playing
+                    if (playPauseOverlay) playPauseOverlay.classList.remove('visible');
                 } else {
                     video.pause();
-                    playPauseOverlay.classList.remove('visible'); // Hide overlay when not in view
+                    if (playPauseOverlay) playPauseOverlay.classList.remove('visible');
                 }
             });
         }, observerOptions);
 
-        reelVideos.forEach(video => {
-            observer.observe(video);
+        reelItems.forEach(item => {
+            if (item.querySelector('.reel-video')) { // Only observe items that contain a video
+                observer.observe(item);
 
-            // Add click listener for play/pause
-            video.closest('.reel-item').addEventListener('click', function(event) {
-                // *** UPDATED: Prevent click on action buttons or the new user profile area from toggling video ***
-                if (event.target.closest('.reel-actions') || event.target.closest('.comments-section') || event.target.closest('.reel-user-profile')) {
-                    return;
-                }
+                item.addEventListener('click', function() {
+                    const video = this.querySelector('.reel-video');
+                    const playPauseOverlay = this.querySelector('.play-pause-overlay');
+                    const icon = playPauseOverlay.querySelector('i');
 
-                const video = this.querySelector('.reel-video');
-                const playPauseOverlay = this.querySelector('.play-pause-overlay');
-                const icon = playPauseOverlay.querySelector('i');
+                    clearTimeout(playPauseTimeout);
 
-                clearTimeout(playPauseTimeout); // Clear any existing timeout
-
-                if (video.paused) {
-                    video.play().catch(error => {
-                        console.log('Video play interrupted:', error);
-                        // Still show play icon if it fails
+                    if (video.paused) {
+                        video.play();
+                        icon.className = 'fas fa-pause';
+                    } else {
+                        video.pause();
                         icon.className = 'fas fa-play';
-                        playPauseOverlay.classList.add('visible');
-                    });
-                    icon.className = 'fas fa-pause';
-                } else {
-                    video.pause();
-                    icon.className = 'fas fa-play';
-                }
+                    }
 
-                playPauseOverlay.classList.add('visible'); // Show overlay
-                playPauseOverlay.classList.remove('hidden'); // Ensure it's not hidden by previous transition
+                    playPauseOverlay.classList.add('visible');
+                    playPauseOverlay.classList.remove('hidden');
 
-                playPauseTimeout = setTimeout(() => {
-                    playPauseOverlay.classList.add('hidden'); // Start fade out
-                    playPauseOverlay.addEventListener('transitionend', function handler() {
-                        playPauseOverlay.classList.remove('visible', 'hidden'); // Remove classes after transition
-                        playPauseOverlay.removeEventListener('transitionend', handler);
-                    });
-                }, 700); // Show for 0.7 seconds
-            });
+                    playPauseTimeout = setTimeout(() => {
+                        playPauseOverlay.classList.add('hidden');
+                        const transitionEndHandler = () => {
+                            playPauseOverlay.classList.remove('visible', 'hidden');
+                            playPauseOverlay.removeEventListener('transitionend', transitionEndHandler);
+                        };
+                        playPauseOverlay.addEventListener('transitionend', transitionEndHandler);
+                    }, 700);
+                });
+            }
         });
 
-        // Initial play for the first reel if it's in view
-        if (reelVideos.length > 0) {
+        // Initial play for the first reel
+        if (reelItems.length > 0 && reelItems[0].querySelector('.reel-video')) {
             setTimeout(() => {
-                const firstVideo = reelsContainer.querySelector('.reel-video');
+                const firstVideo = reelItems[0].querySelector('.reel-video');
                 if (firstVideo && firstVideo.paused) {
-                    firstVideo.play().catch(error => console.log('Initial video play interrupted:', error));
+                    firstVideo.play().catch(error => console.log('Initial autoplay was prevented:', error));
                     currentPlayingVideo = firstVideo;
                 }
-            }, 100);
+            }, 150); // Small delay to ensure the video is ready
         }
 
-        // Like button functionality (existing)
-        document.querySelectorAll('.like-button').forEach(button => {
-            button.addEventListener('click', function(event) {
-                event.stopPropagation(); // Prevent reel-item click from firing
-                const reelId = this.dataset.reelId;
-                const icon = this.querySelector('i');
-                const likesCountSpan = this.querySelector('.likes-count');
-
-                fetch(`/reels/${reelId}/like/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken'),
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({})
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.liked) {
-                        icon.classList.remove('far');
-                        icon.classList.add('fas');
-                    } else {
-                        icon.classList.remove('fas');
-                        icon.classList.add('far');
-                    }
-                    likesCountSpan.textContent = data.likes_count;
-                })
-                .catch(error => console.error('Error liking reel:', error));
-            });
-        });
-
-        // Comment button functionality (existing)
-        document.querySelectorAll('.comment-button').forEach(button => {
-            button.addEventListener('click', function(event) {
-                event.stopPropagation(); // Prevent reel-item click from firing
-                const reelId = this.dataset.reelId;
-                const commentsSection = document.getElementById(`comments-${reelId}`);
-                if (commentsSection) {
-                    commentsSection.classList.add('active');
-                    // Pause video when comments are open
-                    if (currentPlayingVideo) {
-                        currentPlayingVideo.pause();
-                        currentPlayingVideo.nextElementSibling.classList.add('visible'); // Show play icon
-                        currentPlayingVideo.nextElementSibling.querySelector('i').className = 'fas fa-play';
-                    }
-                }
-            });
-        });
-
-        // Close comments section (existing)
-        document.querySelectorAll('.close-comments').forEach(button => {
-            button.addEventListener('click', function(event) {
-                event.stopPropagation(); // Prevent click from bubbling up
-                this.closest('.comments-section').classList.remove('active');
-                // Resume video when comments are closed if it was the current playing video
-                if (currentPlayingVideo) {
-                    currentPlayingVideo.play().catch(error => console.log('Video play interrupted after closing comments:', error));
-                    currentPlayingVideo.nextElementSibling.classList.remove('visible'); // Hide play icon
-                }
-            });
-        });
-
-        // Comment form submission (existing)
-        document.querySelectorAll('.comment-form').forEach(form => {
-            form.addEventListener('submit', function(event) {
-                event.preventDefault();
-                event.stopPropagation(); // Prevent reel-item click from firing
-                const reelId = this.dataset.reelId;
-                const commentInput = this.querySelector('input[name="content"]');
-                const commentContent = commentInput.value.trim();
-                const commentsList = this.closest('.comments-section').querySelector('.comments-list');
-                const commentsCountSpan = document.querySelector(`.reel-item[data-reel-id="${reelId}"] .comments-count`);
-
-                if (!commentContent) {
-                    alert('التعليق لا يمكن أن يكون فارغًا.');
-                    return;
-                }
-
-                fetch(`/reels/${reelId}/comment/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken'),
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `content=${encodeURIComponent(commentContent)}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const newCommentHtml = `
-                            <div class="comment-item">
-                                <img src="${data.comment.user.profile_picture_url}" alt="${data.comment.user.username} Profile Picture">
-                                <div class="comment-content">
-                                    <span class="comment-username">${data.comment.user.username}</span>${data.comment.content}
-                                </div>
-                            </div>
-                        `;
-                        commentsList.insertAdjacentHTML('afterbegin', newCommentHtml);
-                        commentsCountSpan.textContent = data.comments_count;
-                        commentInput.value = '';
-                        const noCommentsMessage = commentsList.querySelector('p');
-                        if (noCommentsMessage && noCommentsMessage.textContent === 'لا توجد تعليقات بعد.') {
-                            noCommentsMessage.remove();
-                        }
-                    } else {
-                        alert(data.error || 'حدث خطأ أثناء إضافة التعليق.');
-                    }
-                })
-                .catch(error => console.error('Error adding comment:', error));
-            });
-        });
-
-        // *** UPDATED: Profile navigation using the new class ***
-        document.querySelectorAll('.reel-user-profile').forEach(header => {
-            header.addEventListener('click', function(event) {
-                event.stopPropagation(); // Prevent reel-item click from firing
-                const username = this.dataset.username;
-                if (username) {
-                    window.location.href = `/profile/${username}/`; // Assuming your profile URL is /profile/<username>/
-                }
-            });
-        });
-
-        // Function to get CSRF token (existing)
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -548,6 +441,110 @@
             }
             return cookieValue;
         }
+
+        // Like button functionality
+        document.querySelectorAll('.like-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const reelId = this.dataset.reelId;
+                const icon = this.querySelector('i');
+                const likesCountSpan = this.querySelector('.likes-count');
+
+                fetch(`/reels/${reelId}/like/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    icon.className = data.liked ? 'fas fa-heart' : 'far fa-heart';
+                    likesCountSpan.textContent = data.likes_count;
+                })
+                .catch(error => console.error('Error liking reel:', error));
+            });
+        });
+
+        // Comment button functionality
+        document.querySelectorAll('.comment-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const reelId = this.dataset.reelId;
+                const commentsSection = document.getElementById(`comments-${reelId}`);
+                if (commentsSection) {
+                    commentsSection.classList.add('active');
+                    if (currentPlayingVideo) {
+                        currentPlayingVideo.pause();
+                        const overlay = currentPlayingVideo.closest('.reel-item').querySelector('.play-pause-overlay');
+                        if(overlay) {
+                           overlay.classList.add('visible');
+                           overlay.querySelector('i').className = 'fas fa-play';
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Close comments section
+        document.querySelectorAll('.close-comments').forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('.comments-section').classList.remove('active');
+                if (currentPlayingVideo && currentPlayingVideo.closest('.reel-item').getBoundingClientRect().top >= 0) {
+                     currentPlayingVideo.play().catch(e => console.log(e));
+                     const overlay = currentPlayingVideo.closest('.reel-item').querySelector('.play-pause-overlay');
+                     if (overlay) overlay.classList.remove('visible');
+                }
+            });
+        });
+
+        // Comment form submission
+        document.querySelectorAll('.comment-form').forEach(form => {
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const reelId = this.dataset.reelId;
+                const commentInput = this.querySelector('input[name="content"]');
+                const commentContent = commentInput.value.trim();
+                const commentsList = this.closest('.comments-section').querySelector('.comments-list');
+                const commentsCountSpan = document.querySelector(`.reel-item[data-reel-id="${reelId}"] .comments-count`);
+                const commentsHeaderSpan = this.closest('.comments-section').querySelector('.comments-header span');
+
+                if (!commentContent) return;
+
+                fetch(`/reels/${reelId}/comment/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `content=${encodeURIComponent(commentContent)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const noCommentsMessage = commentsList.querySelector('p');
+                        if (noCommentsMessage) noCommentsMessage.remove();
+
+                        const newCommentHtml = `
+                            <div class="comment-item">
+                                <img src="${data.comment.user.profile_picture_url}" alt="${data.comment.user.username} Profile Picture">
+                                <div class="comment-content">
+                                    <span class="comment-username">${data.comment.user.username}</span>${data.comment.content}
+                                </div>
+                            </div>
+                        `;
+                        commentsList.insertAdjacentHTML('afterbegin', newCommentHtml);
+                        commentsCountSpan.textContent = data.comments_count;
+                        commentsHeaderSpan.textContent = `التعليقات (${data.comments_count})`;
+                        commentInput.value = '';
+                    } else {
+                        alert(data.error || 'Error adding comment.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+
+        // Profile navigation
+        document.querySelectorAll('.reel-user-profile').forEach(header => {
+            header.addEventListener('click', function() {
+                const username = this.dataset.username;
+                if (username) window.location.href = `/profile/${username}/`;
+            });
+        });
     </script>
 </body>
 </html>
