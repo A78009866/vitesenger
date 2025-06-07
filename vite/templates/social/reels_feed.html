@@ -942,7 +942,7 @@ const observer = new IntersectionObserver((entries) => {
         initializeProgressBars();
         reelsContainer.addEventListener('wheel', (e) => {
     e.preventDefault();
-    const delta = Math.sign(e.deltaY) * 50; // تقليل قيمة التمرير
+    const delta = Math.sign(e.deltaY) * 20; // تقليل قيمة التمرير
     reelsContainer.scrollBy({
         top: delta,
         behavior: 'smooth'
