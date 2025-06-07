@@ -116,6 +116,50 @@
             font-weight: bold;
         }
         
+        /* Video Progress Bar Styles */
+        .video-progress-container {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: rgba(255, 255, 255, 0.3);
+            z-index: 3;
+            cursor: pointer;
+        }
+
+        .video-progress-bar {
+            height: 100%;
+            background-color: #fff;
+            width: 0%;
+            transition: width 0.1s linear;
+            position: relative;
+        }
+
+        .video-progress-handle {
+            position: absolute;
+            top: -4px;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background-color: #fff;
+            border-radius: 50%;
+            transform: translateX(50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            cursor: pointer;
+            z-index: 4;
+        }
+
+        .video-progress-container:hover .video-progress-handle {
+            opacity: 1;
+        }
+
+        .video-progress-container:hover .video-progress-bar {
+            height: 4px;
+            margin-top: -0.5px;
+        }
+        
         .reel-actions {
             display: flex;
             flex-direction: column;
@@ -271,20 +315,29 @@
             cursor: pointer;
             opacity: 0.8;
             transition: opacity 0.2s;
+            padding: 15px;
+            margin: -15px -15px -15px 0;
         }
-        .delete-menu:hover {
-            opacity: 1;
+        
+        .delete-menu i {
+            pointer-events: none;
         }
+        
         .delete-dropdown {
             position: absolute;
-            top: 40px;
+            top: 50px;
             right: 0;
             background-color: rgba(0, 0, 0, 0.9);
             border-radius: 8px;
             padding: 10px 0;
-            min-width: 120px;
+            min-width: 150px;
             display: none;
             z-index: 20;
+        }
+        
+        .delete-dropdown-item {
+            padding: 12px 20px;
+            font-size: 1.1em;
         }
         .delete-dropdown.show {
             display: block;
@@ -306,7 +359,7 @@
         /* Loading Indicator */
         .delete-loading {
             display: none;
-            position: fixed; /* Changed to fixed for global overlay */
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -315,7 +368,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000; /* High z-index to cover everything */
+            z-index: 1000;
             color: white;
             font-size: 1.5em;
             flex-direction: column;
@@ -406,43 +459,6 @@
             to { opacity: 1; transform: scale(1); }
         }
     </style>
-    <style>
-    /* أضف هذه القواعد الجديدة */
-    .delete-menu {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        z-index: 10;
-        color: white;
-        font-size: 1.5em;
-        cursor: pointer;
-        opacity: 0.8;
-        transition: opacity 0.2s;
-        padding: 15px; /* زيادة مساحة اللمس */
-        margin: -15px -15px -15px 0; /* تعويض عن ال padding الإضافي */
-    }
-    
-    .delete-menu i {
-        pointer-events: none; /* تجنب مشاكل النقر على الأيقونة مباشرة */
-    }
-    
-    .delete-dropdown {
-        position: absolute;
-        top: 50px; /* تعديل الموقع ليتناسب مع ال padding الجديد */
-        right: 0;
-        background-color: rgba(0, 0, 0, 0.9);
-        border-radius: 8px;
-        padding: 10px 0;
-        min-width: 150px; /* زيادة العرض قليلاً */
-        display: none;
-        z-index: 20;
-    }
-    
-    .delete-dropdown-item {
-        padding: 12px 20px; /* زيادة التباعد الداخلي */
-        font-size: 1.1em; /* زيادة حجم الخط قليلاً */
-    }
-</style>
 </head>
 <body>
     <div class="reels-container">
@@ -454,14 +470,20 @@
                 <span></span> 
             </div>
             
+            <!-- شريط تقدم الفيديو المضاف -->
+            <div class="video-progress-container">
+                <div class="video-progress-bar"></div>
+                <div class="video-progress-handle"></div>
+            </div>
+            
             <div class="delete-menu">
-    <i class="fas fa-ellipsis-v"></i>
-    <div class="delete-dropdown">
-        {% if request.user == data.reel.user %}
-        <div class="delete-dropdown-item delete" onclick="showDeleteConfirmation({{ data.reel.id }})">حذف الريل</div>
-        {% endif %}
-    </div>
-</div>
+                <i class="fas fa-ellipsis-v"></i>
+                <div class="delete-dropdown">
+                    {% if request.user == data.reel.user %}
+                    <div class="delete-dropdown-item delete" onclick="showDeleteConfirmation({{ data.reel.id }})">حذف الريل</div>
+                    {% endif %}
+                </div>
+            </div>
             
             <video class="reel-video" src="{{ data.reel.video.url }}" loop playsinline preload="auto" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video>
             <div class="play-pause-overlay"><i class="fas fa-play"></i></div>
@@ -480,6 +502,7 @@
                             <p class="caption">{{ data.reel.caption }}</p>
                         {% endif %}
                     </div>
+                    
                     <div class="reel-actions">
                         <div class="action-button like-button" data-reel-id="{{ data.reel.id }}">
                             <i class="{{ data.is_liked_by_user|yesno:'fas,far' }} fa-heart"></i>
@@ -551,11 +574,64 @@
         let playPauseTimeout;
 
         // Stop clicks on overlay elements from triggering video pause/play
-        document.querySelectorAll('.reel-overlay, .reel-actions, .reel-user-profile, .comments-section, .top-bar').forEach(el => {
+        document.querySelectorAll('.reel-overlay, .reel-actions, .reel-user-profile, .comments-section, .top-bar, .video-progress-container').forEach(el => {
             el.addEventListener('click', (event) => {
                 event.stopPropagation();
             });
         });
+
+        // Update progress bar for videos
+        function setupVideoProgress(video, progressBar, progressHandle) {
+            const updateProgress = () => {
+                const progress = (video.currentTime / video.duration) * 100;
+                progressBar.style.width = `${progress}%`;
+                progressHandle.style.right = `${100 - progress}%`;
+            };
+
+            const seekVideo = (e) => {
+                const rect = progressBar.parentElement.getBoundingClientRect();
+                const seekPercentage = (e.clientX - rect.left) / rect.width;
+                video.currentTime = seekPercentage * video.duration;
+            };
+
+            video.addEventListener('timeupdate', updateProgress);
+            video.addEventListener('loadedmetadata', () => {
+                progressBar.style.width = '0%';
+                progressHandle.style.right = '100%';
+            });
+
+            progressBar.parentElement.addEventListener('click', seekVideo);
+            progressHandle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const moveHandler = (moveEvent) => {
+                    seekVideo(moveEvent);
+                };
+                const upHandler = () => {
+                    document.removeEventListener('mousemove', moveHandler);
+                    document.removeEventListener('mouseup', upHandler);
+                };
+                document.addEventListener('mousemove', moveHandler);
+                document.addEventListener('mouseup', upHandler);
+            });
+
+            video.addEventListener('ended', () => {
+                progressBar.style.width = '100%';
+                progressHandle.style.right = '0%';
+            });
+        }
+
+        // Initialize progress bars for all videos
+        function initializeProgressBars() {
+            document.querySelectorAll('.reel-item').forEach(item => {
+                const video = item.querySelector('.reel-video');
+                const progressBar = item.querySelector('.video-progress-bar');
+                const progressHandle = item.querySelector('.video-progress-handle');
+                
+                if (video && progressBar && progressHandle) {
+                    setupVideoProgress(video, progressBar, progressHandle);
+                }
+            });
+        }
 
         const observerOptions = {
             root: reelsContainer,
@@ -569,12 +645,16 @@
                 if (!video) return;
 
                 const playPauseOverlay = entry.target.querySelector('.play-pause-overlay');
+                const progressBar = entry.target.querySelector('.video-progress-bar');
 
                 if (entry.isIntersecting) {
                     if (currentPlayingVideo && currentPlayingVideo !== video) {
                         currentPlayingVideo.pause();
                         const prevOverlay = currentPlayingVideo.closest('.reel-item').querySelector('.play-pause-overlay');
                         if (prevOverlay) prevOverlay.classList.remove('visible');
+                        // Reset progress bar for previous video
+                        const prevProgressBar = currentPlayingVideo.closest('.reel-item').querySelector('.video-progress-bar');
+                        if (prevProgressBar) prevProgressBar.style.width = '0%';
                     }
                     
                     video.play().catch(error => {
@@ -589,6 +669,8 @@
                 } else {
                     video.pause();
                     if (playPauseOverlay) playPauseOverlay.classList.remove('visible');
+                    // Reset progress bar when video is not visible
+                    if (progressBar) progressBar.style.width = '0%';
                 }
             });
         }, observerOptions);
@@ -758,12 +840,11 @@
         });
 
         // Delete reel functionality
-        let reelToDeleteId = null; // Store reel ID for the modal
+        let reelToDeleteId = null;
 
         function showDeleteConfirmation(reelId) {
             reelToDeleteId = reelId;
             document.getElementById('delete-confirmation-modal').style.display = 'flex';
-            // Close the dropdown menu immediately
             document.querySelectorAll('.delete-dropdown').forEach(dropdown => {
                 dropdown.classList.remove('show');
             });
@@ -772,13 +853,13 @@
         document.getElementById('confirm-delete-button').addEventListener('click', function() {
             if (reelToDeleteId) {
                 deleteReel(reelToDeleteId);
-                reelToDeleteId = null; // Reset
+                reelToDeleteId = null;
             }
             document.getElementById('delete-confirmation-modal').style.display = 'none';
         });
 
         document.getElementById('cancel-delete-button').addEventListener('click', function() {
-            reelToDeleteId = null; // Reset
+            reelToDeleteId = null;
             document.getElementById('delete-confirmation-modal').style.display = 'none';
         });
 
@@ -790,7 +871,7 @@
                 reelElement.classList.add('deleting');
             }
             
-            loadingIndicator.style.display = 'flex'; // Changed to flex for the new display style
+            loadingIndicator.style.display = 'flex';
 
             fetch(`/reels/${reelId}/delete/`, {
                 method: 'POST',
@@ -810,11 +891,9 @@
                     if (reelElement) {
                         reelElement.remove();
                         
-                        // Check if no reels left
                         if (document.querySelectorAll('.reel-item').length === 0) {
                             window.location.reload();
                         } else if (currentPlayingVideo === reelElement.querySelector('.reel-video')) {
-                            // If the deleted reel was playing, find the next one or clear
                             const nextReel = document.querySelector('.reel-item .reel-video');
                             if (nextReel) {
                                 nextReel.play().catch(e => console.log('Autoplay after delete was prevented:', e));
@@ -866,6 +945,9 @@
                 dropdown.classList.remove('show');
             });
         });
+
+        // Initialize progress bars when page loads
+        initializeProgressBars();
     </script>
 </body>
 </html>
