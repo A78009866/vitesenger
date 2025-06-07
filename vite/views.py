@@ -16,6 +16,7 @@ from django.utils import timezone
 import pytz
 from django.utils.html import strip_tags, escape
 from django.contrib.auth import get_user_model
+from datetime import timedelta # <-- قم بإضافة هذا السطر
 
 User = get_user_model()
 
@@ -488,10 +489,24 @@ def game_view(request):
 
 @login_required
 def reels_feed(request):
-    reels_list = Reel.objects.select_related('user').prefetch_related(
+    # تحديد العتبة الزمنية للريلز "الجديدة" (مثلاً، آخر 24 ساعة)
+    time_threshold = timezone.now() - timedelta(hours=5)
+
+    # 1. جلب الريلز الجديدة وترتيبها من الأحدث إلى الأقدم
+    new_reels = Reel.objects.filter(created_at__gte=time_threshold).select_related('user').prefetch_related(
         'reel_likes', 
         'reel_comments__user'
-    ).all().order_by('-created_at')
+    ).order_by('-created_at')
+
+    # 2. جلب الريلز القديمة وترتيبها بشكل عشوائي
+    # ملاحظة: قد يكون order_by('?') مكلفًا على قواعد البيانات الكبيرة
+    old_reels = Reel.objects.filter(created_at__lt=time_threshold).select_related('user').prefetch_related(
+        'reel_likes', 
+        'reel_comments__user'
+    ).order_by('?')
+
+    # 3. دمج القائمتين معًا
+    reels_list = list(new_reels) + list(old_reels)
 
     reels_data = []
     for reel in reels_list:
@@ -511,6 +526,7 @@ def reels_feed(request):
         'user_profile_pic_url': user_profile_pic_url,
     }
     return render(request, 'social/reels_feed.html', context)
+
 
 @login_required
 def upload_reel(request):
