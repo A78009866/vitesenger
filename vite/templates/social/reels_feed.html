@@ -73,6 +73,41 @@
             opacity: 0;
         }
 
+        /* NEW: Like Animation Heart Styles */
+        .like-animation-heart {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 6em;
+            color: rgba(255, 255, 255, 0.9);
+            z-index: 4;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .like-animation-heart.show {
+            animation: like-heart-animation 0.7s ease-in-out;
+        }
+        @keyframes like-heart-animation {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            30% {
+                opacity: 0.9;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            80% {
+                opacity: 0.9;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        /* END NEW */
+
         .reel-overlay {
             position: absolute;
             top: 0;
@@ -116,7 +151,6 @@
             font-weight: bold;
         }
         
-        /* Video Progress Bar Styles */
         .video-progress-container {
             position: absolute;
             top: 60px;
@@ -127,7 +161,6 @@
             z-index: 3;
             cursor: pointer;
         }
-
         .video-progress-bar {
             height: 100%;
             background-color: #fff;
@@ -135,7 +168,6 @@
             transition: width 0.1s linear;
             position: relative;
         }
-
         .video-progress-handle {
             position: absolute;
             top: -4px;
@@ -150,11 +182,9 @@
             cursor: pointer;
             z-index: 4;
         }
-
         .video-progress-container:hover .video-progress-handle {
             opacity: 1;
         }
-
         .video-progress-container:hover .video-progress-bar {
             height: 4px;
             margin-top: -0.5px;
@@ -178,7 +208,7 @@
             font-size: 1.8em;
             margin-bottom: 5px;
         }
-        .action-button .fas {
+        .action-button .fas.fa-heart { /* Updated selector for filled heart */
             color: red;
         }
         .reel-details {
@@ -224,7 +254,6 @@
             overflow: hidden;
         }
         
-        /* Comments Section */
         .comments-section {
             background-color: rgba(0, 0, 0, 0.8);
             padding: 15px;
@@ -304,7 +333,6 @@
             background-color: #0056b3;
         }
         
-        /* Delete Menu Styles */
         .delete-menu {
             position: absolute;
             top: 15px;
@@ -318,11 +346,9 @@
             padding: 15px;
             margin: -15px -15px -15px 0;
         }
-        
         .delete-menu i {
             pointer-events: none;
         }
-        
         .delete-dropdown {
             position: absolute;
             top: 50px;
@@ -334,7 +360,6 @@
             display: none;
             z-index: 20;
         }
-        
         .delete-dropdown-item {
             padding: 12px 20px;
             font-size: 1.1em;
@@ -356,7 +381,6 @@
             color: #ff4d4d;
         }
         
-        /* Loading Indicator */
         .delete-loading {
             display: none;
             position: fixed;
@@ -377,7 +401,6 @@
             margin-bottom: 10px;
         }
 
-        /* Confirmation Modal Styles */
         .confirmation-modal-overlay {
             display: none;
             position: fixed;
@@ -390,7 +413,6 @@
             align-items: center;
             z-index: 1000;
         }
-
         .confirmation-modal-content {
             background-color: #222;
             padding: 30px;
@@ -401,26 +423,22 @@
             width: 90%;
             animation: fadeIn 0.3s ease-out;
         }
-
         .confirmation-modal-content h3 {
             margin-top: 0;
             color: #fff;
             font-size: 1.4em;
             margin-bottom: 20px;
         }
-
         .confirmation-modal-content p {
             color: #aaa;
             margin-bottom: 30px;
             font-size: 1em;
         }
-
         .confirmation-modal-buttons {
             display: flex;
             justify-content: space-around;
             gap: 15px;
         }
-
         .confirmation-modal-buttons button {
             padding: 12px 25px;
             border: none;
@@ -431,25 +449,20 @@
             transition: background-color 0.2s ease, transform 0.1s ease;
             flex: 1;
         }
-
         .confirmation-modal-buttons button:active {
             transform: scale(0.98);
         }
-
         .confirmation-modal-buttons .confirm-button {
             background-color: #ff4d4d;
             color: #fff;
         }
-
         .confirmation-modal-buttons .confirm-button:hover {
             background-color: #e60000;
         }
-
         .confirmation-modal-buttons .cancel-button {
             background-color: #444;
             color: #fff;
         }
-
         .confirmation-modal-buttons .cancel-button:hover {
             background-color: #555;
         }
@@ -470,24 +483,25 @@
                 <span></span> 
             </div>
             
-            <!-- شريط تقدم الفيديو المضاف -->
             <div class="video-progress-container">
                 <div class="video-progress-bar"></div>
                 <div class="video-progress-handle"></div>
             </div>
             
+            {% if request.user == data.reel.user %}
             <div class="delete-menu">
                 <i class="fas fa-ellipsis-v"></i>
                 <div class="delete-dropdown">
-                    {% if request.user == data.reel.user %}
                     <div class="delete-dropdown-item delete" onclick="showDeleteConfirmation({{ data.reel.id }})">حذف الريل</div>
-                    {% endif %}
                 </div>
             </div>
+            {% endif %}
             
             <video class="reel-video" src="{{ data.reel.video.url }}" loop playsinline preload="auto" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video>
             <div class="play-pause-overlay"><i class="fas fa-play"></i></div>
             
+            <div class="like-animation-heart"><i class="fas fa-heart"></i></div>
+
             <div class="reel-overlay">
                 <div></div>
                 
@@ -567,14 +581,14 @@
         </div>
     </div>
 
-    <script>
+<script>
         const reelsContainer = document.querySelector('.reels-container');
         const reelItems = document.querySelectorAll('.reel-item');
         let currentPlayingVideo = null;
-        let playPauseTimeout;
+        let clickTimer = null; // NEW: Timer to differentiate single/double clicks
 
         // Stop clicks on overlay elements from triggering video pause/play
-        document.querySelectorAll('.reel-overlay, .reel-actions, .reel-user-profile, .comments-section, .top-bar, .video-progress-container').forEach(el => {
+        document.querySelectorAll('.reel-overlay, .reel-actions, .reel-user-profile, .comments-section, .top-bar, .video-progress-container, .delete-menu').forEach(el => {
             el.addEventListener('click', (event) => {
                 event.stopPropagation();
             });
@@ -583,44 +597,20 @@
         // Update progress bar for videos
         function setupVideoProgress(video, progressBar, progressHandle) {
             const updateProgress = () => {
-                const progress = (video.currentTime / video.duration) * 100;
-                progressBar.style.width = `${progress}%`;
-                progressHandle.style.right = `${100 - progress}%`;
+                if (video.duration) {
+                    const progress = (video.currentTime / video.duration) * 100;
+                    progressBar.style.width = `${progress}%`;
+                }
             };
-
             const seekVideo = (e) => {
                 const rect = progressBar.parentElement.getBoundingClientRect();
                 const seekPercentage = (e.clientX - rect.left) / rect.width;
                 video.currentTime = seekPercentage * video.duration;
             };
-
             video.addEventListener('timeupdate', updateProgress);
-            video.addEventListener('loadedmetadata', () => {
-                progressBar.style.width = '0%';
-                progressHandle.style.right = '100%';
-            });
-
             progressBar.parentElement.addEventListener('click', seekVideo);
-            progressHandle.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                const moveHandler = (moveEvent) => {
-                    seekVideo(moveEvent);
-                };
-                const upHandler = () => {
-                    document.removeEventListener('mousemove', moveHandler);
-                    document.removeEventListener('mouseup', upHandler);
-                };
-                document.addEventListener('mousemove', moveHandler);
-                document.addEventListener('mouseup', upHandler);
-            });
-
-            video.addEventListener('ended', () => {
-                progressBar.style.width = '100%';
-                progressHandle.style.right = '0%';
-            });
         }
 
-        // Initialize progress bars for all videos
         function initializeProgressBars() {
             document.querySelectorAll('.reel-item').forEach(item => {
                 const video = item.querySelector('.reel-video');
@@ -652,7 +642,6 @@
                         currentPlayingVideo.pause();
                         const prevOverlay = currentPlayingVideo.closest('.reel-item').querySelector('.play-pause-overlay');
                         if (prevOverlay) prevOverlay.classList.remove('visible');
-                        // Reset progress bar for previous video
                         const prevProgressBar = currentPlayingVideo.closest('.reel-item').querySelector('.video-progress-bar');
                         if (prevProgressBar) prevProgressBar.style.width = '0%';
                     }
@@ -669,7 +658,6 @@
                 } else {
                     video.pause();
                     if (playPauseOverlay) playPauseOverlay.classList.remove('visible');
-                    // Reset progress bar when video is not visible
                     if (progressBar) progressBar.style.width = '0%';
                 }
             });
@@ -679,37 +667,69 @@
             if (item.querySelector('.reel-video')) {
                 observer.observe(item);
 
+                // --- START: REVISED CLICK/DBLCLICK LOGIC ---
                 item.addEventListener('click', function() {
-                    const video = this.querySelector('.reel-video');
-                    const playPauseOverlay = this.querySelector('.play-pause-overlay');
-                    const icon = playPauseOverlay.querySelector('i');
-
-                    clearTimeout(playPauseTimeout);
-
-                    if (video.paused) {
-                        video.play();
-                        icon.className = 'fas fa-pause';
-                    } else {
-                        video.pause();
-                        icon.className = 'fas fa-play';
-                    }
-
-                    playPauseOverlay.classList.add('visible');
-                    playPauseOverlay.classList.remove('hidden');
-
-                    playPauseTimeout = setTimeout(() => {
-                        playPauseOverlay.classList.add('hidden');
-                        const transitionEndHandler = () => {
-                            playPauseOverlay.classList.remove('visible', 'hidden');
-                            playPauseOverlay.removeEventListener('transitionend', transitionEndHandler);
-                        };
-                        playPauseOverlay.addEventListener('transitionend', transitionEndHandler);
-                    }, 700);
+                    clearTimeout(clickTimer); // Clear previous timer
+                    clickTimer = setTimeout(() => {
+                        // This will only run if no second click occurs within 250ms
+                        handleSingleClick(this);
+                    }, 250);
                 });
+
+                item.addEventListener('dblclick', function() {
+                    clearTimeout(clickTimer); // Cancel the pending single-click action
+                    handleDoubleClick(this); // Execute the double-click action immediately
+                });
+                // --- END: REVISED CLICK/DBLCLICK LOGIC ---
             }
         });
+        
+        // Function to handle single click (play/pause)
+        function handleSingleClick(reelItem) {
+            const video = reelItem.querySelector('.reel-video');
+            const playPauseOverlay = reelItem.querySelector('.play-pause-overlay');
+            const icon = playPauseOverlay.querySelector('i');
+            let playPauseTimeout;
 
-        // Initial play for the first reel
+            if (video.paused) {
+                video.play();
+                icon.className = 'fas fa-pause';
+            } else {
+                video.pause();
+                icon.className = 'fas fa-play';
+            }
+
+            playPauseOverlay.classList.add('visible');
+            playPauseOverlay.classList.remove('hidden');
+
+            playPauseTimeout = setTimeout(() => {
+                playPauseOverlay.classList.add('hidden');
+                const transitionEndHandler = () => {
+                    playPauseOverlay.classList.remove('visible', 'hidden');
+                    playPauseOverlay.removeEventListener('transitionend', transitionEndHandler);
+                };
+                playPauseOverlay.addEventListener('transitionend', transitionEndHandler);
+            }, 700);
+        }
+
+        // Function to handle double click (like)
+        function handleDoubleClick(reelItem) {
+            const likeButton = reelItem.querySelector('.like-button');
+            const likeIcon = likeButton.querySelector('i');
+            const heartAnimation = reelItem.querySelector('.like-animation-heart');
+
+            // Only trigger the like action if the post is not already liked
+            if (!likeIcon.classList.contains('fas')) {
+                likeButton.click();
+            }
+
+            // Show animation regardless
+            heartAnimation.classList.add('show');
+            setTimeout(() => {
+                heartAnimation.classList.remove('show');
+            }, 700);
+        }
+
         if (reelItems.length > 0 && reelItems[0].querySelector('.reel-video')) {
             setTimeout(() => {
                 const firstVideo = reelItems[0].querySelector('.reel-video');
@@ -735,7 +755,6 @@
             return cookieValue;
         }
 
-        // Like button functionality
         document.querySelectorAll('.like-button').forEach(button => {
             button.addEventListener('click', function() {
                 const reelId = this.dataset.reelId;
@@ -756,7 +775,6 @@
             });
         });
 
-        // Comment button functionality
         document.querySelectorAll('.comment-button').forEach(button => {
             button.addEventListener('click', function() {
                 const reelId = this.dataset.reelId;
@@ -775,7 +793,6 @@
             });
         });
         
-        // Close comments section
         document.querySelectorAll('.close-comments').forEach(button => {
             button.addEventListener('click', function() {
                 this.closest('.comments-section').classList.remove('active');
@@ -787,7 +804,6 @@
             });
         });
 
-        // Comment form submission
         document.querySelectorAll('.comment-form').forEach(form => {
             form.addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -831,7 +847,6 @@
             });
         });
 
-        // Profile navigation
         document.querySelectorAll('.reel-user-profile').forEach(header => {
             header.addEventListener('click', function() {
                 const username = this.dataset.username;
@@ -839,7 +854,6 @@
             });
         });
 
-        // Delete reel functionality
         let reelToDeleteId = null;
 
         function showDeleteConfirmation(reelId) {
@@ -867,30 +881,18 @@
             const reelElement = document.querySelector(`.reel-item[data-reel-id="${reelId}"]`);
             const loadingIndicator = document.getElementById('delete-loading');
             
-            if (reelElement) {
-                reelElement.classList.add('deleting');
-            }
-            
+            if (reelElement) reelElement.classList.add('deleting');
             loadingIndicator.style.display = 'flex';
 
             fetch(`/reels/${reelId}/delete/`, {
                 method: 'POST',
-                headers: { 
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' }
             })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-                throw new Error('Network response was not ok.');
-            })
+            .then(response => response.ok ? response.json() : Promise.reject('Network response was not ok.'))
             .then(data => {
                 if (data.success) {
                     if (reelElement) {
                         reelElement.remove();
-                        
                         if (document.querySelectorAll('.reel-item').length === 0) {
                             window.location.reload();
                         } else if (currentPlayingVideo === reelElement.querySelector('.reel-video')) {
@@ -905,27 +907,21 @@
                     }
                 } else {
                     alert(data.error || 'حدث خطأ أثناء محاولة حذف الريل');
-                    if (reelElement) {
-                        reelElement.classList.remove('deleting');
-                    }
+                    if (reelElement) reelElement.classList.remove('deleting');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('حدث خطأ غير متوقع أثناء محاولة حذف الريل');
-                if (reelElement) {
-                    reelElement.classList.remove('deleting');
-                }
+                if (reelElement) reelElement.classList.remove('deleting');
             })
             .finally(() => {
                 loadingIndicator.style.display = 'none';
             });
         }
 
-        // Toggle delete menu
         document.querySelectorAll('.delete-menu').forEach(menu => {
             const dropdown = menu.querySelector('.delete-dropdown');
-            
             menu.addEventListener('click', function(e) {
                 e.stopPropagation();
                 document.querySelectorAll('.delete-dropdown').forEach(d => {
@@ -935,19 +931,12 @@
             });
         });
 
-        function closeDeleteMenu(element) {
-            element.closest('.delete-dropdown').classList.remove('show');
-        }
-
-        // Close dropdown when clicking outside
         document.addEventListener('click', function() {
             document.querySelectorAll('.delete-dropdown').forEach(dropdown => {
                 dropdown.classList.remove('show');
             });
         });
 
-        // Initialize progress bars when page loads
         initializeProgressBars();
-    </script>
-</body>
+    </script>    
 </html>
