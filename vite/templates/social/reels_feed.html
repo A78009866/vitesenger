@@ -19,15 +19,16 @@
             overflow: hidden;
         }
         .reels-container {
-            width: 100%;
-            max-width: 500px;
-            height: 100vh;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scroll-snap-stop: always; /* <<< هذا هو السطر الذي تم إضافته لجعل التمرير أبطأ */
-            -webkit-overflow-scrolling: touch;
-            position: relative;
-        }
+    width: 100%;
+    max-width: 500px;
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-snap-stop: always; /* هذا يضمن توقف التمرير عند كل ريـل */
+    scroll-behavior: smooth; /* إضافة هذه السطر لجعل التمرير سلساً */
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+}
         .reel-item {
             width: 100%;
             height: 100vh;
@@ -625,13 +626,13 @@
         }
 
         const observerOptions = {
-            root: reelsContainer,
-            rootMargin: '0px',
-            threshold: 0.75
-        };
+    root: reelsContainer,
+    rootMargin: '0px',
+    threshold: 0.85 // زيادة هذه القيمة تجعل التمرير يتطلب رؤية جزء أكبر من الريل التالي
+};
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
                 const video = entry.target.querySelector('.reel-video');
                 if (!video) return;
 
@@ -939,5 +940,13 @@
         });
 
         initializeProgressBars();
+        reelsContainer.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = Math.sign(e.deltaY) * 50; // تقليل قيمة التمرير
+    reelsContainer.scrollBy({
+        top: delta,
+        behavior: 'smooth'
+    });
+}, { passive: false });
     </script>    
 </html>
