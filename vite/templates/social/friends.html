@@ -85,7 +85,10 @@
                     <div class="card-body">
                         {% for user in received_requests %}
                         <div class="friend-item d-flex align-items-center">
-                            <img src="{{ user.profile_picture.url|default:'/media/profile_pics/default_profile.png' }}" class="profile-pic rounded-circle me-3" alt="{{ user.username }}">
+                            <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/media/profile_pics/default_profile.png{% endif %}" 
+                                 class="profile-pic rounded-circle me-3" 
+                                 alt="{{ user.username }}"
+                                 onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png'">
                             <div class="flex-grow-1">
                                 <h6 class="mb-0">{{ user.full_name }}</h6>
                                 <small class="text-muted">@{{ user.username }}</small>
@@ -109,7 +112,10 @@
                         {% if friends %}
                             {% for friend in friends %}
                             <div class="friend-item d-flex align-items-center">
-                                <img src="{{ friend.profile_picture.url|default:'/media/profile_pics/default_profile.png' }}" class="profile-pic rounded-circle me-3" alt="{{ friend.username }}">
+                                <img src="{% if friend.profile_picture %}{{ friend.profile_picture.url }}{% else %}/media/profile_pics/default_profile.png{% endif %}" 
+                                     class="profile-pic rounded-circle me-3" 
+                                     alt="{{ friend.username }}"
+                                     onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png'">
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0">{{ friend.full_name }}</h6>
                                     <small class="text-muted">@{{ friend.username }}</small>
@@ -134,7 +140,10 @@
                     <div class="card-body">
                         {% for user in sent_requests %}
                         <div class="friend-item d-flex align-items-center">
-                            <img src="{{ user.profile_picture.url|default:'/media/profile_pics/default_profile.png' }}" class="profile-pic rounded-circle me-3" alt="{{ user.username }}">
+                            <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/media/profile_pics/default_profile.png{% endif %}" 
+                                 class="profile-pic rounded-circle me-3" 
+                                 alt="{{ user.username }}"
+                                 onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png'">
                             <div class="flex-grow-1">
                                 <h6 class="mb-0">{{ user.full_name }}</h6>
                                 <small class="text-muted">@{{ user.username }}</small>
@@ -154,7 +163,10 @@
                     <div class="card-body">
                         {% for user in request.user.blocked_users.all %}
                         <div class="friend-item d-flex align-items-center">
-                            <img src="{{ user.profile_picture.url|default:'/media/profile_pics/default_profile.png' }}" class="profile-pic rounded-circle me-3" alt="{{ user.username }}">
+                            <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/media/profile_pics/default_profile.png{% endif %}" 
+                                 class="profile-pic rounded-circle me-3" 
+                                 alt="{{ user.username }}"
+                                 onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png'">
                             <div class="flex-grow-1">
                                 <h6 class="mb-0">{{ user.full_name }}</h6>
                                 <small class="text-muted">@{{ user.username }}</small>

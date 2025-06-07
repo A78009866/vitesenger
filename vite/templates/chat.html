@@ -3,6 +3,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="screen-orientation" content="portrait-primary">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>محادثة</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -308,6 +310,23 @@
                 padding: 6px 10px;
             }
         }
+        /* منع تدوير الصفحة */
+@media screen and (min-width: 320px) and (max-width: 767px) and (orientation: landscape) {
+    html {
+        transform: rotate(-90deg);
+        transform-origin: left top;
+        width: 100vh;
+        height: 100vw;
+        overflow-x: hidden;
+        position: absolute;
+        top: 100%;
+        left: 0;
+    }
+    body {
+        /* تأكد من أن العناصر لا تتأثر بالتدوير */
+        touch-action: pan-x pan-y;
+    }
+}
     </style>
 </head>
 <body>
@@ -549,5 +568,25 @@
             }, 500);
         });
     </script>
+    <script>
+// منع تدوير الشاشة على الأجهزة المحمولة
+function lockOrientation() {
+    if (window.screen.orientation && window.screen.orientation.lock) {
+        window.screen.orientation.lock('portrait').catch(function(error) {
+            console.log('Orientation lock failed: ', error);
+        });
+    } else if (window.screen.lockOrientation) {
+        window.screen.lockOrientation('portrait');
+    } else if (window.screen.mozLockOrientation) {
+        window.screen.mozLockOrientation('portrait');
+    } else if (window.screen.msLockOrientation) {
+        window.screen.msLockOrientation('portrait');
+    }
+}
+
+// استدعاء الدالة عند تحميل الصفحة وعند تغيير الحجم
+window.addEventListener('load', lockOrientation);
+window.addEventListener('resize', lockOrientation);
+</script>
 </body>
 </html>

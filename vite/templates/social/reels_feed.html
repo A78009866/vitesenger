@@ -406,6 +406,43 @@
             to { opacity: 1; transform: scale(1); }
         }
     </style>
+    <style>
+    /* أضف هذه القواعد الجديدة */
+    .delete-menu {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 10;
+        color: white;
+        font-size: 1.5em;
+        cursor: pointer;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+        padding: 15px; /* زيادة مساحة اللمس */
+        margin: -15px -15px -15px 0; /* تعويض عن ال padding الإضافي */
+    }
+    
+    .delete-menu i {
+        pointer-events: none; /* تجنب مشاكل النقر على الأيقونة مباشرة */
+    }
+    
+    .delete-dropdown {
+        position: absolute;
+        top: 50px; /* تعديل الموقع ليتناسب مع ال padding الجديد */
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.9);
+        border-radius: 8px;
+        padding: 10px 0;
+        min-width: 150px; /* زيادة العرض قليلاً */
+        display: none;
+        z-index: 20;
+    }
+    
+    .delete-dropdown-item {
+        padding: 12px 20px; /* زيادة التباعد الداخلي */
+        font-size: 1.1em; /* زيادة حجم الخط قليلاً */
+    }
+</style>
 </head>
 <body>
     <div class="reels-container">
@@ -418,13 +455,13 @@
             </div>
             
             <div class="delete-menu">
-                <i class="fas fa-ellipsis-v"></i>
-                <div class="delete-dropdown">
-                    {% if request.user == data.reel.user %}
-                    <div class="delete-dropdown-item delete" onclick="showDeleteConfirmation({{ data.reel.id }})">حذف الريل</div>
-                    {% endif %}
-                </div>
-            </div>
+    <i class="fas fa-ellipsis-v"></i>
+    <div class="delete-dropdown">
+        {% if request.user == data.reel.user %}
+        <div class="delete-dropdown-item delete" onclick="showDeleteConfirmation({{ data.reel.id }})">حذف الريل</div>
+        {% endif %}
+    </div>
+</div>
             
             <video class="reel-video" src="{{ data.reel.video.url }}" loop playsinline preload="auto" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video>
             <div class="play-pause-overlay"><i class="fas fa-play"></i></div>

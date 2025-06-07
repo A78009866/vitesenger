@@ -2,6 +2,8 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="screen-orientation" content="portrait-primary">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trimer</title>
     <style>
@@ -51,6 +53,23 @@
             font-size: 24px; /* حجم أكبر للنص الرئيسي */
             margin-top: 15px;
         }
+        /* منع تدوير الصفحة */
+@media screen and (min-width: 320px) and (max-width: 767px) and (orientation: landscape) {
+    html {
+        transform: rotate(-90deg);
+        transform-origin: left top;
+        width: 100vh;
+        height: 100vw;
+        overflow-x: hidden;
+        position: absolute;
+        top: 100%;
+        left: 0;
+    }
+    body {
+        /* تأكد من أن العناصر لا تتأثر بالتدوير */
+        touch-action: pan-x pan-y;
+    }
+}
     </style>
 </head>
 <body>
@@ -77,6 +96,26 @@
             window.location.href = "{% url 'home' %}"; // تأكد أن 'home' هو اسم الصفحة الرئيسية
         }, 3000);
     </script>
+    <script>
+// منع تدوير الشاشة على الأجهزة المحمولة
+function lockOrientation() {
+    if (window.screen.orientation && window.screen.orientation.lock) {
+        window.screen.orientation.lock('portrait').catch(function(error) {
+            console.log('Orientation lock failed: ', error);
+        });
+    } else if (window.screen.lockOrientation) {
+        window.screen.lockOrientation('portrait');
+    } else if (window.screen.mozLockOrientation) {
+        window.screen.mozLockOrientation('portrait');
+    } else if (window.screen.msLockOrientation) {
+        window.screen.msLockOrientation('portrait');
+    }
+}
+
+// استدعاء الدالة عند تحميل الصفحة وعند تغيير الحجم
+window.addEventListener('load', lockOrientation);
+window.addEventListener('resize', lockOrientation);
+</script>
     <h3>Trimer</h3>
 </body>
 </html>
