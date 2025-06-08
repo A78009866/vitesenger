@@ -42,35 +42,34 @@
 
     /* Quran/Athkar Panel Styles */
     .quran-athkar-panel {
-        background-color: #1e1e1e; /* Dark card background */
+        background-color: #1e1e1e;
         border: 1px solid #333;
         border-radius: 8px;
         padding: 25px;
         margin-bottom: 25px;
         text-align: center;
         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        font-family: 'Amiri', serif; /* A good font for Arabic */
+        font-family: 'Amiri', serif;
     }
     .quran-athkar-panel h3 {
-        color: #4a6bff; /* Accent color */
+        color: #4a6bff;
         margin-bottom: 20px;
         font-size: 1.8em;
     }
     .quran-athkar-content {
-        font-size: 1.5em; /* Larger font for readability */
-        color: #e0e0e0; /* Light text color */
-        min-height: 100px; /* Ensure space for content */
+        font-size: 1.5em;
+        color: #e0e0e0;
+        min-height: 100px;
         line-height: 1.8;
-        opacity: 0; /* Start transparent for fade-in */
-        transition: opacity 1.5s ease-in-out; /* Slow fade-in */
-        direction: rtl; /* Right-to-left for Arabic */
+        opacity: 0;
+        transition: opacity 1.5s ease-in-out;
+        direction: rtl;
     }
     .quran-athkar-content.visible {
         opacity: 1;
     }
-    /* Removed button style as button is removed */
 
-    /* ---------- START: New Reels Section Styles ---------- */
+    /* Reels Section Styles */
     .reels-section-container {
         background-color: #1e1e1e;
         border: 1px solid #333;
@@ -88,20 +87,19 @@
     .reels-horizontal-scroll {
         display: flex;
         overflow-x: auto;
-        padding-bottom: 10px; /* Space for scrollbar if visible */
+        padding-bottom: 10px;
         gap: 15px;
-        /* Hide scrollbar for a cleaner look */
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
     }
     .reels-horizontal-scroll::-webkit-scrollbar {
-        display: none; /* Chrome, Safari, and Opera */
+        display: none;
     }
     .reel-card-link {
         text-decoration: none;
     }
     .reel-card {
-        flex: 0 0 150px; /* Do not grow, do not shrink, base width 150px */
+        flex: 0 0 150px;
         width: 150px;
         height: 250px;
         background-color: #333;
@@ -116,10 +114,33 @@
         transform: translateY(-5px);
         box-shadow: 0 4px 15px rgba(0,0,0,0.6);
     }
-    .reel-card video {
+    .reel-thumbnail {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        transition: opacity 0.3s ease;
+    }
+    .reel-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+        display: none;
+    }
+    .reel-card:hover .reel-thumbnail,
+    .reel-card:active .reel-thumbnail {
+        opacity: 0;
+    }
+    .reel-card:hover .reel-video,
+    .reel-card:active .reel-video {
+        display: block;
     }
     .reel-card-overlay {
         position: absolute;
@@ -131,17 +152,24 @@
         font-size: 0.8rem;
         background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
         text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+        z-index: 3;
     }
     .reel-card-user-img {
         width: 24px;
         height: 24px;
         border-radius: 50%;
-        margin-left: 8px; /* Corrected to margin-left for RTL */
+        margin-left: 8px;
         object-fit: cover;
         border: 1px solid rgba(255,255,255,0.5);
     }
-    /* ---------- END: New Reels Section Styles ---------- */
-
+    @media (max-width: 768px) {
+        .reel-thumbnail {
+            opacity: 1 !important;
+        }
+        .reel-video {
+            display: none !important;
+        }
+    }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 
@@ -162,14 +190,22 @@
                         {% for reel in home_reels %}
                         <a href="{% url 'reels_feed' %}?show_reel={{ reel.id }}" class="reel-card-link">
                             <div class="reel-card">
-    <video src="{{ reel.video.url }}" 
-           poster="{{ reel.thumbnail_url }}" 
-           muted 
-           loop 
-           preload="metadata" 
-           onmouseover="this.play()" 
-           onmouseout="this.pause(); this.currentTime=0;"></video>
-    <div class="reel-card-overlay">
+                                {% if reel.thumbnail_url %}
+                                    <img src="{{ reel.thumbnail_url }}" 
+                                         alt="Reel thumbnail" 
+                                         class="reel-thumbnail"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                                {% endif %}
+                                <video src="{{ reel.video.url }}"
+                                       class="reel-video"
+                                       {% if not reel.thumbnail_url %}style="display: block;"{% endif %}
+                                       muted 
+                                       loop 
+                                       preload="none"
+                                       playsinline
+                                       onmouseover="if(!this.playing) this.play()" 
+                                       onmouseout="this.pause(); this.currentTime=0;"></video>
+                                <div class="reel-card-overlay">
                                     <div class="d-flex align-items-center" dir="rtl">
                                         <img src="{{ reel.user.profile_picture.url|default:'/static/images/default_profile.png' }}" 
                                              class="reel-card-user-img"
@@ -262,29 +298,25 @@
         ];
 
         const contentElement = document.getElementById('quran-athkar-text');
-        let currentIndex = -1; // Start at -1 so the first item shown is index 0
-        const displayInterval = 7000; // Time in milliseconds (e.g., 7 seconds for text to be on screen)
-        const fadeDuration = 1500; // Duration of fade effect in milliseconds, should match CSS
+        let currentIndex = -1;
+        const displayInterval = 7000;
+        const fadeDuration = 1500;
 
         function displayNextItem() {
-            contentElement.classList.remove('visible'); // Start fade out
-
-            setTimeout(() => { // Wait for fade out to complete
+            contentElement.classList.remove('visible');
+            setTimeout(() => {
                 currentIndex = (currentIndex + 1) % quranAthkarData.length;
                 if (quranAthkarData.length > 0) {
                     contentElement.textContent = quranAthkarData[currentIndex].text;
                 } else {
                     contentElement.textContent = "لا يوجد محتوى لعرضه حالياً.";
                 }
-                contentElement.classList.add('visible'); // Start fade in
+                contentElement.classList.add('visible');
             }, fadeDuration);
         }
 
-        // Display the first item on load
         displayNextItem();
-
-        // Auto-cycle
-        setInterval(displayNextItem, displayInterval + fadeDuration); // Interval should account for fade time
+        setInterval(displayNextItem, displayInterval + fadeDuration);
     });
 </script>
 {% endblock %}

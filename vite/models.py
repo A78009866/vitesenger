@@ -216,22 +216,27 @@ class Reel(models.Model):
 
     @property
     def comments_count(self):
-        return self.reel_comments.count() # Using related_name from ReelComment
-    
+        return self.reel_comments.count() # Using related_name from ReelComment    
     @property
     def thumbnail_url(self):
-        """
-        Generates a thumbnail URL from the video using Cloudinary transformations.
-        It replaces the video extension with .jpg to create an image poster.
-        """
-        if self.video and self.video.url:
+        if self.video and hasattr(self.video, 'public_id'):
             try:
-                # Use Cloudinary's build_url to create a jpg thumbnail from the video
-                return self.video.build_url(resource_type='image', format='jpg')
-            except Exception:
-                # Fallback in case of an issue
-                return None
-        return None
+            # توليد صورة مصغرة من الإطار الأول للفيديو
+                thumbnail_url = cloudinary.CloudinaryVideo(self.video.public_id).build_url(
+                    transformation=[
+                        {'width': 300, 'height': 500, 'crop': 'fill'},  # اقتصاص الصورة
+                        {'quality': 'auto'},  # جودة تلقائية
+                        {'format': 'jpg'},  # تنسيق الصورة
+                        {'fetch_format': 'auto'},  # Cloudinary يختار أفضل تنسيق
+                ],
+                resource_type="video",
+                )
+                return thumbnail_url
+            except Exception as e:
+                print(f"Error generating thumbnail: {e}")
+                return ""  # لا نريد صورة افتراضية، نتركها فارغة
+        return ""  # لا نريد صورة افتراضية
+    
 
 
 class ReelLike(models.Model):
