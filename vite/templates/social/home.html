@@ -162,9 +162,14 @@
                         {% for reel in home_reels %}
                         <a href="{% url 'reels_feed' %}?show_reel={{ reel.id }}" class="reel-card-link">
                             <div class="reel-card">
-                                <video src="{{ reel.video.url }}" muted loop preload="metadata" 
-                                       onmouseover="this.play()" onmouseout="this.pause(); this.currentTime=0;"></video>
-                                <div class="reel-card-overlay">
+    <video src="{{ reel.video.url }}" 
+           poster="{{ reel.thumbnail_url }}" 
+           muted 
+           loop 
+           preload="metadata" 
+           onmouseover="this.play()" 
+           onmouseout="this.pause(); this.currentTime=0;"></video>
+    <div class="reel-card-overlay">
                                     <div class="d-flex align-items-center" dir="rtl">
                                         <img src="{{ reel.user.profile_picture.url|default:'/static/images/default_profile.png' }}" 
                                              class="reel-card-user-img"
