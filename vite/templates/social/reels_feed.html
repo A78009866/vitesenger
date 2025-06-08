@@ -19,16 +19,16 @@
             overflow: hidden;
         }
         .reels-container {
-    width: 100%;
-    max-width: 500px;
-    height: 100vh;
-    overflow-y: scroll;
-    scroll-snap-type: y mandatory;
-    scroll-snap-stop: always; /* هذا يضمن توقف التمرير عند كل ريـل */
-    scroll-behavior: smooth; /* إضافة هذه السطر لجعل التمرير سلساً */
-    -webkit-overflow-scrolling: touch;
-    position: relative;
-}
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-snap-stop: always; /* هذا يضمن توقف التمرير عند كل ريـل */
+            scroll-behavior: smooth; /* إضافة هذه السطر لجعل التمرير سلساً */
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
         .reel-item {
             width: 100%;
             height: 100vh;
@@ -473,6 +473,38 @@
             from { opacity: 0; transform: scale(0.9); }
             to { opacity: 1; transform: scale(1); }
         }
+
+        /* START: Style for the new beautiful copy link popup */
+        .copy-success-popup {
+            position: fixed;
+            bottom: -100px; /* Start off-screen */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(40, 167, 69, 0.95);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            font-size: 1em;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.5s ease-in-out;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .copy-success-popup.show {
+            bottom: 50px; /* Slide in */
+            opacity: 1;
+        }
+        .copy-success-popup i {
+            margin-left: 10px; /* Changed to margin-left for Arabic RTL layout */
+            font-size: 1.2em;
+        }
+        /* END: Style for the new beautiful copy link popup */
+
     </style>
 </head>
 <body>
@@ -527,6 +559,9 @@
                         <div class="action-button comment-button" data-reel-id="{{ data.reel.id }}">
                             <i class="far fa-comment"></i>
                             <span class="comments-count">{{ data.reel.comments_count }}</span>
+                        </div>
+                        <div class="action-button copy-link-button" data-reel-id="{{ data.reel.id }}">
+                            <i class="fas fa-link"></i>
                         </div>
                     </div>
                 </div>
@@ -583,7 +618,11 @@
         </div>
     </div>
 
-<script>
+    <div class="copy-success-popup" id="copy-success-popup">
+        <span>تم نسخ الرابط بنجاح!</span>
+        <i class="fas fa-check-circle"></i>
+    </div>
+    <script>
         const reelsContainer = document.querySelector('.reels-container');
         const reelItems = document.querySelectorAll('.reel-item');
         let currentPlayingVideo = null;
@@ -626,13 +665,13 @@
         }
 
         const observerOptions = {
-    root: reelsContainer,
-    rootMargin: '0px',
-    threshold: 0.85 // زيادة هذه القيمة تجعل التمرير يتطلب رؤية جزء أكبر من الريل التالي
-};
+            root: reelsContainer,
+            rootMargin: '0px',
+            threshold: 0.85 // زيادة هذه القيمة تجعل التمرير يتطلب رؤية جزء أكبر من الريل التالي
+        };
 
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
                 const video = entry.target.querySelector('.reel-video');
                 if (!video) return;
 
@@ -848,6 +887,37 @@ const observer = new IntersectionObserver((entries) => {
                 .catch(error => console.error('Error:', error));
             });
         });
+        
+        // START: REVISED copy link functionality
+        document.querySelectorAll('.copy-link-button').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.stopPropagation();
+                const reelId = this.dataset.reelId;
+                const reelUrl = `${window.location.origin}/reels/view/${reelId}/`; 
+                const popup = document.getElementById('copy-success-popup');
+
+                // Check for Clipboard API support
+                if (!navigator.clipboard) {
+                    alert("متصفحك لا يدعم خاصية النسخ التلقائي.");
+                    return;
+                }
+
+                navigator.clipboard.writeText(reelUrl).then(() => {
+                    // Show the beautiful popup
+                    if (popup) {
+                        popup.classList.add('show');
+                        // Hide the popup after a delay
+                        setTimeout(() => {
+                            popup.classList.remove('show');
+                        }, 2500); // Keep it visible for 2.5 seconds
+                    }
+                }).catch(err => {
+                    console.error('Failed to copy link: ', err);
+                    alert('فشل نسخ الرابط إلى الحافظة.');
+                });
+            });
+        });
+        // END: REVISED copy link functionality
 
         document.querySelectorAll('.reel-user-profile').forEach(header => {
             header.addEventListener('click', function() {
@@ -941,12 +1011,12 @@ const observer = new IntersectionObserver((entries) => {
 
         initializeProgressBars();
         reelsContainer.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    const delta = Math.sign(e.deltaY) * 20; // تقليل قيمة التمرير
-    reelsContainer.scrollBy({
-        top: delta,
-        behavior: 'smooth'
-    });
-}, { passive: false });
-    </script>    
+            e.preventDefault();
+            const delta = Math.sign(e.deltaY) * 20; // تقليل قيمة التمرير
+            reelsContainer.scrollBy({
+                top: delta,
+                behavior: 'smooth'
+            });
+        }, { passive: false });
+</script>    
 </html>

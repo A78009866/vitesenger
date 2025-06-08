@@ -44,7 +44,7 @@ urlpatterns = [
     # ---------- End of New Reel URLs ----------
     path('reels/<int:reel_id>/delete/', views.delete_reel, name='delete_reel'),
 
-    # Removed story URLs:
+    path('reels/view/<int:reel_id>/', views.reel_detail_view, name='reel_detail'),
     # path('story/upload/', views.upload_story, name='upload_story'),
     # path('stories/<str:username>/', views.user_stories, name='user_stories'),
     path('notifications/unread_count/', views.get_unread_notifications_count, name='unread_notifications_count'),

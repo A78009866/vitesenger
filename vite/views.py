@@ -99,6 +99,9 @@ def home(request):
         post.is_liked = post.likes.filter(user=request.user).exists()
         post.is_saved = SavedPost.objects.filter(user=request.user, post=post).exists()
     
+    # Fetch random reels for the new section
+    home_reels = Reel.objects.select_related('user').order_by('?')[:10]
+
     unread_messages_count = Message.objects.filter(
         receiver=request.user,
         is_read=False
@@ -111,6 +114,7 @@ def home(request):
     
     context = {
         'posts': posts,
+        'home_reels': home_reels, # Add reels to the context
         'unread_messages_count': unread_messages_count,
         'unread_count': unread_notifications_count,
     }
@@ -489,24 +493,38 @@ def game_view(request):
 
 @login_required
 def reels_feed(request):
-    # تحديد العتبة الزمنية للريلز "الجديدة" (مثلاً، آخر 24 ساعة)
-    time_threshold = timezone.now() - timedelta(hours=5)
+    featured_reel_id = request.GET.get('show_reel')
+    reels_list = []
 
-    # 1. جلب الريلز الجديدة وترتيبها من الأحدث إلى الأقدم
-    new_reels = Reel.objects.filter(created_at__gte=time_threshold).select_related('user').prefetch_related(
-        'reel_likes', 
-        'reel_comments__user'
-    ).order_by('-created_at')
+    # If a specific reel is requested, fetch it and put it at the top of the list
+    if featured_reel_id:
+        try:
+            # Get the featured reel
+            featured_reel = Reel.objects.select_related('user').prefetch_related(
+                'reel_likes', 'reel_comments__user'
+            ).get(id=featured_reel_id)
+            reels_list.append(featured_reel)
 
-    # 2. جلب الريلز القديمة وترتيبها بشكل عشوائي
-    # ملاحظة: قد يكون order_by('?') مكلفًا على قواعد البيانات الكبيرة
-    old_reels = Reel.objects.filter(created_at__lt=time_threshold).select_related('user').prefetch_related(
-        'reel_likes', 
-        'reel_comments__user'
-    ).order_by('?')
+            # Get other reels randomly, excluding the featured one
+            other_reels = Reel.objects.exclude(id=featured_reel_id).select_related('user').prefetch_related(
+                'reel_likes', 'reel_comments__user'
+            ).order_by('?')
+            reels_list.extend(list(other_reels))
 
-    # 3. دمج القائمتين معًا
-    reels_list = list(new_reels) + list(old_reels)
+        except Reel.DoesNotExist:
+            # If the reel ID from the URL is invalid, fall back to the default logic
+            featured_reel_id = None
+    
+    # Default logic if no specific reel is requested (or if the ID was invalid)
+    if not featured_reel_id:
+        time_threshold = timezone.now() - timedelta(hours=5)
+        new_reels = Reel.objects.filter(created_at__gte=time_threshold).select_related('user').prefetch_related(
+            'reel_likes', 'reel_comments__user'
+        ).order_by('-created_at')
+        old_reels = Reel.objects.filter(created_at__lt=time_threshold).select_related('user').prefetch_related(
+            'reel_likes', 'reel_comments__user'
+        ).order_by('?')
+        reels_list = list(new_reels) + list(old_reels)
 
     reels_data = []
     for reel in reels_list:
@@ -604,3 +622,30 @@ def delete_reel(request, reel_id):
     except Exception as e:
         print(f"Error deleting reel {reel_id}: {e}")
         return JsonResponse({'success': False, 'error': 'حدث خطأ أثناء محاولة حذف الريل.'}, status=500)
+
+# في ملف views.py الخاص بتطبيق الريلز
+
+def reel_detail_view(request, reel_id):
+    # 1. جلب الريل المحدد مع بيانات المستخدم والتعليقات لتحسين الأداء
+    reel = get_object_or_404(Reel.objects.select_related('user').prefetch_related('reel_comments__user'), id=reel_id)
+
+    # 2. التحقق مما إذا كان المستخدم قد سجل إعجابه بالريل
+    is_liked_by_user = False
+    if request.user.is_authenticated:
+        is_liked_by_user = reel.reel_likes.filter(user=request.user).exists()
+
+    # 3. جلب قائمة التعليقات
+    comments_list = reel.reel_comments.all().order_by('-created_at')
+
+    # 4. تجهيز قاموس البيانات بشكل مشابه لـ reels_feed لتسهيل استخدام القالب
+    reel_data = {
+        'reel': reel,
+        'is_liked_by_user': is_liked_by_user,
+        'comments_list': comments_list,
+    }
+
+    # 5. تمرير البيانات إلى القالب
+    context = {
+        'reel_data': reel_data,
+    }
+    return render(request, 'social/reel_detail.html', context)
