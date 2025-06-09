@@ -201,6 +201,7 @@ class Reel(models.Model):
     caption = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    views_count = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['-created_at']

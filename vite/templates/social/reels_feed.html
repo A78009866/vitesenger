@@ -560,6 +560,10 @@
                             <i class="far fa-comment"></i>
                             <span class="comments-count">{{ data.reel.comments_count }}</span>
                         </div>
+                        <div class="action-button view-count-button" style="cursor: default;">
+                            <i class="far fa-eye"></i>
+                            <span class="views-count">{{ data.reel.views_count }}</span>
+                        </div>
                         <div class="action-button copy-link-button" data-reel-id="{{ data.reel.id }}">
                             <i class="fas fa-link"></i>
                         </div>
@@ -627,6 +631,7 @@
         const reelItems = document.querySelectorAll('.reel-item');
         let currentPlayingVideo = null;
         let clickTimer = null; // NEW: Timer to differentiate single/double clicks
+        const viewedReels = new Set(); // To track reels viewed in this session
 
         // Stop clicks on overlay elements from triggering video pause/play
         document.querySelectorAll('.reel-overlay, .reel-actions, .reel-user-profile, .comments-section, .top-bar, .video-progress-container, .delete-menu').forEach(el => {
@@ -669,6 +674,47 @@
             rootMargin: '0px',
             threshold: 0.85 // زيادة هذه القيمة تجعل التمرير يتطلب رؤية جزء أكبر من الريل التالي
         };
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // New function to record view
+        function recordView(reelId) {
+            if (viewedReels.has(reelId)) {
+                return; // Already recorded a view for this reel in this session
+            }
+
+            fetch(`/reels/${reelId}/view/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    viewedReels.add(reelId);
+                    const viewCountElement = document.querySelector(`.reel-item[data-reel-id="${reelId}"] .views-count`);
+                    if (viewCountElement) {
+                        viewCountElement.textContent = data.views_count;
+                    }
+                }
+            })
+            .catch(error => console.error('Error recording view:', error));
+        }
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -677,6 +723,7 @@
 
                 const playPauseOverlay = entry.target.querySelector('.play-pause-overlay');
                 const progressBar = entry.target.querySelector('.video-progress-bar');
+                const reelId = entry.target.dataset.reelId;
 
                 if (entry.isIntersecting) {
                     if (currentPlayingVideo && currentPlayingVideo !== video) {
@@ -696,6 +743,15 @@
                     });
                     currentPlayingVideo = video;
                     if (playPauseOverlay) playPauseOverlay.classList.remove('visible');
+
+                    // Record view after a short delay to ensure user actually watched it
+                    setTimeout(() => {
+                        // Check again if it's still intersecting before recording
+                        if (entry.isIntersecting) {
+                            recordView(reelId);
+                        }
+                    }, 2000); // Record after 2 seconds of being visible
+
                 } else {
                     video.pause();
                     if (playPauseOverlay) playPauseOverlay.classList.remove('visible');
@@ -779,21 +835,6 @@
                     currentPlayingVideo = firstVideo;
                 }
             }, 150);
-        }
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
         }
 
         document.querySelectorAll('.like-button').forEach(button => {

@@ -17,6 +17,7 @@ import pytz
 from django.utils.html import strip_tags, escape
 from django.contrib.auth import get_user_model
 from datetime import timedelta
+from django.db.models import F
 
 User = get_user_model()
 
@@ -657,3 +658,20 @@ def reel_detail_view(request, reel_id):
         'reel_data': reel_data,
     }
     return render(request, 'social/reel_detail.html', context)
+
+@login_required
+@require_POST
+def record_reel_view(request, reel_id):
+    try:
+        # Using update with F() is atomic and prevents race conditions.
+        updated_count = Reel.objects.filter(pk=reel_id).update(views_count=F('views_count') + 1)
+        if updated_count > 0:
+            # Optionally, get the new count to send back
+            new_count = Reel.objects.get(pk=reel_id).views_count
+            return JsonResponse({'success': True, 'views_count': new_count})
+        else:
+             return JsonResponse({'success': False, 'error': 'Reel not found'}, status=404)
+    except Exception as e:
+        # Log the error for debugging
+        print(f"Error recording reel view: {e}")
+        return JsonResponse({'success': False, 'error': 'An internal error occurred'}, status=500)
