@@ -15,6 +15,7 @@
         --light-text: #b0b3b8; /* تغيير إلى اللون الفاتح */
         --white: #242526; /* تغيير إلى اللون الداكن */
         --border-color: #3e4042; /* تغيير إلى اللون الداكن */
+        --success-color: #22c55e; /* لون الحالة "نشط" */
     }
 
     body {
@@ -96,14 +97,33 @@
     .user-item:hover {
         background-color: var(--secondary-color);
     }
-
-    .user-avatar {
+    
+    /* -- تعديل جديد: حاوية الصورة -- */
+    .avatar-container {
+        position: relative;
         width: 64px;
         height: 64px;
         min-width: 64px;
+        margin-left: 14px;
+    }
+
+    .user-avatar {
+        width: 100%;
+        height: 100%;
         border-radius: 50%;
         object-fit: cover;
-        margin-left: 14px;
+    }
+    
+    /* -- تعديل جديد: مؤشر النشاط -- */
+    .online-indicator {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 15px;
+        height: 15px;
+        background-color: var(--success-color);
+        border-radius: 50%;
+        border: 2px solid var(--white); /* حدود بلون الخلفية */
     }
 
     .user-info {
@@ -180,71 +200,38 @@
 
     /* تحسينات للشاشات الصغيرة */
     @media (max-width: 480px) {
-        .chat-title {
-            font-size: 1.3rem;
-        }
-        
-        .search-input {
-            padding: 12px 14px;
-            font-size: 1rem;
-        }
-        
-        .user-avatar {
-            width: 56px;
-            height: 56px;
-            min-width: 56px;
-        }
-        
-        .user-name {
-            font-size: 1.1rem;
-        }
-        
-        .last-message {
-            font-size: 0.95rem;
-        }
-        
-        .user-item {
-            padding: 14px 10px;
-        }
+        .chat-title { font-size: 1.3rem; }
+        .search-input { padding: 12px 14px; font-size: 1rem; }
+        .avatar-container { width: 56px; height: 56px; min-width: 56px; } /* تعديل الحاوية */
+        .user-name { font-size: 1.1rem; }
+        .last-message { font-size: 0.95rem; }
+        .user-item { padding: 14px 10px; }
+        .online-indicator { width: 13px; height: 13px; }
     }
 
     /* تحسينات للشاشات الصغيرة جدًا */
     @media (max-width: 360px) {
-        .user-avatar {
-            width: 52px;
-            height: 52px;
-            min-width: 52px;
-        }
-        
-        .user-name {
-            font-size: 1rem;
-        }
-        
-        .last-message {
-            font-size: 0.9rem;
-        }
-        
-        .message-time {
-            font-size: 0.8rem;
-        }
+        .avatar-container { width: 52px; height: 52px; min-width: 52px; } /* تعديل الحاوية */
+        .user-name { font-size: 1rem; }
+        .last-message { font-size: 0.9rem; }
+        .message-time { font-size: 0.8rem; }
+        .online-indicator { width: 12px; height: 12px; }
     }
+    
     /* منع تدوير الصفحة */
-@media screen and (min-width: 320px) and (max-width: 767px) and (orientation: landscape) {
-    html {
-        transform: rotate(-90deg);
-        transform-origin: left top;
-        width: 100vh;
-        height: 100vw;
-        overflow-x: hidden;
-        position: absolute;
-        top: 100%;
-        left: 0;
+    @media screen and (min-width: 320px) and (max-width: 767px) and (orientation: landscape) {
+        html {
+            transform: rotate(-90deg);
+            transform-origin: left top;
+            width: 100vh;
+            height: 100vw;
+            overflow-x: hidden;
+            position: absolute;
+            top: 100%;
+            left: 0;
+        }
+        body { touch-action: pan-x pan-y; }
     }
-    body {
-        /* تأكد من أن العناصر لا تتأثر بالتدوير */
-        touch-action: pan-x pan-y;
-    }
-}
 </style>
 
 <div class="chat-list-container" dir="rtl">
@@ -253,7 +240,7 @@
             <i class="fas fa-arrow-left"></i>
         </button>
         <h1 class="chat-title">المحادثات</h1>
-        <div style="width: 48px;"></div> <!-- عنصر فارغ للمحافظة على التوازن -->
+        <div style="width: 48px;"></div>
     </div>
     
     <div class="search-container">
@@ -263,22 +250,29 @@
     <ul class="user-list" id="chatList">
         {% for user_info in all_users %}
             <li class="user-item {% if user_info.is_new %}new-message{% endif %}" onclick="location.href='{% url 'chat' user_info.user.username %}'">
-                <img src="{{ user_info.user.profile_picture.url }}" alt="{{ user_info.user.username }}" class="user-avatar"
-                     onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';">
-                     <div class="user-info">
-                        <div class="user-name">
-                            {% if user_info.is_new %}<span class="new-message-badge">جديد</span>{% endif %}
-                            {{ user_info.user.username }}
-                            {% if user_info.user.is_verified %}
-                                <span class="verified-badge" title="حساب موثوق (لديه أكثر من 10 متابعين)">
-                                    <i class="fas fa-check-circle"></i>
-                                </span>
-                            {% endif %}
-                        </div>
-                        <div class="last-message">{{ user_info.last_message }}</div>
+                <div class="avatar-container">
+                    <img src="{{ user_info.user.profile_picture.url }}" alt="{{ user_info.user.username }}" class="user-avatar"
+                         onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';">
+                    {% if user_info.user.is_online %}
+                        <span class="online-indicator"></span>
+                    {% endif %}
+                </div>
+                 <div class="user-info">
+                    <div class="user-name">
+                        {% if user_info.is_new %}<span class="new-message-badge">جديد</span>{% endif %}
+                        {{ user_info.user.username }}
+                        {% if user_info.user.is_verified %}
+                            <span class="verified-badge" title="حساب موثوق (لديه أكثر من 10 متابعين)">
+                                <i class="fas fa-check-circle"></i>
+                            </span>
+                        {% endif %}
                     </div>
+                    <div class="last-message">{{ user_info.last_message }}</div>
+                </div>
                 <div class="message-time">
-                    {{ user_info.last_time|date:"H:i" }}
+                    {% if user_info.last_time %}
+                        {{ user_info.last_time|date:"H:i" }}
+                    {% endif %}
                 </div>
             </li>
         {% empty %}
