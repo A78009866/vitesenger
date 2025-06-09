@@ -9,21 +9,21 @@
         --bg-secondary: #1a1a1a;
         --bg-card: #222222;
         --bg-item-box: #282828;
-        --bg-hover: #313131; /* Slightly lighter hover for general items */
-        --button-hover-bg: #383838; /* Specific hover for buttons if needed */
+        --bg-hover: #313131;
+        --button-hover-bg: #383838;
         --accent-color: #3b82f6;
-        --accent-hover: #2563eb; /* Used for solid hover fill */
+        --accent-hover: #2563eb;
         --text-primary: #ffffff;
         --text-secondary: #9ca3af;
         --border-color: #333333;
         --border-item-box: #404040;
-        --danger-color: #ef4444; /* Slightly brighter red */
+        --danger-color: #ef4444;
         --danger-hover-bg: #dc2626;
-        --success-color: #22c55e; /* Slightly brighter green */
+        --success-color: #22c55e;
         --success-hover-bg: #16a34a;
-        --warning-color: #f97316; /* Slightly brighter orange */
+        --warning-color: #f97316;
         --warning-hover-bg: #ea580c;
-        --info-color: #0ea5e9; /* Slightly brighter cyan/blue */
+        --info-color: #0ea5e9;
         --info-hover-bg: #0284c7;
         --shadow-light: rgba(59, 130, 246, 0.1);
         --shadow-dark: rgba(0, 0, 0, 0.5);
@@ -60,16 +60,42 @@
     .profile-avatar {
         width: 120px; height: 120px; border-radius: 50%;
         border: 4px solid var(--bg-card); margin: -60px auto 0;
-        position: relative; display: block; background: var(--bg-secondary);
-        overflow: hidden;
+        position: relative; /* تم تعديل هذا */
+        display: block; background: var(--bg-secondary);
+        overflow: visible; /* تم تعديل هذا للسماح بظهور الحدود */
     }
 
-    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; /* لتكون الصورة دائرية تماماً */ }
+    
+    /* تعديل نمط النقطة الخضراء هنا */
+    .profile-avatar .online-indicator {
+        position: absolute;
+        bottom: 5px; /* تعديل المسافة من الأسفل */
+        right: 5px; /* تعديل المسافة من اليمين */
+        width: 18px; /* حجم أكبر مناسب للصورة الكبيرة */
+        height: 18px;
+        background-color: var(--success-color);
+        border-radius: 50%;
+        border: 3px solid var(--bg-card); /* حدود بنفس لون خلفية الكرت */
+        box-shadow: 0 0 7px var(--success-color);
+        z-index: 10;
+    }
+
     .profile-info { text-align: center; margin-top: 1.5rem; }
     .profile-name { font-size: 1.75rem; font-weight: 700; margin: 0 0 0.25rem 0; color: var(--text-primary); }
     .profile-username { font-size: 1rem; color: var(--text-secondary); margin: 0 0 1rem 0; }
     .verified-badge { color: var(--accent-color); margin-left: 0.5rem; font-size: 1.2rem; }
     [dir="rtl"] .verified-badge { margin-right: 0.5rem; margin-left: 0; }
+    .online-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        background-color: var(--success-color);
+        border-radius: 50%;
+        margin-left: 8px;
+        vertical-align: middle;
+        box-shadow: 0 0 5px var(--success-color);
+    }
 
 
     .points-display {
@@ -82,44 +108,40 @@
     [dir="ltr"] .points-display i { margin-right: 0.5rem; }
 
 
-    /* Updated Action Buttons Layout */
     .action-buttons {
         display: flex;
-        gap: 0.6rem; /* Slightly reduced gap */
+        gap: 0.6rem;
         justify-content: center;
-        flex-wrap: wrap; /* Allow buttons to wrap to next line */
+        flex-wrap: wrap;
         margin-top: 1.5rem;
     }
 
-    /* Updated Button Styles */
     .btn-custom {
-        padding: 0.5rem 0.85rem; /* Further reduced padding for a slimmer look */
+        padding: 0.5rem 0.85rem;
         border-radius: 6px;
         font-weight: 500;
-        font-size: 0.8rem; /* Further reduced font size */
+        font-size: 0.8rem;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
-        gap: 0.35rem; /* Further reduced gap */
+        gap: 0.35rem;
         transition: all 0.2s ease;
         cursor: pointer;
-        min-width: auto; /* Allow natural width based on content and padding */
+        min-width: auto;
         justify-content: center;
         background-color: transparent;
-        border: 1px solid var(--border-color); /* Default border */
-        color: var(--text-secondary); /* Default text color */
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
     }
     .btn-custom:hover {
-        background-color: var(--button-hover-bg); /* Subtle background on hover */
+        background-color: var(--button-hover-bg);
         color: var(--text-primary);
-        border-color: var(--text-secondary); /* Slightly highlight border on hover */
+        border-color: var(--text-secondary);
     }
 
-    /* Icons margin in buttons (RTL/LTR) */
     [dir="rtl"] .btn-custom i { margin-left: 0.4rem; margin-right: 0; }
     [dir="ltr"] .btn-custom i { margin-right: 0.4rem; margin-left: 0; }
 
-    /* Specific Button Color Overrides */
     .btn-primary {
         border-color: var(--accent-color);
         color: var(--accent-color);
@@ -130,8 +152,8 @@
         color: white;
     }
 
-    .btn-secondary { /* This is a good candidate for a more subtle default dark theme button */
-        background-color: var(--bg-item-box); /* Use item box bg for a very subtle fill */
+    .btn-secondary {
+        background-color: var(--bg-item-box);
         border-color: var(--border-item-box);
         color: var(--text-primary);
     }
@@ -146,7 +168,7 @@
         color: var(--danger-color);
     }
     .btn-danger:hover {
-        background-color: var(--danger-color); /* Fill with danger color on hover */
+        background-color: var(--danger-color);
         border-color: var(--danger-color);
         color: white;
     }
@@ -156,7 +178,7 @@
         color: var(--success-color);
     }
     .btn-success:hover {
-        background-color: var(--success-color); /* Fill with success color on hover */
+        background-color: var(--success-color);
         border-color: var(--success-color);
         color: white;
     }
@@ -166,7 +188,7 @@
         color: var(--warning-color);
     }
     .btn-warning:hover {
-        background-color: var(--warning-color); /* Fill with warning color on hover */
+        background-color: var(--warning-color);
         border-color: var(--warning-color);
         color: white;
     }
@@ -176,7 +198,7 @@
         color: var(--info-color);
     }
     .btn-info:hover {
-        background-color: var(--info-color); /* Fill with info color on hover */
+        background-color: var(--info-color);
         border-color: var(--info-color);
         color: white;
     }
@@ -188,7 +210,7 @@
         opacity: 0.5;
         cursor: not-allowed;
     }
-    .btn-disabled:hover { /* No hover effect for disabled */
+    .btn-disabled:hover {
         background-color: transparent;
         color: var(--text-secondary);
         border-color: var(--border-color);
@@ -197,7 +219,6 @@
 
     .container-custom { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
 
-    /* Tab Styles */
     .profile-tabs-container {
         margin-top: 2rem; background: var(--bg-card);
         border: 1px solid var(--border-color); border-radius: 12px;
@@ -222,7 +243,6 @@
     .tab-pane.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
-    /* "About" Section Item Styles */
     .about-section-content { display: grid; gap: 1rem; }
     .about-item {
         background-color: var(--bg-item-box); border: 1px solid var(--border-item-box);
@@ -271,7 +291,6 @@
         .container-custom { padding: 1rem 0.5rem; }
         .profile-content { padding: 0 1rem 1.5rem 1rem; }
         .profile-name { font-size: 1.5rem; }
-        /* Ensure action buttons wrap and center, not stack column by default */
         .action-buttons { justify-content: center; }
         .cover-section { height: 150px; }
         .profile-avatar { width: 100px; height: 100px; margin-top: -50px; }
@@ -284,17 +303,14 @@
         .tab-link { border-bottom: 1px solid var(--border-color); border-left: none !important; border-right: none !important;}
         .tab-link.active { border-bottom-color: var(--accent-color); border-left: 3px solid var(--accent-color); border-bottom-width: 1px;}
         [dir="rtl"] .tab-link.active { border-left: none; border-right: 3px solid var(--accent-color); }
-        /* For very small screens, allow buttons to take full width if they wrap to new lines */
         .action-buttons .btn-custom { 
-            flex-grow: 1; /* Allow buttons to grow if space allows or if they are few */
-            /* Consider min-width for very small buttons if content is too short */
+            flex-grow: 1;
         }
     }
     .posts-container-in-tab { margin-bottom: 60px; }
     
 </style>
 <style>
-    /* Tab Styles */
     .profile-tabs-container {
         margin-top: 2rem; background: var(--bg-card);
         border: 1px solid var(--border-color); border-radius: 12px;
@@ -303,8 +319,8 @@
     .tabs-navigation { 
         display: flex; 
         background-color: var(--bg-secondary);
-        flex-direction: row; /* تأكد من أنها أفقيّة */
-        flex-wrap: nowrap; /* منع الانتقال إلى سطر جديد */
+        flex-direction: row;
+        flex-wrap: nowrap;
     }
     .tab-link {
         flex-grow: 1; 
@@ -320,7 +336,7 @@
         border-bottom: 3px solid transparent; 
         position: relative; 
         outline: none;
-        white-space: nowrap; /* منع كسر النص إلى سطر جديد */
+        white-space: nowrap;
     }
     [dir="rtl"] .tab-link:not(:last-child) { border-left: 1px solid var(--border-color); }
     [dir="ltr"] .tab-link:not(:last-child) { border-right: 1px solid var(--border-color); }
@@ -334,12 +350,12 @@
     
     @media (max-width: 480px) {
         .tabs-navigation { 
-            flex-direction: row; /* تغيير من column إلى row */
-            overflow-x: auto; /* إضافة شريط تمرير أفقي إذا لزم الأمر */
-            -webkit-overflow-scrolling: touch; /* لمسة سلسة على الأجهزة المحمولة */
+            flex-direction: row;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .tab-link { 
-            flex-shrink: 0; /* منع الضغط لتقليل العرض */
+            flex-shrink: 0;
             border-bottom: 3px solid transparent; 
             border-left: none !important; 
             border-right: none !important;
@@ -362,6 +378,7 @@
                  onerror="this.onerror=null; this.src='/media/cover_photos/default_cover.jpg';">
         {% endif %}
     </div>
+    
     <div class="profile-avatar">
         {% if profile_user.profile_picture and profile_user.profile_picture.url %}
             <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}'s profile picture"
@@ -369,6 +386,9 @@
         {% else %}
             <img src="/media/profile_pics/default_profile.png" alt="صورة البروفايل الافتراضية"
                  onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';">
+        {% endif %}
+        {% if profile_user.is_online %}
+            <span class="online-indicator" title="نشط الآن"></span>
         {% endif %}
     </div>
 
@@ -541,6 +561,58 @@ document.addEventListener('DOMContentLoaded', function () {
     } else if (tabLinks.length > 0) {
         activateTab(tabLinks[0].getAttribute('data-tab'));
     }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if request.user.is_authenticated %}
+    let userHasBeenActive = false;
+
+    function recordActivity() {
+        userHasBeenActive = true;
+    }
+
+    window.addEventListener('mousemove', recordActivity);
+    window.addEventListener('keydown', recordActivity);
+    window.addEventListener('scroll', recordActivity);
+    window.addEventListener('click', recordActivity);
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    function sendActivityUpdate() {
+        if (userHasBeenActive) {
+            fetch("{% url 'update_user_activity' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({})
+            }).catch(error => {
+                console.error('Error updating activity:', error);
+            });
+            userHasBeenActive = false;
+        }
+    }
+
+    sendActivityUpdate();
+    setInterval(sendActivityUpdate, 30000);
+    {% endif %}
 });
 </script>
 {% endblock %}

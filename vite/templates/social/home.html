@@ -76,6 +76,7 @@
         border-radius: 8px;
         padding: 20px;
         margin-bottom: 25px;
+        margin-top: 25px; /* Added margin-top for spacing */
     }
     .reels-section-container h3 {
         color: #e0e0e0;
@@ -183,45 +184,48 @@
                     <p id="quran-athkar-text" class="quran-athkar-content"></p>
                 </div>
 
-                {% if home_reels %}
-                <div class="reels-section-container">
-                    <h3><i class="fas fa-film me-2"></i> شاهد الريلز</h3>
-                    <div class="reels-horizontal-scroll">
-                        {% for reel in home_reels %}
-                        <a href="{% url 'reels_feed' %}?show_reel={{ reel.id }}" class="reel-card-link">
-                            <div class="reel-card">
-                                {% if reel.thumbnail_url %}
-                                    <img src="{{ reel.thumbnail_url }}" 
-                                         alt="Reel thumbnail" 
-                                         class="reel-thumbnail"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
-                                {% endif %}
-                                <video src="{{ reel.video.url }}"
-                                       class="reel-video"
-                                       {% if not reel.thumbnail_url %}style="display: block;"{% endif %}
-                                       muted 
-                                       loop 
-                                       preload="none"
-                                       playsinline
-                                       onmouseover="if(!this.playing) this.play()" 
-                                       onmouseout="this.pause(); this.currentTime=0;"></video>
-                                <div class="reel-card-overlay">
-                                    <div class="d-flex align-items-center" dir="rtl">
-                                        <img src="{{ reel.user.profile_picture.url|default:'/static/images/default_profile.png' }}" 
-                                             class="reel-card-user-img"
-                                             onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';">
-                                        <span>@{{ reel.user.username }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
                 {% for post in posts %}
                     {% include 'social/post_template.html' with post=post %}
+
+                    {# --- CHANGE: Reels section is now inserted after the first post --- #}
+                    {% if forloop.counter == 1 and home_reels %}
+                    <div class="reels-section-container">
+                        <h3><i class="fas fa-film me-2"></i> شاهد الريلز</h3>
+                        <div class="reels-horizontal-scroll">
+                            {% for reel in home_reels %}
+                            <a href="{% url 'reels_feed' %}?show_reel={{ reel.id }}" class="reel-card-link">
+                                <div class="reel-card">
+                                    {% if reel.thumbnail_url %}
+                                        <img src="{{ reel.thumbnail_url }}"
+                                             alt="Reel thumbnail"
+                                             class="reel-thumbnail"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                                    {% endif %}
+                                    <video src="{{ reel.video.url }}"
+                                           class="reel-video"
+                                           {% if not reel.thumbnail_url %}style="display: block;"{% endif %}
+                                           muted
+                                           loop
+                                           preload="none"
+                                           playsinline
+                                           onmouseover="if(!this.playing) this.play()"
+                                           onmouseout="this.pause(); this.currentTime=0;"></video>
+                                    <div class="reel-card-overlay">
+                                        <div class="d-flex align-items-center" dir="rtl">
+                                            <img src="{{ reel.user.profile_picture.url|default:'/static/images/default_profile.png' }}"
+                                                 class="reel-card-user-img"
+                                                 onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';">
+                                            <span>@{{ reel.user.username }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                 {% endfor %}
+
             </div>
         </div>
     </div>

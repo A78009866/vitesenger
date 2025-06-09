@@ -3,11 +3,16 @@
 <div class="card mb-4 border-dark bg-dark text-light" id="post-{{ post.id }}">
     <div class="card-body">
         <div class="d-flex align-items-center mb-3">
-            <a href="{% url 'profile' post.user.username %}">
-                <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2 border border-secondary" alt="User avatar"
-                    onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
-                    style="width: 50px; height: 50px; object-fit: cover;">
-            </a>
+            <div style="position: relative; flex-shrink: 0;" class="me-2">
+                <a href="{% url 'profile' post.user.username %}">
+                    <img src="{{ post.user.profile_picture.url }}" class="rounded-circle border border-secondary" alt="User avatar"
+                        onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
+                        style="width: 50px; height: 50px; object-fit: cover;">
+                </a>
+                {% if post.user.is_online %}
+                    <span class="online-indicator-dot" title="نشط الآن"></span>
+                {% endif %}
+            </div>
             <div>
                 <a href="{% url 'profile' post.user.username %}" class="text-decoration-none text-light">
                     <h5 class="mb-0">@{{ post.user.username }}
@@ -186,8 +191,6 @@
 </div>
 
 <style>
-    /* Styles remain the same as provided in file_content_1.html */
-    /* أنماط التصميم الغامق */
     .card.bg-dark {
         background-color: #1a1a1a !important;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -206,7 +209,6 @@
         color: #ffffff !important;
     }
 
-    /* تحسينات الصور والفيديوهات للهواتف */
     .post-media-container {
         margin-bottom: 1rem;
         border-radius: 0.5rem;
@@ -246,7 +248,6 @@
         max-height: 500px;
     }
 
-    /* تحسينات لمودال الصورة المكبرة */
     #imageModal .modal-content {
         background-color: rgba(0, 0, 0, 0.9);
     }
@@ -259,7 +260,6 @@
         filter: invert(1);
     }
 
-    /* تحسينات للأزرار والروابط */
     .btn-outline-primary {
         color: #0d6efd;
         border-color: #0d6efd;
@@ -270,7 +270,6 @@
         color: #fff;
     }
 
-    /* إضافة أنماط جديدة للتوست */
     .toast {
         min-width: 250px;
         margin-bottom: 10px;
@@ -296,24 +295,17 @@
         background-color: #dc3545 !important;
     }
 
-    /* تأثيرات عند التحويم */
     a.text-light:hover {
         color: #ffffff !important;
         text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
     }
     
-    /* Style for auto-generated links for better visibility and behavior */
-    .card-text a, .comments-container a {
-        /* text-decoration: underline !important; /* Ensure underline if not already styled by text-decoration-underline */
-        /* color: #your_link_color_for_dark_theme !important; /* Optional: customize link color */
-    }
-    .text-break { /* Bootstrap class, ensures long links break nicely */
-        word-wrap: break-word !important; /* Fallback */
+    .text-break {
+        word-wrap: break-word !important;
         overflow-wrap: break-word !important;
     }
 
 
-    /* تعديلات للهواتف */
     @media (max-width: 768px) {
         .post-image {
             max-height: 350px;
@@ -349,7 +341,6 @@
     }
 </style>
 <style>
-    /* تحسينات الأيقونات */
     .fa-lg {
         font-size: 1.25rem;
     }
@@ -368,28 +359,37 @@
         opacity: 0.9;
     }
 
-    /* تحسينات لأيقونات القوائم */
     .dropdown-item i {
         width: 20px;
         text-align: center;
         margin-right: 8px;
     }
 
-    /* تحسينات للأيقونات في الوضع الغامق */
     .bg-dark .text-muted {
         color: #aaa !important;
     }
 
-    /* تحسينات للوضع المضيء عند التحويم */
     .dropdown-item:hover i {
         opacity: 1;
     }
+    .online-indicator-dot {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 12px;
+        height: 12px;
+        background-color: var(--success-color, #22c55e);
+        border-radius: 50%;
+        border: 2px solid #1a1a1a; /* لون خلفية الكارت */
+        box-shadow: 0 0 5px var(--success-color, #22c55e);
+        z-index: 10;
+    }
+</style>
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
-    // START: Custom Toast Notification Functions (from previous modification)
     function showCustomToast(message, type = 'info', duration = 3000) {
         const toastId = 'custom-copy-action-toast';
         const existingToast = document.getElementById(toastId);
@@ -428,9 +428,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, { once: true });
         }, duration);
     }
-    // END: Custom Toast Notification Functions
 
-    // START: Linkify Content Function
     function linkifyContent(plainText) {
         const segments = [];
         const combinedRegex = /(\b(?:https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(?<!\w)@([a-zA-Z0-9_]{1,50})(?!\w)/ig;
@@ -464,12 +462,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return segments.join('');
     }
-    // END: Linkify Content Function
 
-    // START: Process Existing Content for Links
     function processAllLinkifiableContent() {
-        // Linkify post content
-        document.querySelectorAll('div.card-body > p.card-text.mb-3').forEach(contentElement => { //
+        document.querySelectorAll('div.card-body > p.card-text.mb-3').forEach(contentElement => {
             if (!contentElement.hasAttribute('data-linkified')) {
                 const originalText = contentElement.textContent;
                 contentElement.innerHTML = linkifyContent(originalText);
@@ -477,8 +472,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Linkify existing comment content
-        document.querySelectorAll('.comments-container .flex-grow-1 > p.mb-0.text-light').forEach(commentElement => { //
+        document.querySelectorAll('.comments-container .flex-grow-1 > p.mb-0.text-light').forEach(commentElement => {
             if (!commentElement.hasAttribute('data-linkified')) {
                 const originalText = commentElement.textContent;
                 commentElement.innerHTML = linkifyContent(originalText);
@@ -486,79 +480,72 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    // END: Process Existing Content for Links
 
-    // Initial processing of content on page load
     processAllLinkifiableContent();
 
 
-    // Event listener for comment submission (ensure it's only bound once)
-    if (!document.body.hasAttribute('data-comment-submit-handler-applied')) { //
+    if (!document.body.hasAttribute('data-comment-submit-handler-applied')) {
         document.body.addEventListener('submit', handleCommentSubmit);
-        document.body.setAttribute('data-comment-submit-handler-applied', 'true'); //
+        document.body.setAttribute('data-comment-submit-handler-applied', 'true');
     }
 
-    // Lazy loading for videos
-    const lazyVideos = document.querySelectorAll('.lazy-video'); //
-    lazyVideos.forEach(video => { //
-        if (video.dataset.src && !video.src) { //
-            video.src = video.dataset.src; //
+    const lazyVideos = document.querySelectorAll('.lazy-video');
+    lazyVideos.forEach(video => {
+        if (video.dataset.src && !video.src) {
+            video.src = video.dataset.src;
         }
     });
 
-    // Clickable images (no change needed here)
-    document.querySelectorAll('.clickable-image').forEach(img => { //
-        img.addEventListener('click', function(e) { //
-            e.stopPropagation(); //
+    document.querySelectorAll('.clickable-image').forEach(img => {
+        img.addEventListener('click', function(e) {
+            e.stopPropagation();
         });
     });
 
-    // Handle Copy Link Button
-    document.querySelectorAll('.copy-link-btn').forEach(btn => { //
-        if (btn.hasAttribute('data-copy-listener-attached')) return; //
-        btn.setAttribute('data-copy-listener-attached', 'true'); //
+    document.querySelectorAll('.copy-link-btn').forEach(btn => {
+        if (btn.hasAttribute('data-copy-listener-attached')) return;
+        btn.setAttribute('data-copy-listener-attached', 'true');
 
-        btn.addEventListener('click', function(e) { //
-            e.preventDefault(); //
-            const postUrl = this.dataset.postUrl; //
-            navigator.clipboard.writeText(postUrl).then(() => { //
-                showCustomToast('تم نسخ الرابط بنجاح! جاهز للمشاركة 🎉', 'success'); //
-            }).catch(err => { //
-                console.error('Failed to copy link: ', err); //
-                showCustomToast('فشل نسخ الرابط. حاول مرة أخرى!', 'error'); //
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const postUrl = this.dataset.postUrl;
+            navigator.clipboard.writeText(postUrl).then(() => {
+                showCustomToast('تم نسخ الرابط بنجاح! جاهز للمشاركة 🎉', 'success');
+            }).catch(err => {
+                console.error('Failed to copy link: ', err);
+                showCustomToast('فشل نسخ الرابط. حاول مرة أخرى!', 'error');
             });
         });
     });
 
-    // Handle URL parameters for scrolling and opening comments modal
-    if (!document.body.hasAttribute('data-url-handler-applied')) { //
-        document.body.setAttribute('data-url-handler-applied', 'true'); //
-        const currentUrlParams = new URLSearchParams(window.location.search); //
-        const openCommentsForPostId = currentUrlParams.get('open_comments_for_post'); //
-        const currentHash = window.location.hash; //
-        let targetPostId = null; //
-        if (openCommentsForPostId) { //
-            targetPostId = openCommentsForPostId; //
-        } else if (currentHash && currentHash.startsWith('#post-')) { //
-            targetPostId = currentHash.substring(1).split('-')[1]; //
+    if (!document.body.hasAttribute('data-url-handler-applied')) {
+        document.body.setAttribute('data-url-handler-applied', 'true');
+        const currentUrlParams = new URLSearchParams(window.location.search);
+        const openCommentsForPostId = currentUrlParams.get('open_comments_for_post');
+        const currentHash = window.location.hash;
+        let targetPostId = null;
+        if (openCommentsForPostId) {
+            targetPostId = openCommentsForPostId;
+        } else if (currentHash && currentHash.startsWith('#post-')) {
+            targetPostId = currentHash.substring(1).split('-')[1];
         }
-        if (targetPostId) { //
-            const postElementToScroll = document.getElementById(`post-${targetPostId}`); //
-            if (postElementToScroll) { //
-                setTimeout(() => { //
-                    postElementToScroll.scrollIntoView({ behavior: 'smooth', block: 'center' }); //
-                }, 100); //
+        if (targetPostId) {
+            const postElementToScroll = document.getElementById(`post-${targetPostId}`);
+            if (postElementToScroll) {
+                setTimeout(() => {
+                    postElementToScroll.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
             }
-            if (openCommentsForPostId && openCommentsForPostId === targetPostId) { //
-                const commentsModalElement = document.getElementById(`commentsModal-${openCommentsForPostId}`); //
-                if (commentsModalElement) { //
-                    if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') { //
-                        setTimeout(() => { //
-                            var modalInstance = new bootstrap.Modal(commentsModalElement); //
-                            modalInstance.show(); //
-                        }, 400); //
+            if (openCommentsForPostId && openCommentsForPostId === targetPostId) {
+                const commentsModalElement = document.getElementById(`commentsModal-${openCommentsForPostId}`);
+                if (commentsModalElement) {
+                    if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
+                        setTimeout(() => {
+                            var modalInstance = new bootstrap.Modal(commentsModalElement);
+                            modalInstance.show();
+                        }, 400);
                     } else {
-                        console.warn('Bootstrap Modal JS not found, cannot open comments modal programmatically.'); //
+                        console.warn('Bootstrap Modal JS not found, cannot open comments modal programmatically.');
                     }
                 }
             }
@@ -566,39 +553,38 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function handleCommentSubmit(e) { //
-    if (e.target.classList.contains('comment-form')) { //
-        e.preventDefault(); //
-        const form = e.target; //
-        if (form.dataset.processing === 'true') return; //
-        form.dataset.processing = 'true'; //
-        const postId = form.id.split('-')[2]; //
-        const formData = new FormData(form); //
-        const submitBtn = form.querySelector('button[type="submit"]'); //
-        const originalBtnText = submitBtn.innerHTML; //
-        submitBtn.disabled = true; //
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري الإرسال...'; //
+function handleCommentSubmit(e) {
+    if (e.target.classList.contains('comment-form')) {
+        e.preventDefault();
+        const form = e.target;
+        if (form.dataset.processing === 'true') return;
+        form.dataset.processing = 'true';
+        const postId = form.id.split('-')[2];
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري الإرسال...';
 
-        fetch(form.action, { //
-            method: 'POST', //
-            body: formData, //
-            headers: { //
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken'), //
-                'X-Requested-With': 'XMLHttpRequest' //
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.json()) //
-        .then(data => { //
-            submitBtn.disabled = false; //
-            submitBtn.innerHTML = originalBtnText; //
-            form.dataset.processing = 'false'; //
-            if (data.success) { //
-                const commentsContainer = form.closest('.modal-body').querySelector('.comments-container'); //
-                const commentDiv = document.createElement('div'); //
-                commentDiv.className = 'd-flex mb-3'; //
+        .then(response => response.json())
+        .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+            form.dataset.processing = 'false';
+            if (data.success) {
+                const commentsContainer = form.closest('.modal-body').querySelector('.comments-container');
+                const commentDiv = document.createElement('div');
+                commentDiv.className = 'd-flex mb-3';
 
-                // MODIFICATION: Linkify new comment content
-                const linkedContent = linkifyContent(data.content); // Process content for links
+                const linkedContent = linkifyContent(data.content);
 
                 commentDiv.innerHTML = `
                     <a href="/profile/${data.username}/">
@@ -616,108 +602,103 @@ function handleCommentSubmit(e) { //
                             </div>
                         <p class="mb-0 text-light comment-content-text" data-linkified="true">${linkedContent}</p>
                     </div>
-                `; //
-                if (commentsContainer.firstChild) { //
-                    commentsContainer.insertBefore(commentDiv, commentsContainer.firstChild); //
+                `;
+                if (commentsContainer.firstChild) {
+                    commentsContainer.insertBefore(commentDiv, commentsContainer.firstChild);
                 } else {
-                    commentsContainer.appendChild(commentDiv); //
+                    commentsContainer.appendChild(commentDiv);
                 }
-                const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`); //
-                if (commentsCountElement) { //
-                    const currentCount = parseInt(commentsCountElement.textContent.trim().split(' ')[0]); //
-                    commentsCountElement.textContent = `${currentCount + 1} تعليقات`; //
+                const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`);
+                if (commentsCountElement) {
+                    const currentCount = parseInt(commentsCountElement.textContent.trim().split(' ')[0]);
+                    commentsCountElement.textContent = `${currentCount + 1} تعليقات`;
                 }
-                form.querySelector('input[name="content"]').value = ''; //
-                const noCommentsMsg = commentsContainer.querySelector('.text-muted.text-center'); //
-                if (noCommentsMsg) { //
-                    noCommentsMsg.remove(); //
+                form.querySelector('input[name="content"]').value = '';
+                const noCommentsMsg = commentsContainer.querySelector('.text-muted.text-center');
+                if (noCommentsMsg) {
+                    noCommentsMsg.remove();
                 }
-                // Optionally show a success toast for new comment
-                // showCustomToast('تم نشر التعليق بنجاح', 'success');
-            } else { //
-                 if (typeof showCustomToast === 'function' && data.error) { //
-                    showCustomToast(data.error, 'error'); //
-                } else if (typeof showToast === 'function' && data.error) { // // Fallback, showToast is not defined in this snippet
+            } else {
+                 if (typeof showCustomToast === 'function' && data.error) {
+                    showCustomToast(data.error, 'error');
+                } else if (typeof showToast === 'function' && data.error) {
                     showToast(data.error, 'error');
-                } else if (data.error) { //
-                    alert(data.error); //
+                } else if (data.error) {
+                    alert(data.error);
                 }
             }
         })
-        .catch(error => { //
-            console.error('Error:', error); //
-            submitBtn.disabled = false; //
-            submitBtn.innerHTML = originalBtnText; //
-            form.dataset.processing = 'false'; //
-            if (typeof showCustomToast === 'function') { //
-                showCustomToast('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى', 'error'); //
-            } else { //
-                alert('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى'); //
+        .catch(error => {
+            console.error('Error:', error);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+            form.dataset.processing = 'false';
+            if (typeof showCustomToast === 'function') {
+                showCustomToast('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى', 'error');
+            } else {
+                alert('حدث خطأ أثناء إرسال التعليق، يرجى المحاولة مرة أخرى');
             }
         });
     }
 }
 
-// Delete comment function (ensure DOMContentLoaded is handled well if multiple)
-// This second DOMContentLoaded might be better merged into the first one or use event delegation.
-// For now, keeping structure from file_content_1.html
-document.addEventListener('DOMContentLoaded', function() { //
-    document.querySelectorAll('.delete-comment-btn').forEach(btn => { //
-        if (btn.hasAttribute('data-delete-comment-listener-attached')) return; //
-        btn.setAttribute('data-delete-comment-listener-attached', 'true'); //
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+        if (btn.hasAttribute('data-delete-comment-listener-attached')) return;
+        btn.setAttribute('data-delete-comment-listener-attached', 'true');
 
-        btn.addEventListener('click', function(e) { //
-            e.preventDefault(); //
-            const commentId = this.dataset.commentId; //
-            const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]'); //
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const commentId = this.dataset.commentId;
+            const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]');
 
-            if (confirm('هل أنت متأكد من حذف هذا التعليق؟')) { //
-                fetch(`/comment/${commentId}/delete/`, { //
-                    method: 'POST', //
-                    headers: { //
-                        'X-CSRFToken': csrfToken ? csrfToken.value : '{{ csrf_token }}', // Fallback to template var if needed //
-                        'Accept': 'application/json', //
+            if (confirm('هل أنت متأكد من حذف هذا التعليق؟')) {
+                fetch(`/comment/${commentId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken ? csrfToken.value : '{{ csrf_token }}',
+                        'Accept': 'application/json',
                     },
-                    credentials: 'same-origin' //
+                    credentials: 'same-origin'
                 })
-                .then(response => response.json()) //
-                .then(data => { //
-                    if (data.success) { //
-                        const commentElement = this.closest('.d-flex.mb-3'); //
-                        if (commentElement) { //
-                             commentElement.remove(); //
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const commentElement = this.closest('.d-flex.mb-3');
+                        if (commentElement) {
+                             commentElement.remove();
                         }
-                        const modalElement = this.closest('.modal'); //
-                        if (modalElement) { //
-                            const postId = modalElement.id.split('-')[1]; //
-                             const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`); //
-                            if (commentsCountElement) { //
-                                const currentCountText = commentsCountElement.textContent.trim().split(' ')[0]; //
-                                const currentCount = parseInt(currentCountText); //
-                                if (!isNaN(currentCount)) { //
-                                   commentsCountElement.textContent = `${Math.max(0, currentCount - 1)} تعليقات`; //
+                        const modalElement = this.closest('.modal');
+                        if (modalElement) {
+                            const postId = modalElement.id.split('-')[1];
+                             const commentsCountElement = document.querySelector(`[data-bs-target="#commentsModal-${postId}"]`);
+                            if (commentsCountElement) {
+                                const currentCountText = commentsCountElement.textContent.trim().split(' ')[0];
+                                const currentCount = parseInt(currentCountText);
+                                if (!isNaN(currentCount)) {
+                                   commentsCountElement.textContent = `${Math.max(0, currentCount - 1)} تعليقات`;
                                 }
                             }
                         }
-                        if (typeof showCustomToast === 'function') { //
-                            showCustomToast('تم حذف التعليق بنجاح', 'success'); //
-                        } else { //
-                            alert('تم حذف التعليق بنجاح'); //
+                        if (typeof showCustomToast === 'function') {
+                            showCustomToast('تم حذف التعليق بنجاح', 'success');
+                        } else {
+                            alert('تم حذف التعليق بنجاح');
                         }
-                    } else { //
-                        if (typeof showCustomToast === 'function' && data.error) { //
-                            showCustomToast(data.error, 'error'); //
-                        } else if (data.error) { //
-                            alert(data.error); //
+                    } else {
+                        if (typeof showCustomToast === 'function' && data.error) {
+                            showCustomToast(data.error, 'error');
+                        } else if (data.error) {
+                            alert(data.error);
                         }
                     }
                 })
-                .catch(error => { //
-                    console.error('Error:', error); //
-                     if (typeof showCustomToast === 'function') { //
-                        showCustomToast('حدث خطأ أثناء حذف التعليق', 'error'); //
-                    } else { //
-                        alert('حدث خطأ أثناء حذف التعليق'); //
+                .catch(error => {
+                    console.error('Error:', error);
+                     if (typeof showCustomToast === 'function') {
+                        showCustomToast('حدث خطأ أثناء حذف التعليق', 'error');
+                    } else {
+                        alert('حدث خطأ أثناء حذف التعليق');
                     }
                 });
             }

@@ -2,14 +2,12 @@
 import cloudinary
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.utils.timezone import now # Keep if used by other models
+from django.utils import timezone
 from cloudinary.models import CloudinaryField
-from django.utils import timezone # Keep if used by other models
 import qrcode
 from io import BytesIO
 from django.core.files import File
-# import os # Remove if not used elsewhere
-# from datetime import timedelta # Remove if Story was the only user
+
 
 class CustomUser(AbstractUser):
     GENDER_CHOICES = [
@@ -43,6 +41,7 @@ class CustomUser(AbstractUser):
                                          related_name='blocked_by')
     points = models.IntegerField(default=0)
     qr_code = CloudinaryField('image', blank=True, null=True)
+    last_active = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"@{self.username}"
@@ -50,6 +49,12 @@ class CustomUser(AbstractUser):
     @property
     def has_blue_badge(self):
         return self.is_verified or self.friends.count() > 10
+
+    @property
+    def is_online(self):
+        if self.last_active:
+            return (timezone.now() - self.last_active) < timezone.timedelta(minutes=5)
+        return False
 
     def generate_qr_code(self):
         qr = qrcode.QRCode(
@@ -59,8 +64,6 @@ class CustomUser(AbstractUser):
             border=4,
         )
 
-        # تأكد من تحديث هذا الرابط ليعكس نطاقك الفعلي
-        # You should replace "yourdomain.com" with your actual domain
         profile_url = f"https://yourdomain.com/profile/{self.username}" # Replace with your actual domain
         qr.add_data(profile_url)
         qr.make(fit=True)
@@ -78,27 +81,22 @@ class CustomUser(AbstractUser):
         )
 
         self.qr_code = result['secure_url']
-        self.save(update_fields=['qr_code']) # Specify fields to avoid recursion if needed
+        self.save(update_fields=['qr_code'])
 
         return self.qr_code
 
     def save(self, *args, **kwargs):
-        # Check if it's a new user and qr_code is not set
         is_new = not self.pk
-        # Ensure that 'qr_code' is not in update_fields if we are about to generate it.
-        # This helps prevent recursion if generate_qr_code calls save again.
         generating_qr = is_new and not self.qr_code
         if 'update_fields' in kwargs and 'qr_code' in kwargs['update_fields'] and generating_qr:
-             # Avoid saving qr_code field if we are just about to generate it after this save.
              fields = list(kwargs['update_fields'])
              if 'qr_code' in fields:
                  fields.remove('qr_code')
              kwargs['update_fields'] = tuple(fields) if fields else None
 
-
-        super().save(*args, **kwargs) # Save first to get an ID
+        super().save(*args, **kwargs)
         if generating_qr:
-            self.generate_qr_code() # This will call save() again with update_fields=['qr_code']
+            self.generate_qr_code()
 
 
 class Message(models.Model):
@@ -171,6 +169,7 @@ class SavedPost(models.Model):
     def __str__(self):
         return f"{self.user.username} saved {self.post.id}"
 
+
 class Notification(models.Model):
     NOTIFICATION_TYPES = (
         ('message', 'رسالة جديدة'),
@@ -178,7 +177,8 @@ class Notification(models.Model):
         ('comment', 'تعليق'),
         ('friend_request', 'طلب صداقة'),
         ('friend_accept', 'قبول الصداقة'),
-        # You might want to add reel_like and reel_comment here later
+        ('reel_like', 'إعجاب على ريل'),
+        ('reel_comment', 'تعليق على ريل'),
     )
 
     recipient = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
@@ -195,8 +195,6 @@ class Notification(models.Model):
     def __str__(self):
         return f"{self.get_notification_type_display()} لـ {self.recipient.username}"
 
-
-# ---------- Start of New Reel Models ----------
 class Reel(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reels')
     video = CloudinaryField('video', resource_type="video") # Ensures Cloudinary treats this as a video
@@ -221,27 +219,25 @@ class Reel(models.Model):
     def thumbnail_url(self):
         if self.video and hasattr(self.video, 'public_id'):
             try:
-            # توليد صورة مصغرة من الإطار الأول للفيديو
                 thumbnail_url = cloudinary.CloudinaryVideo(self.video.public_id).build_url(
                     transformation=[
-                        {'width': 300, 'height': 500, 'crop': 'fill'},  # اقتصاص الصورة
-                        {'quality': 'auto'},  # جودة تلقائية
-                        {'format': 'jpg'},  # تنسيق الصورة
-                        {'fetch_format': 'auto'},  # Cloudinary يختار أفضل تنسيق
+                        {'width': 300, 'height': 500, 'crop': 'fill'},
+                        {'quality': 'auto'},
+                        {'format': 'jpg'},
+                        {'fetch_format': 'auto'},
                 ],
                 resource_type="video",
                 )
                 return thumbnail_url
             except Exception as e:
                 print(f"Error generating thumbnail: {e}")
-                return ""  # لا نريد صورة افتراضية، نتركها فارغة
-        return ""  # لا نريد صورة افتراضية
-    
+                return ""
+        return ""
 
 
 class ReelLike(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    reel = models.ForeignKey(Reel, on_delete=models.CASCADE, related_name='reel_likes') # Changed related_name
+    reel = models.ForeignKey(Reel, on_delete=models.CASCADE, related_name='reel_likes')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -252,13 +248,12 @@ class ReelLike(models.Model):
 
 class ReelComment(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    reel = models.ForeignKey(Reel, on_delete=models.CASCADE, related_name='reel_comments') # Changed related_name
+    reel = models.ForeignKey(Reel, on_delete=models.CASCADE, related_name='reel_comments')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['created_at'] # Oldest comments first, or '-created_at' for newest
+        ordering = ['created_at']
 
     def __str__(self):
         return f"Comment by {self.user.username} on Reel {self.reel.id}: {self.content[:20]}"
-# ---------- End of New Reel Models ----------

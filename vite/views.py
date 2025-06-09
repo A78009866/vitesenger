@@ -16,9 +16,17 @@ from django.utils import timezone
 import pytz
 from django.utils.html import strip_tags, escape
 from django.contrib.auth import get_user_model
-from datetime import timedelta # <-- قم بإضافة هذا السطر
+from datetime import timedelta
 
 User = get_user_model()
+
+
+@login_required
+@require_POST
+def update_user_activity(request):
+    request.user.last_active = timezone.now()
+    request.user.save(update_fields=['last_active'])
+    return JsonResponse({'status': 'success'})
 
 
 @login_required
@@ -99,7 +107,6 @@ def home(request):
         post.is_liked = post.likes.filter(user=request.user).exists()
         post.is_saved = SavedPost.objects.filter(user=request.user, post=post).exists()
     
-    # Fetch random reels for the new section
     home_reels = Reel.objects.select_related('user').order_by('?')[:10]
 
     unread_messages_count = Message.objects.filter(
@@ -114,7 +121,7 @@ def home(request):
     
     context = {
         'posts': posts,
-        'home_reels': home_reels, # Add reels to the context
+        'home_reels': home_reels,
         'unread_messages_count': unread_messages_count,
         'unread_count': unread_notifications_count,
     }
@@ -311,10 +318,9 @@ def delete_post(request, post_id):
 @login_required
 def chat_view(request, username):
     other_user = get_object_or_404(User, username=username)
-    # Check if the current user and the other_user are friends
     if other_user not in request.user.friends.all():
         messages.error(request, "لا يمكنك بدء محادثة مع شخص ليس صديقك.")
-        return redirect('home') # Or redirect to a different page, like chat_list
+        return redirect('home')
         
     unread_messages = Message.objects.filter(
         sender=other_user,
@@ -338,7 +344,6 @@ def send_message(request):
         data = json.loads(request.body)
         receiver = get_object_or_404(CustomUser, username=data["receiver"])
 
-        # Check if the receiver is a friend of the sender
         if receiver not in request.user.friends.all():
             return JsonResponse({"error": "لا يمكنك إرسال رسائل إلى شخص ليس صديقك."}, status=403)
 
@@ -372,7 +377,6 @@ def send_message(request):
 @login_required
 def get_messages(request, username):
     other_user = get_object_or_404(CustomUser, username=username)
-    # Ensure they are friends before showing messages
     if other_user not in request.user.friends.all():
         return JsonResponse({"error": "لا يمكنك عرض الرسائل مع شخص ليس صديقك."}, status=403)
         
@@ -397,7 +401,6 @@ def get_messages(request, username):
 def chat_list(request, username):
     try:
         current_user = request.user
-        # Only show friends in the chat list
         friends = current_user.friends.all() 
         query = request.GET.get('q', '')
         if query:
@@ -439,10 +442,9 @@ def chat_list(request, username):
 @login_required
 def chat(request, username):
     other_user = get_object_or_404(User, username=username)
-    # Check if the current user and the other_user are friends
     if other_user not in request.user.friends.all():
         messages.error(request, "لا يمكنك بدء محادثة مع شخص ليس صديقك.")
-        return redirect('home') # Or redirect to a different page, like chat_list
+        return redirect('home')
         
     context = {
         'other_user': other_user,
@@ -496,26 +498,21 @@ def reels_feed(request):
     featured_reel_id = request.GET.get('show_reel')
     reels_list = []
 
-    # If a specific reel is requested, fetch it and put it at the top of the list
     if featured_reel_id:
         try:
-            # Get the featured reel
             featured_reel = Reel.objects.select_related('user').prefetch_related(
                 'reel_likes', 'reel_comments__user'
             ).get(id=featured_reel_id)
             reels_list.append(featured_reel)
 
-            # Get other reels randomly, excluding the featured one
             other_reels = Reel.objects.exclude(id=featured_reel_id).select_related('user').prefetch_related(
                 'reel_likes', 'reel_comments__user'
             ).order_by('?')
             reels_list.extend(list(other_reels))
 
         except Reel.DoesNotExist:
-            # If the reel ID from the URL is invalid, fall back to the default logic
             featured_reel_id = None
     
-    # Default logic if no specific reel is requested (or if the ID was invalid)
     if not featured_reel_id:
         time_threshold = timezone.now() - timedelta(hours=5)
         new_reels = Reel.objects.filter(created_at__gte=time_threshold).select_related('user').prefetch_related(
@@ -562,6 +559,7 @@ def upload_reel(request):
         form = ReelForm()
     return render(request, 'social/upload_reel.html', {'form': form})
 
+
 @login_required
 @require_POST
 def like_reel(request, reel_id):
@@ -573,6 +571,14 @@ def like_reel(request, reel_id):
         liked = False
     else:
         liked = True
+        if request.user != reel.user:
+            Notification.objects.create(
+                recipient=reel.user,
+                sender=request.user,
+                notification_type='reel_like',
+                content=f"أعجب {request.user.username} بالريل الخاص بك",
+                related_id=reel.id
+            )
     return JsonResponse({'liked': liked, 'likes_count': reel.likes_count})
 
 @login_required
@@ -585,6 +591,15 @@ def add_reel_comment(request, reel_id):
         return JsonResponse({'success': False, 'error': 'التعليق لا يمكن أن يكون فارغًا.'}, status=400)
 
     comment = ReelComment.objects.create(user=request.user, reel=reel, content=content)
+    
+    if request.user != reel.user:
+        Notification.objects.create(
+            recipient=reel.user,
+            sender=request.user,
+            notification_type='reel_comment',
+            content=f"علق {request.user.username} على الريل الخاص بك",
+            related_id=reel.id
+        )
     
     profile_picture_url = request.user.profile_picture.url if request.user.profile_picture else \
                           '/static/images/default_profile.png'
@@ -623,28 +638,21 @@ def delete_reel(request, reel_id):
         print(f"Error deleting reel {reel_id}: {e}")
         return JsonResponse({'success': False, 'error': 'حدث خطأ أثناء محاولة حذف الريل.'}, status=500)
 
-# في ملف views.py الخاص بتطبيق الريلز
-
 def reel_detail_view(request, reel_id):
-    # 1. جلب الريل المحدد مع بيانات المستخدم والتعليقات لتحسين الأداء
     reel = get_object_or_404(Reel.objects.select_related('user').prefetch_related('reel_comments__user'), id=reel_id)
 
-    # 2. التحقق مما إذا كان المستخدم قد سجل إعجابه بالريل
     is_liked_by_user = False
     if request.user.is_authenticated:
         is_liked_by_user = reel.reel_likes.filter(user=request.user).exists()
 
-    # 3. جلب قائمة التعليقات
     comments_list = reel.reel_comments.all().order_by('-created_at')
 
-    # 4. تجهيز قاموس البيانات بشكل مشابه لـ reels_feed لتسهيل استخدام القالب
     reel_data = {
         'reel': reel,
         'is_liked_by_user': is_liked_by_user,
         'comments_list': comments_list,
     }
 
-    # 5. تمرير البيانات إلى القالب
     context = {
         'reel_data': reel_data,
     }
