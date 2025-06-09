@@ -102,7 +102,9 @@ class CustomUser(AbstractUser):
 class Message(models.Model):
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sent_messages")
     receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="received_messages")
-    content = models.TextField(default="")
+    content = models.TextField(default="", blank=True)
+    image = CloudinaryField('image', blank=True, null=True)
+    video = CloudinaryField('video', resource_type="video", blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     seen_at = models.DateTimeField(null=True, blank=True)

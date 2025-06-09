@@ -79,7 +79,6 @@
             border: 1px solid rgba(255,255,255,0.3);
         }
         
-        /* -- تعديل جديد: حاوية معلومات المستخدم -- */
         .user-info-header {
             display: flex;
             flex-direction: column;
@@ -95,8 +94,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        
-        /* -- تعديل جديد: حالة النشاط -- */
+
         .user-status {
             font-size: 12px;
             color: rgba(255, 255, 255, 0.8);
@@ -134,6 +132,13 @@
             animation: fadeIn 0.3s ease;
         }
         
+        .message img, .message video {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 5px;
+            display: block;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -144,7 +149,7 @@
             background: var(--message-sent);
             color: var(--text-color);
             border-top-right-radius: 0;
-            margin-left: 0;
+            margin-left: auto;
         }
         
         .received {
@@ -152,7 +157,7 @@
             background: var(--message-received);
             color: var(--text-color);
             border-top-left-radius: 0;
-            margin-right: 0;
+            margin-right: auto;
             box-shadow: 0 1px 0.5px rgba(0,0,0,0.1);
         }
         
@@ -162,8 +167,9 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            margin-top: 2px;
+            margin-top: 4px;
             direction: ltr;
+            float: left; /* Keep time at the end */
         }
         
         .received .message-time { color: rgba(0,0,0,0.5); }
@@ -173,9 +179,10 @@
             background: var(--secondary-color);
             border-top: 1px solid #ddd;
             display: flex;
-            align-items: center;
+            align-items: flex-end; /* Align items to the bottom */
             position: sticky;
             bottom: 0;
+            gap: 8px;
         }
         
         .message-input-container {
@@ -184,8 +191,7 @@
             align-items: center;
             background: var(--white);
             border-radius: 20px;
-            padding: 6px 12px;
-            margin: 0 8px;
+            padding: 0 12px;
             min-height: 40px;
         }
         
@@ -194,7 +200,7 @@
             border: none;
             outline: none;
             font-size: 15px;
-            padding: 6px;
+            padding: 9px 6px;
             background: transparent;
             max-height: 100px;
             resize: none;
@@ -202,8 +208,8 @@
         }
         
         .action-btn {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border: none;
             background: transparent;
             color: var(--primary-color);
@@ -213,6 +219,7 @@
             justify-content: center;
             font-size: 18px;
             cursor: pointer;
+            flex-shrink: 0;
         }
         
         .send-btn {
@@ -248,7 +255,42 @@
         .fa-check-double { color: #4fc3f7; font-size: 10px; }
         .verified-badge { color: #1DA1F2; font-size: 0.8em; margin-right: 3px; vertical-align: middle; }
         
-        /* ... (بقية الأنماط) ... */
+        #file-preview-container {
+            display: none;
+            position: absolute;
+            bottom: 60px; /* Position above the input bar */
+            right: 10px;
+            left: 10px;
+            background: #fff;
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            align-items: center;
+        }
+
+        #file-preview-image {
+            max-width: 50px;
+            max-height: 50px;
+            border-radius: 5px;
+            object-fit: cover;
+        }
+
+        #remove-file-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border-radius: 50%;
+            border: 1px solid white;
+            width: 20px;
+            height: 20px;
+            line-height: 18px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1;
+        }
 
     </style>
 </head>
@@ -286,26 +328,19 @@
         </div>
         
         <div id="chat-box" class="chat-box">
-            {% for message in messages %}
-            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
-                <p>{{ message.content }}</p>
-                <span class="message-time">
-                    {{ message.timestamp|time:"H:i" }}
-                    {% if message.sender == request.user and message.is_read %}
-                        <i class="fas fa-check-double" style="color: #4fc3f7;"></i>
-                    {% elif message.sender == request.user %}
-                        <i class="fas fa-check"></i>
-                    {% endif %}
-                </span>
             </div>
-            {% endfor %}
-        </div>
         
+        <div id="file-preview-container">
+             <img id="file-preview-image" src="" alt="Preview">
+             <button id="remove-file-btn">&times;</button>
+        </div>
+
         <div class="chat-footer">
-            <button class="action-btn">
-                <i class="far fa-smile"></i>
+            <button id="attach-btn" class="action-btn">
+                <i class="fas fa-paperclip"></i>
             </button>
-            
+            <input type="file" id="file-input" accept="image/*,video/*" style="display:none;">
+
             <div class="message-input-container">
                 <textarea id="message-input" class="message-input" placeholder="اكتب رسالة..." rows="1"></textarea>
             </div>
@@ -316,9 +351,8 @@
         </div>
     </div>
 
-    <!-- مؤشرات الإرسال -->
     <div id="sending-indicator" class="sending-indicator">
-        جاري الإرسال <i class="fas fa-spinner"></i>
+        جاري الإرسال <i class="fas fa-spinner fa-spin"></i>
     </div>
 
     <div id="send-success" class="send-success">
@@ -330,130 +364,128 @@
             const chatBox = document.getElementById("chat-box");
             const messageInput = document.getElementById("message-input");
             const sendButton = document.getElementById("send-btn");
+            const attachButton = document.getElementById("attach-btn");
+            const fileInput = document.getElementById("file-input");
+            const filePreviewContainer = document.getElementById("file-preview-container");
+            const filePreviewImage = document.getElementById("file-preview-image");
+            const removeFileButton = document.getElementById("remove-file-btn");
+
             const otherUser = "{{ other_user.username }}";
             let lastMessageId = 0;
-            
-            // Auto-resize textarea
-            messageInput.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-                
-                if (window.innerHeight < 500) {
-                    setTimeout(() => {
-                        window.scrollTo(0, document.body.scrollHeight);
-                    }, 100);
-                }
-            });
-            
-            messageInput.addEventListener('focus', function() {
-                setTimeout(() => {
-                    window.scrollTo(0, document.body.scrollHeight);
-                }, 300);
-            });
-            
+            let selectedFile = null;
+
             function scrollToBottom() {
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
-            
+
             function formatTime(dateString) {
+                if (!dateString) return '';
                 const date = new Date(dateString);
                 let hours = date.getHours();
                 let minutes = date.getMinutes();
-                const ampm = hours >= 12 ? 'م' : 'ص';
-                hours = hours % 12;
-                hours = hours ? hours : 12;
-                minutes = minutes < 10 ? '0'+minutes : minutes;
-                return hours + ':' + minutes + ' ' + ampm;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                return hours + ':' + minutes;
             }
-            
-            function fetchMessages() {
-                fetch(`/chat/${otherUser}/get-messages/`)
-                .then(response => response.json())
-                .then(messages => {
-                    chatBox.innerHTML = "";
-                    messages.forEach(msg => {
-                        addMessageToChat(msg, false);
-                        lastMessageId = msg.id;
-                    });
-                    scrollToBottom();
-                });
-            }
-            
+
+            attachButton.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) {
+                    selectedFile = fileInput.files[0];
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        filePreviewImage.src = e.target.result;
+                    }
+                    reader.readAsDataURL(selectedFile);
+                    filePreviewContainer.style.display = 'flex';
+                }
+            });
+
+            removeFileButton.addEventListener('click', () => {
+                selectedFile = null;
+                fileInput.value = '';
+                filePreviewContainer.style.display = 'none';
+            });
+
             function sendMessage() {
-                const message = messageInput.value.trim();
-                if (!message) return;
-                
-                // عرض مؤشر الإرسال
+                const content = messageInput.value.trim();
+                if (!content && !selectedFile) return;
+
                 const sendingIndicator = document.getElementById("sending-indicator");
                 sendingIndicator.style.display = 'block';
-                
-                // تعطيل زر الإرسال أثناء الإرسال
                 sendButton.disabled = true;
+
+                const formData = new FormData();
+                formData.append('receiver', otherUser);
+                formData.append('content', content);
                 
+                if (selectedFile) {
+                    if (selectedFile.type.startsWith('image/')) {
+                        formData.append('image', selectedFile);
+                    } else if (selectedFile.type.startsWith('video/')) {
+                        formData.append('video', selectedFile);
+                    }
+                }
+
                 fetch("{% url 'send_message' %}", {
                     method: "POST",
-                    headers: {
-                        "X-CSRFToken": "{{ csrf_token }}",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        receiver: otherUser, 
-                        content: message
-                    })
+                    headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                    body: formData
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.error) {
-                        // إخفاء مؤشر الإرسال وإظهار تأكيد الإرسال
-                        sendingIndicator.style.display = 'none';
-                        
-                        const sendSuccess = document.getElementById("send-success");
-                        sendSuccess.style.display = 'block';
-                        
-                        // إخفاء تأكيد الإرسال بعد 2 ثانية
-                        setTimeout(() => {
-                            sendSuccess.style.display = 'none';
-                        }, 2000);
-                        
+                .then(response => response.json().then(data => ({ ok: response.ok, data })))
+                .then(({ ok, data }) => {
+                    if (ok) {
                         addMessageToChat(data, true);
                         messageInput.value = "";
                         messageInput.style.height = 'auto';
+                        removeFileButton.click();
                         scrollToBottom();
+                        
+                        const sendSuccess = document.getElementById("send-success");
+                        sendSuccess.style.display = 'block';
+                        setTimeout(() => { sendSuccess.style.display = 'none'; }, 2000);
                     } else {
-                        sendingIndicator.style.display = 'none';
-                        alert("حدث خطأ أثناء الإرسال: " + data.error);
+                        throw new Error(data.error || "حدث خطأ غير معروف");
                     }
                 })
                 .catch(error => {
-                    sendingIndicator.style.display = 'none';
-                    alert("حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى");
+                    console.error("Error sending message:", error);
+                    alert("حدث خطأ في الإرسال: " + error.message);
                 })
                 .finally(() => {
+                    sendingIndicator.style.display = 'none';
                     sendButton.disabled = false;
                 });
             }
-            
+
             function addMessageToChat(msg, isNew) {
                 const messageDiv = document.createElement("div");
                 messageDiv.classList.add("message");
-                
+                messageDiv.dataset.id = msg.id;
+
                 if (msg.sender === "{{ request.user.username }}") {
                     messageDiv.classList.add("sent");
                 } else {
                     messageDiv.classList.add("received");
                 }
+
+                let mediaHTML = '';
+                if (msg.image_url) {
+                    mediaHTML = `<img src="${msg.image_url}" alt="Image">`;
+                } else if (msg.video_url) {
+                    mediaHTML = `<video src="${msg.video_url}" controls></video>`;
+                }
+
+                let contentHTML = msg.content ? `<p>${msg.content.replace(/\n/g, '<br>')}</p>` : '';
                 
                 let seenIcon = "";
                 if (msg.sender === "{{ request.user.username }}") {
-                    if (msg.is_read) {
-                        seenIcon = `<i class="fas fa-check-double" style="color: #4fc3f7;"></i>`;
-                    } else {
-                        seenIcon = `<i class="fas fa-check"></i>`;
-                    }
+                    seenIcon = `<i class="fas fa-check${msg.is_read ? '-double' : ''}" ${msg.is_read ? 'style="color: #4fc3f7;"' : ''}></i>`;
                 }
                 
                 messageDiv.innerHTML = `
-                    <p>${msg.content}</p>
+                    ${mediaHTML}
+                    ${contentHTML}
                     <span class="message-time">
                         ${formatTime(msg.timestamp)}
                         ${seenIcon}
@@ -466,21 +498,45 @@
                     lastMessageId = msg.id;
                 }
             }
-            
+
+            function fetchAndRenderMessages() {
+                fetch(`/chat/${otherUser}/get-messages/`)
+                .then(response => response.json())
+                .then(messages => {
+                    chatBox.innerHTML = "";
+                    let latestId = 0;
+                    messages.forEach(msg => {
+                        addMessageToChat(msg, false);
+                        if (msg.id > latestId) latestId = msg.id;
+                    });
+                    lastMessageId = latestId;
+                    scrollToBottom();
+                });
+            }
+
             function checkNewMessages() {
                 fetch(`/chat/${otherUser}/get-messages/`)
                 .then(response => response.json())
                 .then(messages => {
                     messages.forEach(msg => {
-                        if (msg.id > lastMessageId) {
+                        const messageElement = document.querySelector(`.message[data-id='${msg.id}']`);
+                        if (!messageElement) { // New message
                             addMessageToChat(msg, true);
-                            lastMessageId = msg.id;
                             scrollToBottom();
+                        } else { // Existing message, check for read status update
+                            if (msg.sender === "{{ request.user.username }}" && msg.is_read) {
+                                const icon = messageElement.querySelector('.message-time .fa-check');
+                                if (icon) {
+                                    icon.classList.add('fa-check-double');
+                                    icon.classList.remove('fa-check');
+                                    icon.style.color = '#4fc3f7';
+                                }
+                            }
                         }
                     });
                 });
             }
-            
+
             sendButton.addEventListener("click", sendMessage);
             
             messageInput.addEventListener("keypress", function(event) {
@@ -489,36 +545,29 @@
                     sendMessage();
                 }
             });
-            
-            setInterval(checkNewMessages, 2000);
-            
-            fetchMessages();
-            scrollToBottom();
-            
-            setTimeout(() => {
-                messageInput.focus();
-            }, 500);
-        });
-    </script>
-    <script>
-// منع تدوير الشاشة على الأجهزة المحمولة
-function lockOrientation() {
-    if (window.screen.orientation && window.screen.orientation.lock) {
-        window.screen.orientation.lock('portrait').catch(function(error) {
-            console.log('Orientation lock failed: ', error);
-        });
-    } else if (window.screen.lockOrientation) {
-        window.screen.lockOrientation('portrait');
-    } else if (window.screen.mozLockOrientation) {
-        window.screen.mozLockOrientation('portrait');
-    } else if (window.screen.msLockOrientation) {
-        window.screen.msLockOrientation('portrait');
-    }
-}
 
-// استدعاء الدالة عند تحميل الصفحة وعند تغيير الحجم
-window.addEventListener('load', lockOrientation);
-window.addEventListener('resize', lockOrientation);
-</script>
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Initial load and periodic checks
+            fetchAndRenderMessages();
+            setInterval(checkNewMessages, 3000);
+        });
+
+        // Prevent screen rotation
+        function lockOrientation() {
+            try {
+                if (window.screen.orientation && window.screen.orientation.lock) {
+                    window.screen.orientation.lock('portrait').catch(() => {});
+                }
+            } catch (e) {
+                console.warn("Screen orientation lock not supported.", e);
+            }
+        }
+        window.addEventListener('load', lockOrientation);
+        window.addEventListener('resize', lockOrientation);
+    </script>
 </body>
 </html>

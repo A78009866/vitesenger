@@ -340,40 +340,62 @@ def chat_view(request, username):
     })
 
 @login_required
+@require_POST
 def send_message(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        receiver = get_object_or_404(CustomUser, username=data["receiver"])
+    receiver_username = request.POST.get("receiver")
+    if not receiver_username:
+        return JsonResponse({"error": "المستلم غير محدد."}, status=400)
 
-        if receiver not in request.user.friends.all():
-            return JsonResponse({"error": "لا يمكنك إرسال رسائل إلى شخص ليس صديقك."}, status=403)
+    receiver = get_object_or_404(CustomUser, username=receiver_username)
 
-        content = data["content"].strip()
-        if not content:
-            return JsonResponse({"error": "لا يمكن إرسال رسالة فارغة"}, status=400)
-        
-        message = Message.objects.create(
-            sender=request.user,
-            receiver=receiver,
-            content=content,
-            is_read=False,
-            seen_at=None
-        )
-        Notification.objects.create(
-            recipient=receiver,
-            sender=request.user,
-            notification_type='message',
-            content=content
-        )
-        return JsonResponse({
-            "id": message.id,
-            "sender": message.sender.username,
-            "receiver": receiver.username,
-            "content": message.content,
-            "timestamp": message.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-            "is_read": message.is_read,
-            "seen_at": None
-        })
+    if receiver not in request.user.friends.all():
+        return JsonResponse({"error": "لا يمكنك إرسال رسائل إلى شخص ليس صديقك."}, status=403)
+
+    content = request.POST.get("content", "").strip()
+    image_file = request.FILES.get('image')
+    video_file = request.FILES.get('video')
+
+    if not content and not image_file and not video_file:
+        return JsonResponse({"error": "لا يمكن إرسال رسالة فارغة"}, status=400)
+
+    # Create the message instance in memory without saving yet
+    message = Message(
+        sender=request.user,
+        receiver=receiver,
+        content=content
+    )
+
+    # Assign the file objects directly to the CloudinaryFields
+    if image_file:
+        message.image = image_file
+
+    if video_file:
+        message.video = video_file
+
+    # Now, save the model. The upload to Cloudinary happens automatically here.
+    message.save()
+
+    notification_content = content if content else ("📷 صورة" if message.image else "🎥 فيديو")
+
+    Notification.objects.create(
+        recipient=receiver,
+        sender=request.user,
+        notification_type='message',
+        content=notification_content
+    )
+    
+    # Return the JSON response with the URLs now available from the saved instance
+    return JsonResponse({
+        "id": message.id,
+        "sender": message.sender.username,
+        "receiver": receiver.username,
+        "content": message.content,
+        "image_url": message.image.url if message.image else None,
+        "video_url": message.video.url if message.video else None,
+        "timestamp": message.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+        "is_read": message.is_read,
+        "seen_at": None
+    })
 
 @login_required
 def get_messages(request, username):
@@ -385,12 +407,18 @@ def get_messages(request, username):
         (django_models.Q(sender=request.user, receiver=other_user) |
          django_models.Q(sender=other_user, receiver=request.user))
     ).order_by("timestamp")
+
+    # Mark messages from the other user as read as they are fetched
+    Message.objects.filter(sender=other_user, receiver=request.user, is_read=False).update(is_read=True, seen_at=timezone.now())
+
     return JsonResponse([
         {
             "id": msg.id,
             "sender": msg.sender.username,
             "receiver": msg.receiver.username,
             "content": msg.content,
+            "image_url": msg.image.url if msg.image else None,
+            "video_url": msg.video.url if msg.video else None,
             "timestamp": msg.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
             "is_read": msg.is_read,
             "seen_at": msg.seen_at.strftime("%Y-%m-%d %H:%M:%S") if msg.seen_at else None
@@ -425,9 +453,19 @@ def chat_list(request, username):
             is_new = False
             if last_message and last_message.receiver == current_user and not last_message.is_read:
                 is_new = True
+            
+            last_message_content = "لا توجد رسائل"
+            if last_message:
+                if last_message.content:
+                    last_message_content = strip_tags(last_message.content)
+                elif last_message.image:
+                    last_message_content = "📷 صورة"
+                elif last_message.video:
+                    last_message_content = "🎥 فيديو"
+
             user_data.append({
                 'user': user_item,
-                'last_message': strip_tags(last_message.content) if last_message else "لا توجد رسائل",
+                'last_message': last_message_content,
                 'last_time': last_message.timestamp if last_message else None,
                 'is_new': is_new
             })
