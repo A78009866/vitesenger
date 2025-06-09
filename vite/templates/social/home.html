@@ -163,6 +163,19 @@
         object-fit: cover;
         border: 1px solid rgba(255,255,255,0.5);
     }
+    .reel-views-overlay {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        z-index: 3;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+    }
     @media (max-width: 768px) {
         .reel-thumbnail {
             opacity: 1 !important;
@@ -195,6 +208,10 @@
                             {% for reel in home_reels %}
                             <a href="{% url 'reels_feed' %}?show_reel={{ reel.id }}" class="reel-card-link">
                                 <div class="reel-card">
+                                    <div class="reel-views-overlay">
+                                        <i class="fas fa-eye me-1"></i>
+                                        <span>{{ reel.views_count }}</span>
+                                    </div>
                                     {% if reel.thumbnail_url %}
                                         <img src="{{ reel.thumbnail_url }}"
                                              alt="Reel thumbnail"
