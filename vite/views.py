@@ -801,13 +801,7 @@ def ask_gemini(request):
 
         ai_response = response.text
 
-        if formatted_history and len(formatted_history) >= 2:
-            last_model_msg = formatted_history[-1]["parts"][0]
-            if ai_response.strip() == last_model_msg.strip():
-                ai_response = "لقد أجبتك على هذا مسبقًا. هل ترغب في الانتقال إلى موضوع جديد؟"
-
-
-        # ✅ تحسين الردود الغامضة
+    
         if not ai_response:
             ai_response = "عذرًا، لم أتمكن من فهم سؤالك."
         elif "غامض" in ai_response or "أخشى" in ai_response:

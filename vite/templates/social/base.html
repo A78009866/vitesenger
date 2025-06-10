@@ -1055,11 +1055,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let geminiHistory = [];
 
-const shouldStoreInHistory = (msg) => {
-    const meaningless = ["هههه", "ماذا", "ها", "؟", "...", "اوكي", "اوك", "lol", "xd"];
-    return !meaningless.some(word => msg.toLowerCase().includes(word.trim()));
-};
-
 const sendMessage = async () => {
     const query = userInput.value.trim();
     if (!query) return;
