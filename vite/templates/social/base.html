@@ -1055,100 +1055,104 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let geminiHistory = [];
 
-const sendMessage = async () => {
-    const query = userInput.value.trim();
-    if (!query) return;
+    const isMeaningless = (msg) => {
+        const phrases = ["هههه", "ها", "؟", "اوك", "اوكي", "xd", "lol", "تمام", "طيب", "..."];
+        return phrases.includes(msg.toLowerCase().trim());
+    };
 
-    if (initialMessage) initialMessage.style.display = 'none';
+    const shouldStoreInHistory = (msg) => !isMeaningless(msg);
 
-    appendMessage(query, 'user');
-    if (shouldStoreInHistory(query)) {
-        geminiHistory.push({ role: 'user', content: query });
-    }
+    const sendMessage = async () => {
+        const query = userInput.value.trim();
+        if (!query) return;
 
-    userInput.value = '';
-    showTypingIndicator();
+        if (initialMessage) initialMessage.style.display = 'none';
 
-    try {
-        const response = await fetch("{% url 'ask_gemini' %}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-                prompt: query,
-                history: geminiHistory
-            })
-        });
-
-        const data = await response.json();
-
-        hideTypingIndicator();
-
-        if (!response.ok || !data.response) {
-            throw new Error(data.error || 'حدث خطأ في الخادم');
+        appendMessage(query, 'user');
+        if (shouldStoreInHistory(query)) {
+            geminiHistory.push({ role: 'user', content: query });
         }
 
-        appendMessage(data.response, 'ai');
-        geminiHistory.push({ role: 'model', content: data.response });
+        userInput.value = '';
+        showTypingIndicator();
 
-    } catch (error) {
-        hideTypingIndicator();
-        appendMessage("حدث خطأ، حاول مجددًا.", 'ai');
-        console.error('Error details:', error);
-    }
-};
-
-
-
-            sendBtn.addEventListener('click', sendMessage);
-            userInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
+        try {
+            const response = await fetch("{% url 'ask_gemini' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    prompt: query,
+                    history: geminiHistory
+                })
             });
 
-            function appendMessage(text, sender) {
-                const messageWrapper = document.createElement('div');
-                messageWrapper.className = `gemini-chat-message ${sender}`;
-                
-                const messageContent = document.createElement('div');
-                messageContent.className = 'message-content';
-                messageContent.textContent = text;
-                
-                if (sender === 'ai') {
-                    const icon = document.createElement('i');
-                    icon.className = 'fas fa-magic message-icon';
-                    messageWrapper.appendChild(icon);
-                }
-                
-                messageWrapper.appendChild(messageContent);
-                chatBody.appendChild(messageWrapper);
-                chatBody.scrollTop = chatBody.scrollHeight; // Scroll to bottom
+            const data = await response.json();
+            hideTypingIndicator();
+
+            if (!response.ok || !data.response) {
+                throw new Error(data.error || 'حدث خطأ في الخادم');
             }
 
-            function showTypingIndicator() {
-                const typingIndicator = `
-                    <div class="gemini-chat-message ai typing-indicator">
-                        <i class="fas fa-magic message-icon"></i>
-                        <div class="message-content">
-                            <span class="typing-dot"></span>
-                            <span class="typing-dot"></span>
-                            <span class="typing-dot"></span>
-                        </div>
-                    </div>`;
-                chatBody.insertAdjacentHTML('beforeend', typingIndicator);
-                chatBody.scrollTop = chatBody.scrollHeight;
-            }
+            appendMessage(data.response, 'ai');
+            geminiHistory.push({ role: 'model', content: data.response });
 
-            function hideTypingIndicator() {
-                const indicator = document.querySelector('.typing-indicator');
-                if (indicator) {
-                    indicator.remove();
-                }
-            }
-        });
+        } catch (error) {
+            hideTypingIndicator();
+            appendMessage("حدث خطأ، حاول مجددًا.", 'ai');
+            console.error('Error details:', error);
+        }
+    };
+
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    function appendMessage(text, sender) {
+        const messageWrapper = document.createElement('div');
+        messageWrapper.className = `gemini-chat-message ${sender}`;
+
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        messageContent.textContent = text;
+
+        if (sender === 'ai') {
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-magic message-icon';
+            messageWrapper.appendChild(icon);
+        }
+
+        messageWrapper.appendChild(messageContent);
+        chatBody.appendChild(messageWrapper);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+        const typingIndicator = `
+            <div class="gemini-chat-message ai typing-indicator">
+                <i class="fas fa-magic message-icon"></i>
+                <div class="message-content">
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                </div>
+            </div>`;
+        chatBody.insertAdjacentHTML('beforeend', typingIndicator);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+        const indicator = document.querySelector('.typing-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+});
 
     </script>
     <script>

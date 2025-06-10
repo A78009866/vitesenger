@@ -746,49 +746,35 @@ def ask_gemini(request):
         return JsonResponse({'error': 'طلب JSON غير صالح.'}, status=400)
 
     try:
-        # ✅ system_instruction أكثر ذكاء وربطاً للسياق
         system_instruction = (
             "أنت مساعد ذكي اسمه Trimer AI. مهمتك هي فهم السياق وتقديم إجابات دقيقة بناءً على المحادثة السابقة.\n"
-            "إرشادات أساسية:\n"
-            "1. حافظ على سياق المحادثة، وافترض أن الأسئلة المختصرة أو الغامضة مرتبطة بما سبق.\n"
-            "2. لا تطلب توضيحات إذا كان بإمكانك تخمين المقصود بناءً على الحديث السابق.\n"
-            "3. إذا قال المستخدم كلمة مثل 'بطاطا'، ثم قال 'ما مميزاتها؟'، افترض أنه يتحدث عن البطاطا.\n"
-            "4. استخدم الضمائر مثل 'هي، هذا، مميزاته' بالإشارة إلى الموضوع السابق.\n"
-            "5. قدم إجابات واضحة ومركزة دون حشو.\n"
-            "6. حافظ على نبرة ودودة واحترافية.\n\n"
-            "معلومات خاصة:\n"
-            "- أنا Trimer AI، مساعدك الذكي.\n"
-            "- تم تطويري بواسطة سالم أحمد، مؤسس Trimer.\n"
-            "إذا سُئلت عن هويتك، أجب: 'أنا Trimer AI، نموذج ذكاء اصطناعي.'\n"
-            "إذا سُئلت عن من طورك، أجب: 'تم تطويري بواسطة سالم أحمد، مؤسس Trimer.'\n"
-            "إذا سُئلت عن Trimer، أجب: 'Trimer هي منصة تواصل اجتماعي تهدف لربط الناس ومشاركة اللحظات.'"
+            "إرشادات:\n"
+            "1. افترض أن الأسئلة المختصرة مرتبطة بالسياق السابق.\n"
+            "2. إذا قال المستخدم 'هههه' أو 'اوك' أو 'xd'، رد برد لطيف وموجز.\n"
+            "3. لا تكرر نفس الإجابة.\n"
+            "4. لا تقل 'غامض' أو 'أخشى'، بل افترض.\n"
+            "5. حافظ على نبرة ودودة واحترافية.\n"
+            "6. Trimer هي منصة تواصل اجتماعي، وأنا Trimer AI طورتني سالم أحمد."
         )
 
-        # ✅ ربط سياقي تلقائي إذا كان السؤال الحالي غامضًا أو قصيرًا
+        # ربط السؤال المختصر بسياق سابق
         if prompt and len(prompt.split()) <= 3 and history:
-            last_topic = ""
-            for msg in reversed(history):
-                if msg["role"] == "user" and len(msg["content"].split()) > 2:
-                    last_topic = msg["content"]
-                    break
-            if last_topic:
-                prompt = f"{last_topic} - {prompt}"
+            last_user_topic = next((msg["content"] for msg in reversed(history) if msg["role"] == "user" and len(msg["content"].split()) > 2), "")
+            last_model_reply = next((msg["content"] for msg in reversed(history) if msg["role"] == "model" and len(msg["content"].split()) > 2), "")
+            context_base = last_user_topic or last_model_reply
+            if context_base:
+                prompt = f"{context_base} - {prompt}"
 
-        # ✅ تنسيق سجل المحادثة
-        formatted_history = []
-        for msg in history:
-            role = "user" if msg["role"] == "user" else "model"
-            formatted_history.append({"role": role, "parts": [msg["content"]]})
+        formatted_history = [
+            {"role": "user" if msg["role"] == "user" else "model", "parts": [msg["content"]]}
+            for msg in history
+        ]
 
-        # ✅ إعداد النموذج
         model = genai.GenerativeModel(
             'gemini-1.5-flash',
             system_instruction=system_instruction
         )
-
         chat = model.start_chat(history=formatted_history)
-
-        # ✅ إرسال الطلب
         response = chat.send_message(
             prompt,
             generation_config={
@@ -799,17 +785,24 @@ def ask_gemini(request):
             }
         )
 
-        ai_response = response.text
+        ai_response = response.text or ""
 
-    
-        if not ai_response:
+        # منع تكرار الإجابة
+        if formatted_history and len(formatted_history) >= 2:
+            last_model_msg = formatted_history[-1]["parts"][0]
+            if ai_response.strip() == last_model_msg.strip():
+                ai_response = "يبدو أنني أجبت على هذا مسبقًا. هل ننتقل لموضوع جديد؟ 😊"
+
+        # تحسين الردود على كلام مثل "هههه"
+        if any(word in prompt.lower() for word in ["هههه", "xd", "lol", "اوك", "تمام"]):
+            ai_response = "😂 واضح أنك مستمتع! تحب تسألني عن شيء؟"
+        elif not ai_response:
             ai_response = "عذرًا، لم أتمكن من فهم سؤالك."
         elif "غامض" in ai_response or "أخشى" in ai_response:
             last_user_q = next((msg["parts"][0] for msg in reversed(formatted_history) if msg["role"] == "user"), "")
             if last_user_q:
                 ai_response = f"بناءً على سؤالك السابق عن '{last_user_q}'، {ai_response.replace('غامض', 'واضح').replace('أخشى', 'أفترض')}"
 
-        # ✅ إعادة التاريخ المحدث
         return JsonResponse({
             'response': ai_response,
             'history': formatted_history + [
@@ -817,7 +810,6 @@ def ask_gemini(request):
                 {"role": "model", "parts": [ai_response]}
             ]
         })
-    
 
     except Exception as e:
         print(f"Gemini API Error: {e}")
@@ -825,5 +817,3 @@ def ask_gemini(request):
             'error': 'حدث خطأ أثناء معالجة طلبك. يرجى المحاولة مرة أخرى لاحقًا.',
             'details': str(e)
         }, status=500)
-        
-
