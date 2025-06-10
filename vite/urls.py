@@ -41,6 +41,7 @@ urlpatterns = [
     path('reels/<int:reel_id>/delete/', views.delete_reel, name='delete_reel'),
     path('reels/view/<int:reel_id>/', views.reel_detail_view, name='reel_detail'),
     path('reels/<int:reel_id>/view/', views.record_reel_view, name='record_reel_view'),
+    path('ai/ask/', views.ask_gemini, name='ask_gemini'),
 
     path('notifications/unread_count/', views.get_unread_notifications_count, name='unread_notifications_count'),
     path('notifications/mark_as_read/<int:notification_id>/', views.mark_notification_as_read, name='mark_notification_as_read'),

@@ -96,7 +96,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'messaging_platform.wsgi.application'
 ASGI_APPLICATION = 'messaging_platform.asgi.application'
-
+GEMINI_API_KEY = "AIzaSyDFV6eVgIK3SUXqBAP5XcmMrgM2Wm0pvgE"
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -177,3 +177,4 @@ DATABASES = {
 AUTH_USER_MODEL = 'vite.CustomUser'  # استبدل your_app_name باسم تطبيقك
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5" # Or just "bootstrap5" if it's the only one
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+

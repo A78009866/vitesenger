@@ -670,6 +670,54 @@
         touch-action: pan-x pan-y;
     }
 }
+ /* AI Chat Modal Styles */
+        .gemini-chat-message {
+            display: flex;
+            margin-bottom: 1rem;
+            max-width: 85%;
+        }
+        .gemini-chat-message.user {
+            margin-left: auto;
+            flex-direction: row-reverse;
+        }
+        .gemini-chat-message .message-content {
+            padding: 0.6rem 1rem;
+            border-radius: 1rem;
+            word-wrap: break-word;
+        }
+        .gemini-chat-message.user .message-content {
+            background-color: var(--primary);
+            color: var(--bg-dark);
+        }
+        .gemini-chat-message.ai .message-content {
+            background-color: var(--bg-darker);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .gemini-chat-message.ai .message-icon {
+            font-size: 1.5rem;
+            margin-left: 0.5rem; /* For RTL */
+            color: var(--primary-light);
+        }
+        .gemini-chat-message.typing-indicator .message-content {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
 </style>
 {% load static %} </head>
 <body>
@@ -682,6 +730,10 @@
             </a>
             
             <div class="nav-icons">
+                
+                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#geminiAiModal">
+                    <i class="fas fa-magic"></i>
+                </a>
                 <a class="nav-link position-relative" href="{% url 'notifications' %}">
                     <i class="fas fa-bell"></i>
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge" style="display: none; font-size: 0.6em; padding: 0.3em 0.5em;">0</span>
@@ -791,6 +843,30 @@
                          <a href="{% url 'upload_reel' %}" class="btn btn-outline-primary btn-lg">
                              <i class="fas fa-film me-2"></i> إنشاء ريلز
                          </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="geminiAiModal" tabindex="-1" aria-labelledby="geminiAiModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="geminiAiModalLabel"><i class="fas fa-magic me-2"></i>Trimer AI</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body" id="gemini-chat-body" style="height: 400px; overflow-y: auto;">
+                    <div id="gemini-initial-message" class="text-center p-4">
+                        <p class="text-muted">أهلاً بك! كيف يمكنني مساعدتك اليوم؟</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="input-group">
+                        <input type="text" id="gemini-user-input" class="form-control" placeholder="اسأل Trimer AI...">
+                        <button class="btn btn-primary" type="button" id="gemini-send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -969,6 +1045,115 @@
                 new bootstrap.Alert(alert).close();
             });
         }, 5000); // Dismiss after 5 seconds
+
+        // Gemini AI Chat Logic
+document.addEventListener('DOMContentLoaded', function() {
+    const sendBtn = document.getElementById('gemini-send-btn');
+    const userInput = document.getElementById('gemini-user-input');
+    const chatBody = document.getElementById('gemini-chat-body');
+    const initialMessage = document.getElementById('gemini-initial-message');
+
+    let geminiHistory = [];
+
+const shouldStoreInHistory = (msg) => {
+    const meaningless = ["هههه", "ماذا", "ها", "؟", "...", "اوكي", "اوك", "lol", "xd"];
+    return !meaningless.some(word => msg.toLowerCase().includes(word.trim()));
+};
+
+const sendMessage = async () => {
+    const query = userInput.value.trim();
+    if (!query) return;
+
+    if (initialMessage) initialMessage.style.display = 'none';
+
+    appendMessage(query, 'user');
+    if (shouldStoreInHistory(query)) {
+        geminiHistory.push({ role: 'user', content: query });
+    }
+
+    userInput.value = '';
+    showTypingIndicator();
+
+    try {
+        const response = await fetch("{% url 'ask_gemini' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                prompt: query,
+                history: geminiHistory
+            })
+        });
+
+        const data = await response.json();
+
+        hideTypingIndicator();
+
+        if (!response.ok || !data.response) {
+            throw new Error(data.error || 'حدث خطأ في الخادم');
+        }
+
+        appendMessage(data.response, 'ai');
+        geminiHistory.push({ role: 'model', content: data.response });
+
+    } catch (error) {
+        hideTypingIndicator();
+        appendMessage("حدث خطأ، حاول مجددًا.", 'ai');
+        console.error('Error details:', error);
+    }
+};
+
+
+
+            sendBtn.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            function appendMessage(text, sender) {
+                const messageWrapper = document.createElement('div');
+                messageWrapper.className = `gemini-chat-message ${sender}`;
+                
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                messageContent.textContent = text;
+                
+                if (sender === 'ai') {
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-magic message-icon';
+                    messageWrapper.appendChild(icon);
+                }
+                
+                messageWrapper.appendChild(messageContent);
+                chatBody.appendChild(messageWrapper);
+                chatBody.scrollTop = chatBody.scrollHeight; // Scroll to bottom
+            }
+
+            function showTypingIndicator() {
+                const typingIndicator = `
+                    <div class="gemini-chat-message ai typing-indicator">
+                        <i class="fas fa-magic message-icon"></i>
+                        <div class="message-content">
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                        </div>
+                    </div>`;
+                chatBody.insertAdjacentHTML('beforeend', typingIndicator);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+
+            function hideTypingIndicator() {
+                const indicator = document.querySelector('.typing-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            }
+        });
 
     </script>
     <script>

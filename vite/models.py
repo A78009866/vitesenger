@@ -260,3 +260,4 @@ class ReelComment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.user.username} on Reel {self.reel.id}: {self.content[:20]}"
+    
