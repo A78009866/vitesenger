@@ -704,19 +704,36 @@ def reel_detail_view(request, reel_id):
 @require_POST
 def record_reel_view(request, reel_id):
     try:
-        # Using update with F() is atomic and prevents race conditions.
-        updated_count = Reel.objects.filter(pk=reel_id).update(views_count=F('views_count') + 1)
-        if updated_count > 0:
-            # Optionally, get the new count to send back
-            new_count = Reel.objects.get(pk=reel_id).views_count
-            return JsonResponse({'success': True, 'views_count': new_count})
+        reel = get_object_or_404(Reel, pk=reel_id)
+        
+        # تحقق إذا كان المستخدم قد شاهد الريل بالفعل
+        if request.user not in reel.viewers.all():
+            # إضافة المستخدم إلى المشاهدين وزيادة العداد
+            reel.viewers.add(request.user)
+            reel.views_count = F('views_count') + 1
+            reel.save(update_fields=['views_count'])
+            
+            # جلب القيمة المحدثة
+            reel.refresh_from_db()
+            
+            return JsonResponse({
+                'success': True, 
+                'views_count': reel.views_count,
+                'is_new_view': True
+            })
         else:
-             return JsonResponse({'success': False, 'error': 'Reel not found'}, status=404)
+            return JsonResponse({
+                'success': True, 
+                'views_count': reel.views_count,
+                'is_new_view': False
+            })
+            
     except Exception as e:
-        # Log the error for debugging
         print(f"Error recording reel view: {e}")
-        return JsonResponse({'success': False, 'error': 'An internal error occurred'}, status=500)
-
+        return JsonResponse({
+            'success': False, 
+            'error': 'An internal error occurred'
+        }, status=500)
 
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse

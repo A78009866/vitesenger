@@ -1059,5 +1059,25 @@
                 behavior: 'smooth'
             });
         }, { passive: false });
+        // بدلاً من استخدام Set محلي، سنعتمد على الخادم للتحقق
+function recordView(reelId) {
+    fetch(`/reels/${reelId}/view/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.is_new_view) {
+            const viewCountElement = document.querySelector(`.reel-item[data-reel-id="${reelId}"] .views-count`);
+            if (viewCountElement) {
+                viewCountElement.textContent = data.views_count;
+            }
+        }
+    })
+    .catch(error => console.error('Error recording view:', error));
+}
 </script>    
 </html>

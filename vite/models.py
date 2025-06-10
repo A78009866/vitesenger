@@ -199,12 +199,13 @@ class Notification(models.Model):
 
 class Reel(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reels')
-    video = CloudinaryField('video', resource_type="video") # Ensures Cloudinary treats this as a video
+    video = CloudinaryField('video', resource_type="video")
     caption = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     views_count = models.PositiveIntegerField(default=0)
-
+    viewers = models.ManyToManyField(CustomUser, related_name='viewed_reels', blank=True)  # إضا
+    
     class Meta:
         ordering = ['-created_at']
 
