@@ -112,7 +112,21 @@ def home(request):
         post.is_saved = SavedPost.objects.filter(user=request.user, post=post).exists()
     
     home_reels = Reel.objects.select_related('user').order_by('?')[:10]
+    
+    active_threshold = timezone.now() - timedelta(minutes=5)
+    active_users_queryset = CustomUser.objects.filter(
+        last_active__gte=active_threshold
+    ).exclude(
+        id__in=blocked_users.values_list('id', flat=True)
+    ).order_by('-last_active')
 
+    active_users = list(active_users_queryset[:10])
+
+    current_user_is_active = request.user.last_active and request.user.last_active >= active_threshold
+    if current_user_is_active and request.user not in active_users:
+        active_users.insert(0, request.user)
+        active_users = active_users[:10]
+    
     unread_messages_count = Message.objects.filter(
         receiver=request.user,
         is_read=False
@@ -126,11 +140,11 @@ def home(request):
     context = {
         'posts': posts,
         'home_reels': home_reels,
+        'active_users': active_users,
         'unread_messages_count': unread_messages_count,
         'unread_count': unread_notifications_count,
     }
     return render(request, 'social/home.html', context)
-
 
 @login_required
 def send_friend_request(request, username):
