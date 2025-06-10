@@ -361,21 +361,19 @@ def send_message(request):
     if not content and not image_file and not video_file:
         return JsonResponse({"error": "لا يمكن إرسال رسالة فارغة"}, status=400)
 
-    # Create the message instance in memory without saving yet
     message = Message(
         sender=request.user,
         receiver=receiver,
-        content=content
+        content=content,
+        is_system_message=False
     )
 
-    # Assign the file objects directly to the CloudinaryFields
     if image_file:
         message.image = image_file
 
     if video_file:
         message.video = video_file
 
-    # Now, save the model. The upload to Cloudinary happens automatically here.
     message.save()
 
     notification_content = content if content else ("📷 صورة" if message.image else "🎥 فيديو")
@@ -387,7 +385,6 @@ def send_message(request):
         content=notification_content
     )
     
-    # Return the JSON response with the URLs now available from the saved instance
     return JsonResponse({
         "id": message.id,
         "sender": message.sender.username,
@@ -397,7 +394,8 @@ def send_message(request):
         "video_url": message.video.url if message.video else None,
         "timestamp": message.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
         "is_read": message.is_read,
-        "seen_at": None
+        "seen_at": None,
+        "is_system_message": message.is_system_message
     })
 
 @login_required
@@ -411,7 +409,6 @@ def get_messages(request, username):
          django_models.Q(sender=other_user, receiver=request.user))
     ).order_by("timestamp")
 
-    # Mark messages from the other user as read as they are fetched
     Message.objects.filter(sender=other_user, receiver=request.user, is_read=False).update(is_read=True, seen_at=timezone.now())
 
     return JsonResponse([
@@ -424,7 +421,8 @@ def get_messages(request, username):
             "video_url": msg.video.url if msg.video else None,
             "timestamp": msg.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
             "is_read": msg.is_read,
-            "seen_at": msg.seen_at.strftime("%Y-%m-%d %H:%M:%S") if msg.seen_at else None
+            "seen_at": msg.seen_at.strftime("%Y-%m-%d %H:%M:%S") if msg.seen_at else None,
+            "is_system_message": msg.is_system_message
         }
         for msg in messages_qs
     ], safe=False)
@@ -706,14 +704,11 @@ def record_reel_view(request, reel_id):
     try:
         reel = get_object_or_404(Reel, pk=reel_id)
         
-        # تحقق إذا كان المستخدم قد شاهد الريل بالفعل
         if request.user not in reel.viewers.all():
-            # إضافة المستخدم إلى المشاهدين وزيادة العداد
             reel.viewers.add(request.user)
             reel.views_count = F('views_count') + 1
             reel.save(update_fields=['views_count'])
             
-            # جلب القيمة المحدثة
             reel.refresh_from_db()
             
             return JsonResponse({
@@ -734,13 +729,6 @@ def record_reel_view(request, reel_id):
             'success': False, 
             'error': 'An internal error occurred'
         }, status=500)
-
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse
-from django.conf import settings
-import google.generativeai as genai
-import json
-from django.contrib.auth.decorators import login_required
 
 @login_required
 @require_POST
@@ -768,13 +756,13 @@ def ask_gemini(request):
             "إرشادات:\n"
             "1. افترض أن الأسئلة المختصرة مرتبطة بالسياق السابق.\n"
             "2. إذا قال المستخدم 'هههه' أو 'اوك' أو 'xd'، رد برد لطيف وموجز.\n"
+
             "3. لا تكرر نفس الإجابة.\n"
             "4. لا تقل 'غامض' أو 'أخشى'، بل افترض.\n"
             "5. حافظ على نبرة ودودة واحترافية.\n"
             "6. Trimer هي منصة تواصل اجتماعي، وأنا Trimer AI طورتني سالم أحمد."
         )
 
-        # ربط السؤال المختصر بسياق سابق
         if prompt and len(prompt.split()) <= 3 and history:
             last_user_topic = next((msg["content"] for msg in reversed(history) if msg["role"] == "user" and len(msg["content"].split()) > 2), "")
             last_model_reply = next((msg["content"] for msg in reversed(history) if msg["role"] == "model" and len(msg["content"].split()) > 2), "")
@@ -804,13 +792,11 @@ def ask_gemini(request):
 
         ai_response = response.text or ""
 
-        # منع تكرار الإجابة
         if formatted_history and len(formatted_history) >= 2:
             last_model_msg = formatted_history[-1]["parts"][0]
             if ai_response.strip() == last_model_msg.strip():
                 ai_response = "يبدو أنني أجبت على هذا مسبقًا. هل ننتقل لموضوع جديد؟ 😊"
 
-        # تحسين الردود على كلام مثل "هههه"
         if any(word in prompt.lower() for word in ["هههه", "xd", "lol", "اوك", "تمام"]):
             ai_response = "😂 واضح أنك مستمتع! تحب تسألني عن شيء؟"
         elif not ai_response:
@@ -834,3 +820,25 @@ def ask_gemini(request):
             'error': 'حدث خطأ أثناء معالجة طلبك. يرجى المحاولة مرة أخرى لاحقًا.',
             'details': str(e)
         }, status=500)
+
+@login_required
+@require_POST
+def screenshot_notification(request):
+    try:
+        data = json.loads(request.body)
+        receiver_username = data.get("receiver")
+        if not receiver_username:
+            return JsonResponse({"error": "المستلم غير محدد."}, status=400)
+
+        receiver = get_object_or_404(CustomUser, username=receiver_username)
+
+        Message.objects.create(
+            sender=request.user,
+            receiver=receiver,
+            content=f"لقد قام {request.user.username} بلقطة شاشة",
+            is_system_message=True
+        )
+
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

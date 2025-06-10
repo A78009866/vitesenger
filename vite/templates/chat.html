@@ -292,6 +292,17 @@
             z-index: 1;
         }
 
+        .system-message {
+            align-self: center;
+            background: #e1f5fe;
+            color: #01579b;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
     </style>
 </head>
 <body>
@@ -359,6 +370,12 @@
         تم الإرسال بنجاح <i class="fas fa-check"></i>
     </div>
 
+    <div id="image-modal" style="display:none; position:fixed; z-index:1001; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.9);">
+      <span id="close-modal" style="position:absolute; top:15px; right:35px; color:#f1f1f1; font-size:40px; font-weight:bold; cursor:pointer;">&times;</span>
+      <img id="modal-image" style="margin:auto; display:block; max-width:80%; max-height:80%; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
+      <a id="save-image-btn" style="display:block; width:80px; text-align:center; padding:10px; background-color:#25D366; color:white; border-radius:5px; text-decoration:none; position:absolute; bottom:20px; left:50%; transform:translateX(-50%); cursor:pointer;" download>حفظ</a>
+    </div>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const chatBox = document.getElementById("chat-box");
@@ -369,6 +386,11 @@
             const filePreviewContainer = document.getElementById("file-preview-container");
             const filePreviewImage = document.getElementById("file-preview-image");
             const removeFileButton = document.getElementById("remove-file-btn");
+
+            const imageModal = document.getElementById("image-modal");
+            const modalImage = document.getElementById("modal-image");
+            const closeModal = document.getElementById("close-modal");
+            const saveImageBtn = document.getElementById("save-image-btn");
 
             const otherUser = "{{ other_user.username }}";
             let lastMessageId = 0;
@@ -460,37 +482,42 @@
 
             function addMessageToChat(msg, isNew) {
                 const messageDiv = document.createElement("div");
-                messageDiv.classList.add("message");
                 messageDiv.dataset.id = msg.id;
 
-                if (msg.sender === "{{ request.user.username }}") {
-                    messageDiv.classList.add("sent");
+                if (msg.is_system_message) {
+                    messageDiv.classList.add("system-message");
+                    messageDiv.innerHTML = `<p>${msg.content}</p>`;
                 } else {
-                    messageDiv.classList.add("received");
-                }
+                    messageDiv.classList.add("message");
+                    if (msg.sender === "{{ request.user.username }}") {
+                        messageDiv.classList.add("sent");
+                    } else {
+                        messageDiv.classList.add("received");
+                    }
 
-                let mediaHTML = '';
-                if (msg.image_url) {
-                    mediaHTML = `<img src="${msg.image_url}" alt="Image">`;
-                } else if (msg.video_url) {
-                    mediaHTML = `<video src="${msg.video_url}" controls></video>`;
-                }
+                    let mediaHTML = '';
+                    if (msg.image_url) {
+                        mediaHTML = `<img src="${msg.image_url}" alt="Image" style="cursor:pointer;">`;
+                    } else if (msg.video_url) {
+                        mediaHTML = `<video src="${msg.video_url}" controls></video>`;
+                    }
 
-                let contentHTML = msg.content ? `<p>${msg.content.replace(/\n/g, '<br>')}</p>` : '';
-                
-                let seenIcon = "";
-                if (msg.sender === "{{ request.user.username }}") {
-                    seenIcon = `<i class="fas fa-check${msg.is_read ? '-double' : ''}" ${msg.is_read ? 'style="color: #4fc3f7;"' : ''}></i>`;
+                    let contentHTML = msg.content ? `<p>${msg.content.replace(/\n/g, '<br>')}</p>` : '';
+                    
+                    let seenIcon = "";
+                    if (msg.sender === "{{ request.user.username }}") {
+                        seenIcon = `<i class="fas fa-check${msg.is_read ? '-double' : ''}" ${msg.is_read ? 'style="color: #4fc3f7;"' : ''}></i>`;
+                    }
+                    
+                    messageDiv.innerHTML = `
+                        ${mediaHTML}
+                        ${contentHTML}
+                        <span class="message-time">
+                            ${formatTime(msg.timestamp)}
+                            ${seenIcon}
+                        </span>
+                    `;
                 }
-                
-                messageDiv.innerHTML = `
-                    ${mediaHTML}
-                    ${contentHTML}
-                    <span class="message-time">
-                        ${formatTime(msg.timestamp)}
-                        ${seenIcon}
-                    </span>
-                `;
                 
                 chatBox.appendChild(messageDiv);
                 
@@ -519,12 +546,12 @@
                 .then(response => response.json())
                 .then(messages => {
                     messages.forEach(msg => {
-                        const messageElement = document.querySelector(`.message[data-id='${msg.id}']`);
+                        const messageElement = document.querySelector(`.message[data-id='${msg.id}'], .system-message[data-id='${msg.id}']`);
                         if (!messageElement) { // New message
                             addMessageToChat(msg, true);
                             scrollToBottom();
                         } else { // Existing message, check for read status update
-                            if (msg.sender === "{{ request.user.username }}" && msg.is_read) {
+                            if (msg.sender === "{{ request.user.username }}" && msg.is_read && !msg.is_system_message) {
                                 const icon = messageElement.querySelector('.message-time .fa-check');
                                 if (icon) {
                                     icon.classList.add('fa-check-double');
@@ -536,6 +563,30 @@
                     });
                 });
             }
+
+            function sendScreenshotNotification() {
+                fetch("{% url 'screenshot_notification' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        'receiver': otherUser
+                    })
+                }).then(response => response.json()).then(data => {
+                    if (data.success) {
+                        console.log("Screenshot notification sent.");
+                    }
+                });
+            }
+
+            document.addEventListener('keyup', function(e) {
+                if (e.key == 'PrintScreen') {
+                    e.preventDefault();
+                    sendScreenshotNotification();
+                }
+            });
 
             sendButton.addEventListener("click", sendMessage);
             
@@ -550,6 +601,18 @@
                 this.style.height = 'auto';
                 this.style.height = (this.scrollHeight) + 'px';
             });
+            
+            chatBox.addEventListener('click', function(event) {
+                if (event.target.tagName === 'IMG' && event.target.closest('.message')) {
+                    modalImage.src = event.target.src;
+                    imageModal.style.display = "block";
+                    saveImageBtn.href = event.target.src;
+                }
+            });
+
+            closeModal.onclick = function() {
+                imageModal.style.display = "none";
+            }
 
             // Initial load and periodic checks
             fetchAndRenderMessages();

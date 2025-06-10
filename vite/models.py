@@ -108,6 +108,7 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     seen_at = models.DateTimeField(null=True, blank=True)
+    is_system_message = models.BooleanField(default=False)
 
     def __str__(self):
         return f"من {self.sender} إلى {self.receiver}: {self.content[:30]}"
@@ -204,7 +205,7 @@ class Reel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     views_count = models.PositiveIntegerField(default=0)
-    viewers = models.ManyToManyField(CustomUser, related_name='viewed_reels', blank=True)  # إضا
+    viewers = models.ManyToManyField(CustomUser, related_name='viewed_reels', blank=True)
     
     class Meta:
         ordering = ['-created_at']
@@ -214,11 +215,12 @@ class Reel(models.Model):
 
     @property
     def likes_count(self):
-        return self.reel_likes.count() # Using related_name from ReelLike
+        return self.reel_likes.count()
 
     @property
     def comments_count(self):
-        return self.reel_comments.count() # Using related_name from ReelComment    
+        return self.reel_comments.count()
+
     @property
     def thumbnail_url(self):
         if self.video and hasattr(self.video, 'public_id'):
@@ -261,4 +263,3 @@ class ReelComment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.user.username} on Reel {self.reel.id}: {self.content[:20]}"
-    

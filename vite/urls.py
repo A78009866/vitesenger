@@ -46,6 +46,8 @@ urlpatterns = [
     path('notifications/unread_count/', views.get_unread_notifications_count, name='unread_notifications_count'),
     path('notifications/mark_as_read/<int:notification_id>/', views.mark_notification_as_read, name='mark_notification_as_read'),
     path('activity/update/', views.update_user_activity, name='update_user_activity'),
+    
+    path("chat/screenshot-notification/", views.screenshot_notification, name="screenshot_notification"),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
