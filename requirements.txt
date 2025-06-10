@@ -56,4 +56,4 @@ daphne==4.1.2
 mysqlclient
 mysqlclient==2.2.1
 django-crispy-forms==2.4
-google-generativeai==25.1.1
+google-generativeai
