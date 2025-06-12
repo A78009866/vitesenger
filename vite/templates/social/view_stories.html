@@ -21,10 +21,11 @@
         z-index: 2000;
     }
 
-    .story-content {
+    .story-viewer-wrapper {
         position: relative;
         max-width: 450px;
         width: 90%;
+        aspect-ratio: 9 / 16; /* Maintain a mobile-friendly aspect ratio */
         background-color: #111;
         border-radius: 12px;
         display: flex;
@@ -32,15 +33,51 @@
         overflow: hidden;
     }
 
-    .story-media {
+    .story-content {
+        display: none; /* Hide all stories by default */
+        height: 100%;
         width: 100%;
-        max-height: 80vh;
-        object-fit: contain;
+        flex-direction: column;
     }
 
+    .story-content.active {
+        display: flex; /* Show only the active story */
+    }
+
+    .story-media {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        flex-grow: 1;
+    }
+
+    /* --- Progress Bar --- */
+    .stories-progress-bar {
+        position: absolute;
+        top: 5px;
+        left: 10px;
+        right: 10px;
+        display: flex;
+        gap: 4px;
+        z-index: 2010;
+    }
+
+    .progress-item {
+        flex-grow: 1;
+        height: 3px;
+        background-color: rgba(255, 255, 255, 0.4);
+        border-radius: 3px;
+        transition: background-color 0.3s linear;
+    }
+
+    .progress-item.active {
+        background-color: white;
+    }
+
+    /* --- Story Header --- */
     .story-header {
         position: absolute;
-        top: 0;
+        top: 15px; /* Adjusted for progress bar */
         left: 0;
         right: 0;
         padding: 15px;
@@ -48,6 +85,7 @@
         color: white;
         display: flex;
         align-items: center;
+        z-index: 2005;
     }
 
     .story-header img {
@@ -70,15 +108,21 @@
         text-decoration: none;
         line-height: 1;
         opacity: 0.8;
+        z-index: 2010;
     }
 
-    /* New styles for footer and like button */
+    /* --- Footer --- */
     .story-footer {
         padding: 15px;
         display: flex;
         align-items: center;
         gap: 10px;
         direction: ltr; /* Ensure like button is on the left */
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
     }
 
     .like-button {
@@ -104,30 +148,73 @@
         font-size: 1.2rem;
         font-weight: bold;
     }
+    
+    /* --- Navigation Buttons --- */
+    .story-nav-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: rgba(0, 0, 0, 0.3);
+        color: white;
+        border: none;
+        font-size: 2rem;
+        cursor: pointer;
+        padding: 15px 5px;
+        z-index: 2001;
+        display: none; /* Hidden by default */
+    }
+    
+    .story-nav-button.prev {
+        left: 5px;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .story-nav-button.next {
+        right: 5px;
+        border-radius: 8px 0 0 8px;
+    }
+
+    .story-viewer-wrapper:hover .story-nav-button {
+        display: block; /* Show on hover */
+    }
+
 </style>
 
 <div class="story-viewer-container" id="storyViewer">
-    {% with stories.first as story %}
-    {% if story %}
-    <div class="story-content">
-        <div class="story-main">
+    {% if stories %}
+    <div class="story-viewer-wrapper">
+        <div class="stories-progress-bar">
+            {% for story in stories %}
+            <div class="progress-item" data-story-id="{{ story.id }}"></div>
+            {% endfor %}
+        </div>
+        
+        <a href="{% url 'home' %}" class="close-story-viewer">&times;</a>
+
+        {% for story in stories %}
+        <div class="story-content {% if forloop.first %}active{% endif %}" data-story-index="{{ forloop.counter0 }}">
             <div class="story-header">
-                <div class="username">@{{ story.user.username }}</div>
-                <img src="{{ story.user.profile_picture.url|default:'/static/images/default_profile.png' }}" alt="">
+                <div class="username">@{{ story_user.username }}</div>
+                <img src="{{ story_user.profile_picture.url|default:'/static/images/default_profile.png' }}" alt="">
             </div>
             {% if story.video %}
-            <video src="{{ story.video.url }}" class="story-media" autoplay muted controls></video>
+                <video src="{{ story.video.url }}" class="story-media" muted controls data-story-id="{{ story.id }}"></video>
             {% elif story.image %}
-            <img src="{{ story.image.url }}" class="story-media" alt="Story by @{{ story.user.username }}">
+                <img src="{{ story.image.url }}" class="story-media" alt="Story by @{{ story_user.username }}">
             {% endif %}
+
+            <div class="story-footer">
+                <button class="like-button {% if story.is_liked %}liked{% endif %}" data-story-id="{{ story.id }}">
+                    <i class="fas fa-heart"></i>
+                </button>
+                <span class="likes-count" id="likes-count-{{ story.id }}">{{ story.likes_count }}</span>
+            </div>
         </div>
-        <div class="story-footer">
-            <button class="like-button {% if story.is_liked %}liked{% endif %}" data-story-id="{{ story.id }}">
-                <i class="fas fa-heart"></i>
-            </button>
-            <span class="likes-count" id="likes-count-{{ story.id }}">{{ story.likes_count }}</span>
-        </div>
-        <a href="{% url 'home' %}" class="close-story-viewer">&times;</a>
+        {% endfor %}
+
+        <button class="story-nav-button prev" id="prevStoryBtn" style="display: none;">&#10094;</button>
+        <button class="story-nav-button next" id="nextStoryBtn">&#10095;</button>
+
     </div>
     {% else %}
     <div class="text-light text-center">
@@ -135,59 +222,122 @@
         <a href="{% url 'home' %}" class="btn btn-outline-light mt-3">العودة للرئيسية</a>
     </div>
     {% endif %}
-    {% endwith %}
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const likeButton = document.querySelector('.like-button');
-        if (likeButton) {
-            likeButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                const storyId = this.dataset.storyId;
-                const url = `/story/${storyId}/like/`;
-                // In a real Django template, you'd use {% csrf_token %} to generate the form and get the token.
-                // For this script, we'll assume it's available in a cookie, which is standard.
-                function getCookie(name) {
-                    let cookieValue = null;
-                    if (document.cookie && document.cookie !== '') {
-                        const cookies = document.cookie.split(';');
-                        for (let i = 0; i < cookies.length; i++) {
-                            const cookie = cookies[i].trim();
-                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                                break;
-                            }
-                        }
-                    }
-                    return cookieValue;
-                }
-                const csrfToken = getCookie('csrftoken');
+document.addEventListener('DOMContentLoaded', function() {
+    const stories = document.querySelectorAll('.story-content');
+    if (stories.length === 0) return;
 
-                fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': csrfToken,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({})
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data) {
-                            const likeCountElement = document.getElementById(`likes-count-${storyId}`);
-                            likeCountElement.textContent = data.likes_count;
-                            this.classList.toggle('liked', data.liked);
-                        }
-                    })
-                    .catch(error => console.error('Error liking story:', error));
-            });
+    let currentStoryIndex = 0;
+    const totalStories = stories.length;
+    const nextBtn = document.getElementById('nextStoryBtn');
+    const prevBtn = document.getElementById('prevStoryBtn');
+    const progressItems = document.querySelectorAll('.progress-item');
+
+    function showStory(index) {
+        // Pause all videos first
+        document.querySelectorAll('.story-media[data-story-id]').forEach(media => {
+            if(media.tagName === 'VIDEO') media.pause();
+        });
+
+        // Hide current story and show the new one
+        stories.forEach((story, i) => {
+            story.classList.toggle('active', i === index);
+        });
+        
+        // Update progress bar
+        progressItems.forEach((item, i) => {
+            item.classList.toggle('active', i === index);
+        });
+
+        // Play video of the new active story
+        const activeStory = stories[index];
+        const activeMedia = activeStory.querySelector('.story-media[data-story-id]');
+        if (activeMedia && activeMedia.tagName === 'VIDEO') {
+            activeMedia.currentTime = 0;
+            activeMedia.play().catch(e => console.error("Video play failed:", e));
+        }
+
+        // Update button visibility
+        prevBtn.style.display = index > 0 ? 'block' : 'none';
+        nextBtn.style.display = index < totalStories - 1 ? 'block' : 'none';
+        
+        currentStoryIndex = index;
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrfToken = getCookie('csrftoken');
+
+    function handleLikeClick(e) {
+        e.preventDefault();
+        const button = e.currentTarget;
+        const storyId = button.dataset.storyId;
+        const url = `/story/${storyId}/like/`;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.ok ? response.json() : Promise.reject('Network response was not ok'))
+        .then(data => {
+            if (data) {
+                const likeCountElement = document.getElementById(`likes-count-${storyId}`);
+                likeCountElement.textContent = data.likes_count;
+                button.classList.toggle('liked', data.liked);
+            }
+        })
+        .catch(error => console.error('Error liking story:', error));
+    }
+
+    // Attach event listeners
+    document.querySelectorAll('.like-button').forEach(button => {
+        button.addEventListener('click', handleLikeClick);
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentStoryIndex < totalStories - 1) {
+            showStory(currentStoryIndex + 1);
         }
     });
+
+    prevBtn.addEventListener('click', () => {
+        if (currentStoryIndex > 0) {
+            showStory(currentStoryIndex - 1);
+        }
+    });
+    
+    // Auto-advance on video end
+    document.querySelectorAll('video.story-media').forEach(video => {
+        video.addEventListener('ended', () => {
+             if (currentStoryIndex < totalStories - 1) {
+                showStory(currentStoryIndex + 1);
+            } else {
+                // Optional: redirect home when the last story finishes
+                window.location.href = "{% url 'home' %}";
+            }
+        });
+    });
+
+    // Initial setup
+    showStory(0);
+});
 </script>
 {% endblock %}
