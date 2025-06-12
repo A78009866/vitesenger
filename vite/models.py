@@ -53,7 +53,7 @@ class CustomUser(AbstractUser):
     @property
     def is_online(self):
         if self.last_active:
-            return (timezone.now() - self.last_active) < timezone.timedelta(seconds=30)
+            return (timezone.now() - self.last_active) < timezone.timedelta(minute=3)
         return False
 
     def generate_qr_code(self):
