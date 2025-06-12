@@ -53,6 +53,7 @@ urlpatterns = [
     path('story/upload/', views.upload_story, name='upload_story'),
     path('stories/<str:username>/', views.view_stories, name='view_stories'),
     path('story/<int:story_id>/like/', views.like_story, name='like_story'),
+    path('story/<int:story_id>/delete/', views.delete_story, name='delete_story'),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

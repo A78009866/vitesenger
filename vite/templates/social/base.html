@@ -672,6 +672,42 @@
             padding-left: 15px;
             padding-right: 15px;
         }
+        /* --- الكود الجديد --- */
+.nav-icons-top { /* New class for top right icons */
+    display: flex;
+    align-items: center;
+    gap: 12px; /* تم تقليل المسافة من 15px */
+}
+
+.nav-icons-top .nav-link {
+    font-size: 1.2rem; /* تم تصغير حجم الأيقونة من 1.3rem */
+    padding: 4px !important; 
+    line-height: 1; 
+    background-color: var(--bg-darker); /* Circle background for top icons */
+    border-radius: 50%;
+    width: 34px; /* تم تصغير الحجم من 36px */
+    height: 34px; /* تم تصغير الحجم من 36px */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--border);
+}
+/* ... */
+@media (max-width: 768px) {
+    /* ... */
+    .nav-icons-top { /* Mobile adjustment for top icons */
+        gap: 10px; /* تم تقليل المسافة من 12px */
+    }
+    
+    .nav-icons-top .nav-link {
+        font-size: 1.1rem; /* تم تصغير حجم الأيقونة من 1.2rem */
+        padding: 3px !important;
+        width: 30px; /* تم تصغير الحجم من 32px */
+        height: 30px; /* تم تصغير الحجم من 32px */
+    }
+    /* ... */
+}
+/* --- نهاية الكود الجديد --- */
 </style>
 {% load static %} </head>
 <body>

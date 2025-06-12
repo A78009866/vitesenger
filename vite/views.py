@@ -183,6 +183,17 @@ def like_story(request, story_id):
 
 @login_required
 @require_POST
+def delete_story(request, story_id):
+    story = get_object_or_404(Story, id=story_id)
+    if story.user != request.user:
+        return JsonResponse({'success': False, 'error': 'Permission denied.'}, status=403)
+    
+    story.delete()
+    return JsonResponse({'success': True, 'message': 'Story deleted successfully.'})
+
+
+@login_required
+@require_POST
 def update_user_activity(request):
     request.user.last_active = timezone.now()
     request.user.save(update_fields=['last_active'])
