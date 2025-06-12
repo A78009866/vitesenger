@@ -300,13 +300,13 @@
             padding-right: 15px;
         }
 
+        /* Adjusted styles for the top navbar to match the image */
         .navbar-top-row {
             display: flex;
             align-items: center;
             justify-content: space-between; 
             width: 100%;
             padding: 10px 0; 
-            border-bottom: 1px solid var(--border);
         }
         
         .navbar-brand {
@@ -319,85 +319,64 @@
             margin-left: 10px; 
         }
         
-        .nav-icons {
+        .nav-icons-top { /* New class for top right icons */
             display: flex;
             align-items: center;
-            gap: 22px; 
+            gap: 15px; /* Reduced gap between icons */
         }
         
-        .nav-icons .nav-link {
-            padding: 5px !important; 
-            font-size: 1.5rem; 
+        .nav-icons-top .nav-link {
+            font-size: 1.3rem; /* Slightly smaller icon size */
+            padding: 4px !important; 
             line-height: 1; 
+            background-color: var(--bg-darker); /* Circle background for top icons */
+            border-radius: 50%;
+            width: 36px; /* Reduced size for icons */
+            height: 36px; /* Reduced size for icons */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border);
         }
-        .nav-icons .nav-link i{
+        .nav-icons-top .nav-link i{
              margin-right: 0rem !important;
         }
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: var(--bg-light);
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 10px 0;
-    z-index: 1000;
-    height: 60px; /* Standard height for bottom nav */
-}
-
-.bottom-nav .nav-link {
-    font-size: 1.4rem; /* Icon size */
-    color: var(--text) !important;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 5px 10px !important; /* Padding for touch targets */
-    margin: 0 !important; /* Remove any default margins */
-}
-
-.bottom-nav .nav-link i {
-    margin: 0 !important; /* Ensure icon is centered */
-}
-
-/* Style for the central "create post" button, if you keep it this way */
-.create-post-btn {
-    position: relative; /* For potential badge or animation */
-    background-color: var(--primary);
-    color: var(--bg-light) !important; /* Icon color */
-    width: 50px; /* Circular button */
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 15px; /* Lift it up a bit */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-}
-
-.create-post-btn i {
-    font-size: 1.4rem; /* Icon size inside button */
-    color: var(--bg-light) !important;
-}
-
-.create-post-btn:hover {
-    transform: scale(1.1) translateY(-2px); /* Hover effect */
-    background-color: var(--primary-light);
-}
-
-/* Profile picture in bottom nav */
-.bottom-nav .profile-pic {
-    width: 30px; /* Slightly smaller for nav */
-    height: 30px;
-    border-width: 1px; /* Thinner border */
-}
         
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            background-color: var(--bg-light);
+            border-top: 1px solid var(--border); /* Line separator */
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            height: 60px; /* Standard height for bottom nav */
+            width: 100%; /* Ensure full width */
+        }
+
+        .bottom-nav .nav-link {
+            font-size: 1.4rem; /* Icon size */
+            color: var(--text) !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px 10px !important; /* Padding for touch targets */
+            margin: 0 !important; /* Remove any default margins */
+        }
+
+        .bottom-nav .nav-link i {
+            margin: 0 !important; /* Ensure icon is centered */
+        }
+
+        /* Profile picture in bottom nav */
+        .bottom-nav .profile-pic {
+            width: 30px; /* Slightly smaller for nav */
+            height: 30px;
+            border-width: 1px; /* Thinner border */
+        }
+                
         .container.py-4 { 
             padding-top: 1.5rem; 
-            padding-bottom: 80px !important; /* Increased to avoid overlap with bottom-nav */
         }
         
         @media (max-width: 768px) {
@@ -409,13 +388,15 @@
                 padding: 8px 0;
             }
             
-            .nav-icons {
-                gap: 18px; 
+            .nav-icons-top { /* Mobile adjustment for top icons */
+                gap: 12px; /* Even smaller gap on mobile */
             }
             
-            .nav-icons .nav-link {
-                font-size: 1.3rem; 
-                padding: 4px !important;
+            .nav-icons-top .nav-link {
+                font-size: 1.2rem; /* Even smaller icons on mobile */
+                padding: 3px !important;
+                width: 32px; /* Adjust size for mobile */
+                height: 32px;
             }
             
             .logo-img {
@@ -430,20 +411,12 @@
                 font-size: 1.2rem; /* Smaller icons on mobile */
                  padding: 5px 8px !important;
             }
-            .create-post-btn {
-                width: 45px;
-                height: 45px;
-                margin-bottom: 12px; /* Adjust lift */
-            }
-            .create-post-btn i {
-                font-size: 1.2rem;
-            }
-             .bottom-nav .profile-pic {
+            .bottom-nav .profile-pic {
                 width: 26px;
                 height: 26px;
             }
-             .container.py-4 {
-                padding-bottom: 70px !important; /* Adjust for mobile bottom nav */
+             .nav-link span { /* Hide text on smaller screens for bottom nav */
+                 display: none;
             }
         }
 
@@ -528,88 +501,53 @@
                  display: none;
             }
         }
-.navbar-search-container {
-    width: 100%;
-    padding: 10px 15px;
-    background-color: var(--bg-light);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+
+/* Styles for the new Search Modal */
+.search-modal .modal-dialog {
+    max-width: 90%; /* Make it wider */
+    margin-top: 50px; /* Position it lower from the top */
 }
 
-.navbar-search-form {
-    display: flex;
-    width: 100%;
-    gap: 8px;
+@media (min-width: 576px) {
+    .search-modal .modal-dialog {
+        max-width: 500px; /* Adjust for larger screens */
+        margin-top: 100px;
+    }
 }
 
-.navbar-search {
+.search-modal .modal-content {
+    border-radius: 0.75rem;
+}
+
+.search-modal .modal-header {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.search-modal .modal-body {
+    padding-top: 0.5rem;
+    padding-bottom: 2rem;
+}
+
+.search-modal .form-control {
     background-color: var(--bg-darker);
     border: 1px solid var(--border);
     color: var(--text);
     border-radius: 0.5rem;
-    padding: 0.5rem 1rem;
-    width: 100%;
-    transition: all 0.2s;
-    flex-grow: 1;
+    padding: 0.75rem 1rem;
+    font-size: 1.1rem;
 }
 
-.navbar-search-btn {
-    background-color: var(--primary);
-    color: var(--bg-light);
-    border: none;
-    border-radius: 0.5rem;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-
-.navbar-search-btn:hover {
-    background-color: var(--primary-light);
-    transform: translateY(-1px);
-}
-
-.navbar-search:focus {
-    background-color: var(--bg-darker);
-    color: var(--text);
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
-    outline: none;
+.search-modal .form-control:focus {
     border-color: var(--primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.1);
 }
 
-.navbar-search::placeholder {
-    color: var(--text-muted);
+.search-modal .btn-primary {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
 }
-@media (max-width: 768px) {
-    .navbar-search-container {
-        padding: 8px 10px;
-        gap: 5px;
-    }
-    
-    .navbar-search-form {
-        gap: 5px;
-    }
-    
-    .navbar-search {
-        padding: 0.4rem 0.8rem;
-        font-size: 14px;
-    }
-    
-    .navbar-search-btn {
-        padding: 0.4rem 0.8rem;
-        font-size: 14px;
-    }
-    
-    .navbar-search-btn span {
-        display: none;
-    }
-    
-    .navbar-search-btn i {
-        margin: 0;
-    }
-}
+
     /* Custom styles for alerts / messages.success */
     .alert-container {
         position: fixed;
@@ -718,6 +656,22 @@
             0%, 60%, 100% { transform: translateY(0); }
             30% { transform: translateY(-6px); }
         }
+         /* لضمان عدم وجود هوامش جانبية تمنع الامتداد الكامل */
+        .container, .container-fluid {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .row {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        /* لضمان عدم وجود هوامش داخلية غير مرغوبة في الأعمدة */
+        .col-12 {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
 </style>
 {% load static %} </head>
 <body>
@@ -729,49 +683,50 @@
                 Trimer
             </a>
             
-            <div class="nav-icons">
-                
-                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#geminiAiModal">
-                    <i class="fas fa-magic"></i>
+            <div class="nav-icons-top">
+                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#createModal" style="text-decoration: none !important;">
+                    <i class="fas fa-plus"></i>
                 </a>
-                <a class="nav-link position-relative" href="{% url 'notifications' %}">
-                    <i class="fas fa-bell"></i>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge" style="display: none; font-size: 0.6em; padding: 0.3em 0.5em;">0</span>
-                </a>
-                <a class="nav-link" href="{% url 'chat_list' request.user.username %}">
-                    <i class="fas fa-paper-plane"></i>
-                </a>
-                
-            </div>
-        </div>
-        
-        <div class="navbar-search-container">
-            <form class="navbar-search-form" action="{% url 'search_users' %}" method="get">
-                <input type="search" class="navbar-search" name="q" placeholder="ابحث عن مستخدمين..." value="{{ request.GET.q }}">
-                <button type="submit" class="navbar-search-btn">
+                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#searchModal">
                     <i class="fas fa-search"></i>
-                    <span class="d-none d-sm-inline">بحث</span>
-                </button>
-            </form>
+                </a>
+                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#geminiAiModal">
+                    <i class="fas fa-magic"></i> </a>
+            </div>
         </div>
     </div>
 </nav>
 
 <div class="bottom-nav">
-    <a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i></a>
-    <a class="nav-link" href="{% url 'friends' %}"><i class="fas fa-users"></i></a>
-    
-    <a href="#" class="create-post-btn" data-bs-toggle="modal" data-bs-target="#createModal" style="text-decoration: none !important;">
-        <i class="fas fa-plus"></i>
+    <a class="nav-link" href="{% url 'home' %}">
+        <i class="fas fa-home"></i>
+        <span>الرئيسية</span>
     </a>
-    
-    <a class="nav-link" href="{% url 'reels_feed' %}"><i class="fas fa-film"></i></a> 
+    <a class="nav-link" href="{% url 'reels_feed' %}">
+        <i class="fas fa-play-circle"></i>
+        <span>ريلز</span>
+    </a> 
+    <a class="nav-link" href="{% url 'friends' %}">
+        <i class="fas fa-users"></i>
+        <span>الأصدقاء</span>
+    </a>
+    <a class="nav-link position-relative" href="{% url 'notifications' %}">
+        <i class="fas fa-bell"></i>
+        <span>الإشعارات</span>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge" style="display: none; font-size: 0.6em; padding: 0.3em 0.5em;">0</span>
+    </a>
+    <a class="nav-link" href="{% url 'chat_list' request.user.username %}">
+        <i class="fab fa-facebook-messenger"></i>
+        <span>الرسائل</span>
+    </a>
     <div class="dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
             {% if request.user.profile_picture and request.user.profile_picture.url %}
                 <img src="{{ request.user.profile_picture.url }}" class="profile-pic" alt="صورة البروفيل">
             {% else %}
-                <img src="{% static 'images/default_profile.png' %}" class="profile-pic" alt="صورة افتراضية"> {% endif %}
+                <img src="{% static 'images/default_profile.png' %}" class="profile-pic" alt="صورة افتراضية">
+            {% endif %}
+            <span>البروفيل</span>
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
             {% if request.user.is_authenticated and request.user.username %}
@@ -844,6 +799,26 @@
                              <i class="fas fa-film me-2"></i> إنشاء ريلز
                          </a>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade search-modal" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchModalLabel">البحث في Trimer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="d-flex" action="{% url 'search_users' %}" method="get">
+                        <input type="search" class="form-control me-2" name="q" placeholder="ابحث عن مستخدمين..." value="{{ request.GET.q }}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            <span class="d-none d-sm-inline ms-2">بحث</span>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

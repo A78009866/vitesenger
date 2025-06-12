@@ -1,0 +1,193 @@
+{% extends 'social/base.html' %}
+{% load static %}
+{% block content %}
+<style>
+    body,
+    html {
+        background-color: #000;
+        overflow: hidden;
+    }
+
+    .story-viewer-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+    .story-content {
+        position: relative;
+        max-width: 450px;
+        width: 90%;
+        background-color: #111;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .story-media {
+        width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+    }
+
+    .story-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 15px;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+    }
+
+    .story-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-left: 10px;
+    }
+
+    .story-header .username {
+        font-weight: bold;
+    }
+
+    .close-story-viewer {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 2rem;
+        color: white;
+        text-decoration: none;
+        line-height: 1;
+        opacity: 0.8;
+    }
+
+    /* New styles for footer and like button */
+    .story-footer {
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        direction: ltr; /* Ensure like button is on the left */
+    }
+
+    .like-button {
+        background: none;
+        border: none;
+        font-size: 1.8rem;
+        cursor: pointer;
+        color: #e0e0e0;
+        transition: color 0.2s, transform 0.2s;
+        padding: 5px;
+    }
+
+    .like-button:hover {
+        transform: scale(1.1);
+    }
+
+    .like-button.liked {
+        color: #ff4757;
+    }
+
+    .likes-count {
+        color: #e0e0e0;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+</style>
+
+<div class="story-viewer-container" id="storyViewer">
+    {% with stories.first as story %}
+    {% if story %}
+    <div class="story-content">
+        <div class="story-main">
+            <div class="story-header">
+                <div class="username">@{{ story.user.username }}</div>
+                <img src="{{ story.user.profile_picture.url|default:'/static/images/default_profile.png' }}" alt="">
+            </div>
+            {% if story.video %}
+            <video src="{{ story.video.url }}" class="story-media" autoplay muted controls></video>
+            {% elif story.image %}
+            <img src="{{ story.image.url }}" class="story-media" alt="Story by @{{ story.user.username }}">
+            {% endif %}
+        </div>
+        <div class="story-footer">
+            <button class="like-button {% if story.is_liked %}liked{% endif %}" data-story-id="{{ story.id }}">
+                <i class="fas fa-heart"></i>
+            </button>
+            <span class="likes-count" id="likes-count-{{ story.id }}">{{ story.likes_count }}</span>
+        </div>
+        <a href="{% url 'home' %}" class="close-story-viewer">&times;</a>
+    </div>
+    {% else %}
+    <div class="text-light text-center">
+        <p>لا توجد قصة لعرضها.</p>
+        <a href="{% url 'home' %}" class="btn btn-outline-light mt-3">العودة للرئيسية</a>
+    </div>
+    {% endif %}
+    {% endwith %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const likeButton = document.querySelector('.like-button');
+        if (likeButton) {
+            likeButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                const storyId = this.dataset.storyId;
+                const url = `/story/${storyId}/like/`;
+                // In a real Django template, you'd use {% csrf_token %} to generate the form and get the token.
+                // For this script, we'll assume it's available in a cookie, which is standard.
+                function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+                const csrfToken = getCookie('csrftoken');
+
+                fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({})
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data) {
+                            const likeCountElement = document.getElementById(`likes-count-${storyId}`);
+                            likeCountElement.textContent = data.likes_count;
+                            this.classList.toggle('liked', data.liked);
+                        }
+                    })
+                    .catch(error => console.error('Error liking story:', error));
+            });
+        }
+    });
+</script>
+{% endblock %}

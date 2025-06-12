@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as auth_login
 from .forms import CustomUserCreationForm, PostForm, FriendRequestForm, ProfileEditForm, PostEditForm, ReelForm
-from .models import Post, Like, Comment, SavedPost, CustomUser, Notification, Message, Reel, ReelLike, ReelComment
+from .models import Post, Like, Comment, SavedPost, CustomUser, Notification, Message, Reel, ReelLike, ReelComment, Story, StoryLike
 from django.http import JsonResponse, Http404, HttpResponseForbidden
 import cloudinary.uploader
 from django.contrib.auth import authenticate, login, logout
@@ -17,12 +17,167 @@ import pytz
 from django.utils.html import strip_tags, escape
 from django.contrib.auth import get_user_model
 from datetime import timedelta
-from django.db.models import F
-from django.conf import settings
+from django.db.models import F, Exists, OuterRef
 import google.generativeai as genai
+from django import forms
+import random
 
 
 User = get_user_model()
+
+
+# Helper Form for Story Upload - This would typically be in forms.py
+class StoryForm(forms.ModelForm):
+    class Meta:
+        model = Story
+        fields = ['image', 'video']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        image = cleaned_data.get("image")
+        video = cleaned_data.get("video")
+        if not image and not video:
+            raise forms.ValidationError("يجب رفع صورة أو فيديو.")
+        if image and video:
+            raise forms.ValidationError("لا يمكن رفع صورة وفيديو في نفس القصة. يرجى اختيار واحد فقط.")
+        return cleaned_data
+
+
+@login_required
+def home(request):
+    blocked_users = request.user.blocked_users.all()
+    posts = Post.objects.exclude(user__in=blocked_users).order_by('-created_at')
+    for post in posts:
+        post.is_liked = post.likes.filter(user=request.user).exists()
+        post.is_saved = SavedPost.objects.filter(user=request.user, post=post).exists()
+    
+    home_reels = Reel.objects.select_related('user').order_by('?')[:10]
+
+    # --- Start of Stories Logic ---
+    twenty_four_hours_ago = timezone.now() - timedelta(hours=24)
+    
+    story_user_ids = Story.objects.filter(
+        created_at__gte=twenty_four_hours_ago
+    ).exclude(
+        user__in=blocked_users
+    ).values_list('user_id', flat=True).distinct()
+
+    all_story_users = list(CustomUser.objects.filter(id__in=story_user_ids))
+    
+    current_user_with_story = None
+    for i, user in enumerate(all_story_users):
+        if user.id == request.user.id:
+            current_user_with_story = all_story_users.pop(i)
+            break
+            
+    random.shuffle(all_story_users)
+    
+    sorted_story_users = []
+    if current_user_with_story:
+        sorted_story_users.append(current_user_with_story)
+    sorted_story_users.extend(all_story_users)
+
+    users_with_previews = []
+    for user in sorted_story_users:
+        try:
+            latest_story = Story.objects.filter(
+                user=user, created_at__gte=twenty_four_hours_ago
+            ).latest('created_at')
+            users_with_previews.append({
+                'user': user,
+                'preview_story': latest_story
+            })
+        except Story.DoesNotExist:
+            continue
+    # --- End of Stories Logic ---
+
+    unread_messages_count = Message.objects.filter(
+        receiver=request.user, is_read=False
+    ).count()
+    
+    unread_notifications_count = Notification.objects.filter(
+        recipient=request.user, is_read=False
+    ).count()
+    
+    context = {
+        'posts': posts,
+        'home_reels': home_reels,
+        'stories_data': {
+            'users_with_previews': users_with_previews
+        },
+        'unread_messages_count': unread_messages_count,
+        'unread_count': unread_notifications_count,
+    }
+    return render(request, 'social/home.html', context)
+
+
+@login_required
+def upload_story(request):
+    if request.method == 'POST':
+        form = StoryForm(request.POST, request.FILES)
+        if form.is_valid():
+            story = form.save(commit=False)
+            story.user = request.user
+            story.save()
+            messages.success(request, 'تم نشر قصتك بنجاح!')
+            return redirect('home')
+        else:
+            # Pass the form with errors back to the template
+            return render(request, 'social/upload_story.html', {'form': form})
+    
+    form = StoryForm()
+    return render(request, 'social/upload_story.html', {'form': form})
+
+
+@login_required
+def view_stories(request, username):
+    try:
+        story_user = get_object_or_404(CustomUser, username=username)
+        twenty_four_hours_ago = timezone.now() - timedelta(hours=24)
+
+        if story_user in request.user.blocked_users.all():
+            raise Http404("User not found.")
+
+        user_stories = Story.objects.filter(
+            user=story_user,
+            created_at__gte=twenty_four_hours_ago
+        ).annotate(
+            is_liked=Exists(StoryLike.objects.filter(story_id=OuterRef('pk'), user=request.user))
+        ).order_by('created_at')
+
+        if not user_stories.exists():
+            messages.info(request, "لا توجد قصص نشطة لهذا المستخدم.")
+            return redirect('profile', username=username)
+
+        context = {
+            'story_user': story_user,
+            'stories': user_stories
+        }
+        return render(request, 'social/view_stories.html', context)
+    except CustomUser.DoesNotExist:
+        raise Http404("User not found.")
+
+
+@login_required
+@require_POST
+def like_story(request, story_id):
+    story = get_object_or_404(Story, id=story_id)
+    like, created = StoryLike.objects.get_or_create(user=request.user, story=story)
+
+    if not created:
+        like.delete()
+        liked = False
+    else:
+        liked = True
+        if request.user != story.user:
+            Notification.objects.create(
+                recipient=story.user,
+                sender=request.user,
+                notification_type='story_like',
+                content=f"أعجب {request.user.username} بقصتك",
+                related_id=story.id
+            )
+    return JsonResponse({'liked': liked, 'likes_count': story.likes_count})
 
 
 @login_required
@@ -102,49 +257,6 @@ def add_comment(request, post_id):
         })
     return JsonResponse({'success': False, 'error': 'طلب غير صالح.'})
 
-
-@login_required
-def home(request):
-    blocked_users = request.user.blocked_users.all()
-    posts = Post.objects.exclude(user__in=blocked_users).order_by('-created_at')
-    for post in posts:
-        post.is_liked = post.likes.filter(user=request.user).exists()
-        post.is_saved = SavedPost.objects.filter(user=request.user, post=post).exists()
-    
-    home_reels = Reel.objects.select_related('user').order_by('?')[:10]
-    
-    active_threshold = timezone.now() - timedelta(minutes=5)
-    active_users_queryset = CustomUser.objects.filter(
-        last_active__gte=active_threshold
-    ).exclude(
-        id__in=blocked_users.values_list('id', flat=True)
-    ).order_by('-last_active')
-
-    active_users = list(active_users_queryset[:10])
-
-    current_user_is_active = request.user.last_active and request.user.last_active >= active_threshold
-    if current_user_is_active and request.user not in active_users:
-        active_users.insert(0, request.user)
-        active_users = active_users[:10]
-    
-    unread_messages_count = Message.objects.filter(
-        receiver=request.user,
-        is_read=False
-    ).count()
-    
-    unread_notifications_count = Notification.objects.filter(
-        recipient=request.user,
-        is_read=False
-    ).count()
-    
-    context = {
-        'posts': posts,
-        'home_reels': home_reels,
-        'active_users': active_users,
-        'unread_messages_count': unread_messages_count,
-        'unread_count': unread_notifications_count,
-    }
-    return render(request, 'social/home.html', context)
 
 @login_required
 def send_friend_request(request, username):

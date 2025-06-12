@@ -99,6 +99,63 @@ class CustomUser(AbstractUser):
             self.generate_qr_code()
 
 
+class Story(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='stories')
+    image = CloudinaryField('image', blank=True, null=True)
+    video = CloudinaryField('video', resource_type="video", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Story"
+        verbose_name_plural = "Stories"
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timezone.timedelta(hours=24)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Story by {self.user.username} from {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+    @property
+    def preview_url(self):
+        """
+        Returns a thumbnail URL for videos or the direct URL for images.
+        """
+        if self.video and hasattr(self.video, 'public_id'):
+            try:
+                return cloudinary.CloudinaryVideo(self.video.public_id).build_url(
+                    transformation=[
+                        {'width': 300, 'height': 500, 'crop': 'fill'},
+                        {'quality': 'auto', 'fetch_format': 'auto', 'format': 'jpg'}
+                    ],
+                    resource_type="video"
+                )
+            except Exception:
+                return "/static/images/default_profile.png" # Fallback image
+        if self.image:
+            return self.image.url
+        return "/static/images/default_profile.png" # Fallback image
+        
+    @property
+    def likes_count(self):
+        return self.story_likes.count()
+
+
+class StoryLike(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name='story_likes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'story')
+
+    def __str__(self):
+        return f"{self.user.username} likes Story {self.story.id}"
+
+
 class Message(models.Model):
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sent_messages")
     receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="received_messages")
@@ -182,6 +239,7 @@ class Notification(models.Model):
         ('friend_accept', 'قبول الصداقة'),
         ('reel_like', 'إعجاب على ريل'),
         ('reel_comment', 'تعليق على ريل'),
+        ('story_like', 'إعجاب على القصة'),
     )
 
     recipient = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')

@@ -72,6 +72,7 @@
                                              {% elif notification.notification_type == 'friend_request' %}{% url 'profile' notification.sender.username %}
                                              {% elif notification.notification_type == 'friend_accept' %}{% url 'profile' notification.sender.username %}
                                              {% elif notification.notification_type == 'reel_like' or notification.notification_type == 'reel_comment' %}{% url 'reel_detail' notification.related_id %}
+                                             {% elif notification.notification_type == 'story_like' %}{% url 'view_stories' username=notification.recipient.username %}
                                              {% else %}#{% endif %}"
                                        class="notification-item list-group-item list-group-item-action {% if not notification.is_read %}unread{% endif %}">
                                         <div class="d-flex align-items-center py-2 px-3">
