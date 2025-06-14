@@ -174,14 +174,14 @@ DATABASES = {
         'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': 'salem.2024',
-        'HOST': 'db.bpmyyrzaiuujzcemzcoa.supabase.co'
-',
+        'HOST': 'db.bpmyyrzaiuujzcemzcoa.supabase.co',
         'PORT': '5432',
         'OPTIONS': {
             'sslmode': 'require'
         },
     }
 }
+
 
 AUTH_USER_MODEL = 'vite.CustomUser'  # استبدل your_app_name باسم تطبيقك
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5" # Or just "bootstrap5" if it's the only one
