@@ -174,7 +174,7 @@ DATABASES = {
         'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': 'salem.2024',
-        'HOST': ''db.bpmyyrzaiuujzcemzcoa.supabase.co'
+        'HOST': 'db.bpmyyrzaiuujzcemzcoa.supabase.co'
 ',
         'PORT': '5432',
         'OPTIONS': {
