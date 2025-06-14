@@ -174,8 +174,11 @@ DATABASES = {
         'NAME': 'vitesql_z6qy',
         'USER': 'vitesql_z6qy_user',
         'PASSWORD': 'l4dsbayEHYrpZRXmZVyhYlPYG0O4pL5b',
-        'HOST': 'dpg-d0inpdre5dus739pugd0-a.oregon-postgres.render.com',  # لاحظ .render.com المضافة
+        'HOST': 'dpg-d0inpdre5dus739pugd0-a.oregon-postgres.render.com',
         'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require'
+        },
     }
 }
 
