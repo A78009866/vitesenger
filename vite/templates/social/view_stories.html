@@ -392,10 +392,17 @@
             {% endif %}
 
             <div class="story-footer">
-                 <button class="like-button {% if story.is_liked_by_user %}liked{% endif %}" data-story-id="{{ story.id }}" data-like-url="{% url 'like_story' %}">
+                {# FIX 1: Pass story.id to the url tag #}
+                {# FIX 2: Check for story.is_liked which is annotated in the view #}
+                <button class="like-button {% if story.is_liked %}liked{% endif %}" 
+                        data-story-id="{{ story.id }}" 
+                        data-like-url="{% url 'like_story' story_id=story.id %}">
                     <i class="fas fa-heart"></i>
                 </button>
-                <span class="likes-count" id="likes-count-{{ story.id }}">{{ story.likes.count }}</span>
+                
+                {# The like_story view returns 'likes_count', which the JS will use to update this span. #}
+                {# The initial count comes from the model property. #}
+                <span class="likes-count" id="likes-count-{{ story.id }}">{{ story.likes_count }}</span>
             </div>
         </div>
         {% endfor %}
