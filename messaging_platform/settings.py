@@ -167,20 +167,21 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 LOGIN_REDIRECT_URL = 'home'  # استبدل 'home' باسم المسار الذي تريده بعد تسجيل الدخول
 USE_L10N = True
 LANGUAGE_CODE = 'ar'
-# تحليل Internal Database URL
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
-        'USER': 'postgres',
+        'USER': 'postgres.bpmyyrzaiuujzcemzcoa',
         'PASSWORD': 'salem.2024',
-        'HOST': 'db.bpmyyrzaiuujzcemzcoa.supabase.co',
+        'HOST': 'aws-0-us-east-2.pooler.supabase.com',
         'PORT': '5432',
         'OPTIONS': {
             'sslmode': 'require'
         },
     }
 }
+
 
 
 AUTH_USER_MODEL = 'vite.CustomUser'  # استبدل your_app_name باسم تطبيقك
