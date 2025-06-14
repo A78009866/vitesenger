@@ -123,7 +123,8 @@
         background: none;
         border: none;
         cursor: pointer;
-        padding: 5px;
+        /* MODIFICATION: Increased padding for better touch target */
+        padding: 10px; 
     }
     .story-control-btn:hover {
         opacity: 1;
@@ -154,11 +155,13 @@
         cursor: pointer;
         color: #e0e0e0;
         transition: color 0.2s, transform 0.2s;
-        padding: 5px;
+        /* MODIFICATION: Increased padding for better touch target */
+        padding: 10px;
     }
 
     .like-button.liked {
         color: #ff4757;
+        transform: scale(1.1);
     }
 
     .likes-count {
@@ -215,7 +218,7 @@
         transform: translate(-50%, -50%) scale(1);
     }
 
-    /* --- NEW: Mute/Unmute Button --- */
+    /* --- Mute/Unmute Button --- */
     .story-mute-toggle-btn {
         position: absolute;
         bottom: 15px;
@@ -333,13 +336,14 @@
 
     /* --- Spinner for Loading Indicator --- */
     .btn-spinner {
-        display: inline-block;
+        display: none; /* Hidden by default */
         width: 18px;
         height: 18px;
         border: 3px solid rgba(255, 255, 255, 0.4);
         border-radius: 50%;
         border-top-color: #fff;
         animation: spin 1s ease-in-out infinite;
+        margin-left: 8px;
     }
     @keyframes spin {
         to { transform: rotate(360deg); }
@@ -388,10 +392,10 @@
             {% endif %}
 
             <div class="story-footer">
-                <button class="like-button {% if story.is_liked %}liked{% endif %}" data-story-id="{{ story.id }}">
+                 <button class="like-button {% if story.is_liked_by_user %}liked{% endif %}" data-story-id="{{ story.id }}" data-like-url="{% url 'like_story' %}">
                     <i class="fas fa-heart"></i>
                 </button>
-                <span class="likes-count" id="likes-count-{{ story.id }}">{{ story.likes_count }}</span>
+                <span class="likes-count" id="likes-count-{{ story.id }}">{{ story.likes.count }}</span>
             </div>
         </div>
         {% endfor %}
@@ -408,7 +412,7 @@
     {% endif %}
 </div>
 
-<div class="confirm-dialog-overlay" id="customConfirm">
+<div class="confirm-dialog-overlay" id="customConfirm" data-delete-url-template="{% url 'delete_story' 0 %}">
     <div class="confirm-dialog-box">
         <h3>تأكيد الحذف</h3>
         <p>هل أنت متأكد من رغبتك في حذف هذه القصة؟ لا يمكن التراجع عن هذا الإجراء.</p>
@@ -417,7 +421,7 @@
             <button class="confirm-btn-cancel" id="confirmCancel">إلغاء</button>
             <button class="confirm-btn-delete" id="confirmDelete">
                 <span class="btn-text">حذف</span>
-                <span class="btn-loader-container"></span>
+                <span class="btn-spinner"></span>
             </button>
         </div>
     </div>
@@ -426,49 +430,15 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // --- Existing setup ---
     const stories = document.querySelectorAll('.story-content');
     if (stories.length === 0) return;
+
     let currentStoryIndex = 0;
     const totalStories = stories.length;
     const nextBtn = document.getElementById('nextStoryBtn');
     const prevBtn = document.getElementById('prevStoryBtn');
     const progressItems = document.querySelectorAll('.progress-item');
     const csrfToken = getCookie('csrftoken');
-
-    // --- Core Functions ---
-    function showStory(index) {
-        // Pause all media before switching
-        document.querySelectorAll('.story-media[data-story-id]').forEach(media => {
-            if(media.tagName === 'VIDEO') media.pause();
-        });
-
-        stories.forEach((story, i) => story.classList.toggle('active', i === index));
-        progressItems.forEach((item, i) => item.classList.toggle('active', i === index));
-        
-        const activeStory = stories[index];
-        const activeMedia = activeStory.querySelector('.story-media[data-story-id]');
-        
-        // Handle video playback
-        if (activeMedia && activeMedia.tagName === 'VIDEO') {
-            activeMedia.currentTime = 0;
-            activeMedia.muted = true; // ALWAYS start muted for autoplay
-
-            // Reset the icon for this specific story's mute button
-            const muteBtnIcon = activeStory.querySelector('.story-mute-toggle-btn i');
-            if (muteBtnIcon) {
-                muteBtnIcon.classList.remove('fa-volume-up');
-                muteBtnIcon.classList.add('fa-volume-mute');
-            }
-
-            let playPromise = activeMedia.play();
-            if (playPromise !== undefined) { playPromise.catch(error => {}); }
-        }
-
-        prevBtn.style.display = index > 0 ? 'block' : 'none';
-        nextBtn.style.display = index < totalStories - 1 ? 'block' : 'none';
-        currentStoryIndex = index;
-    }
 
     function getCookie(name) {
         if (document.cookie && document.cookie !== '') {
@@ -480,15 +450,90 @@ document.addEventListener('DOMContentLoaded', function() {
         return null;
     }
 
-    // --- Event Listeners ---
-    document.querySelectorAll('.like-button').forEach(button => { /* ... like logic ... */ });
+    function showStory(index) {
+        document.querySelectorAll('.story-media[data-story-id]').forEach(media => {
+            if (media.tagName === 'VIDEO') media.pause();
+        });
+
+        stories.forEach((story, i) => story.classList.toggle('active', i === index));
+        progressItems.forEach((item, i) => item.classList.toggle('active', i === index));
+        
+        const activeStory = stories[index];
+        const activeMedia = activeStory.querySelector('.story-media[data-story-id]');
+        
+        if (activeMedia && activeMedia.tagName === 'VIDEO') {
+            activeMedia.currentTime = 0;
+            activeMedia.muted = true;
+            const muteBtnIcon = activeStory.querySelector('.story-mute-toggle-btn i');
+            if (muteBtnIcon) {
+                muteBtnIcon.classList.remove('fa-volume-up');
+                muteBtnIcon.classList.add('fa-volume-mute');
+            }
+            let playPromise = activeMedia.play();
+            if (playPromise !== undefined) { playPromise.catch(error => {}); }
+        }
+
+        prevBtn.style.display = index > 0 ? 'block' : 'none';
+        nextBtn.style.display = index < totalStories - 1 ? 'block' : 'none';
+        currentStoryIndex = index;
+    }
+    
+    // --- Like Button Logic ---
+    // MODIFICATION: Completed the like logic using 'touchstart' for mobile.
+    document.querySelectorAll('.like-button').forEach(button => {
+        button.addEventListener('touchstart', function(e) {
+            e.preventDefault(); // Prevents emulated click
+            e.stopPropagation(); // Prevents event from bubbling to parent (dblclick)
+
+            const storyId = this.dataset.storyId;
+            const likeUrl = this.dataset.likeUrl;
+            const likesCountSpan = document.getElementById(`likes-count-${storyId}`);
+            const isLiked = this.classList.contains('liked');
+
+            // Optimistic UI update
+            this.classList.toggle('liked');
+            let currentLikes = parseInt(likesCountSpan.textContent);
+            likesCountSpan.textContent = isLiked ? currentLikes - 1 : currentLikes + 1;
+            
+            fetch(likeUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ story_id: storyId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Server-side validation
+                if (data.status === 'ok') {
+                    this.classList.toggle('liked', data.liked);
+                    likesCountSpan.textContent = data.likes_count;
+                } else {
+                    // Revert UI on failure
+                    this.classList.toggle('liked');
+                    likesCountSpan.textContent = currentLikes;
+                }
+            })
+            .catch(error => {
+                // Revert UI on network error
+                this.classList.toggle('liked');
+                likesCountSpan.textContent = currentLikes;
+                console.error('Like action failed:', error);
+            });
+        });
+    });
+
+    // Double click to like
     stories.forEach(storyContent => {
-        // Double click to like
-        storyContent.addEventListener('dblclick', function() {
+        storyContent.addEventListener('dblclick', function(e) {
             const likeButton = this.querySelector('.like-button');
             const feedbackIcon = this.querySelector('.like-feedback-icon');
-            if (likeButton && !likeButton.classList.contains('liked')) {
-                likeButton.click();
+
+            // Only trigger like if the target is not the button itself
+            if (!e.target.closest('.like-button') && likeButton && !likeButton.classList.contains('liked')) {
+                 // Use touchstart to trigger the like logic consistently
+                likeButton.dispatchEvent(new Event('touchstart', { bubbles: true }));
             }
             if (feedbackIcon) {
                 feedbackIcon.classList.add('show');
@@ -497,27 +542,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- NEW: Mute/Unmute Logic ---
+    // Mute/Unmute Logic
     document.querySelectorAll('.story-mute-toggle-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation(); // Prevent other clicks
+        button.addEventListener('click', function(e) { // Click is fine here
+            e.stopPropagation();
             const storyContent = this.closest('.story-content');
             const video = storyContent.querySelector('video.story-media');
             const icon = this.querySelector('i');
 
             if (video) {
                 video.muted = !video.muted;
-                if (video.muted) {
-                    icon.classList.remove('fa-volume-up');
-                    icon.classList.add('fa-volume-mute');
-                } else {
-                    icon.classList.remove('fa-volume-mute');
-                    icon.classList.add('fa-volume-up');
-                }
+                icon.classList.toggle('fa-volume-mute', video.muted);
+                icon.classList.toggle('fa-volume-up', !video.muted);
             }
         });
     });
-
 
     // --- Story Deletion Logic ---
     const confirmDialog = document.getElementById('customConfirm');
@@ -525,16 +564,78 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmCancelBtn = document.getElementById('confirmCancel');
     const dialogError = document.getElementById('dialogError');
     const deleteBtnText = confirmDeleteBtn.querySelector('.btn-text');
-    const deleteBtnLoader = confirmDeleteBtn.querySelector('.btn-loader-container');
+    const deleteBtnSpinner = confirmDeleteBtn.querySelector('.btn-spinner');
+    let storyIdToDelete = null;
 
-    function showDialog(storyId) { /* ... same as before ... */ }
-    function hideDialog() { /* ... same as before ... */ }
+    function showDialog(storyId) {
+        storyIdToDelete = storyId;
+        dialogError.textContent = '';
+        confirmDialog.style.display = 'flex';
+        setTimeout(() => confirmDialog.classList.add('show'), 10);
+    }
 
+    function hideDialog() {
+        confirmDialog.classList.remove('show');
+        setTimeout(() => confirmDialog.style.display = 'none', 300);
+    }
+    
+    // MODIFICATION: Using 'touchstart' for mobile reliability.
     document.querySelectorAll('.delete-story-btn').forEach(button => {
-        button.addEventListener('click', function(e) { /* ... same as before ... */ });
+        button.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const storyId = this.dataset.storyId;
+            showDialog(storyId);
+        });
     });
+
     confirmCancelBtn.addEventListener('click', hideDialog);
-    confirmDeleteBtn.addEventListener('click', () => { /* ... same deletion logic as before ... */ });
+
+    // MODIFICATION: Completed the deletion logic.
+    confirmDeleteBtn.addEventListener('click', () => {
+        if (!storyIdToDelete) return;
+
+        // Show loading state
+        deleteBtnText.style.display = 'none';
+        deleteBtnSpinner.style.display = 'inline-block';
+        confirmDeleteBtn.disabled = true;
+        confirmCancelBtn.disabled = true;
+        dialogError.textContent = '';
+        
+        const urlTemplate = confirmDialog.dataset.deleteUrlTemplate;
+        const deleteUrl = urlTemplate.replace('0', storyIdToDelete);
+
+        fetch(deleteUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({id: storyIdToDelete})
+        })
+        .then(response => {
+            if (!response.ok) {
+                 return response.json().then(err => { throw err; });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                // On successful deletion, go to the home page or previous page
+                window.location.href = "{% url 'home' %}";
+            } else {
+                throw new Error(data.message || 'فشل حذف القصة.');
+            }
+        })
+        .catch(error => {
+            dialogError.textContent = error.message || 'حدث خطأ غير متوقع. حاول مرة أخرى.';
+            // Hide loading state
+            deleteBtnText.style.display = 'inline-block';
+            deleteBtnSpinner.style.display = 'none';
+            confirmDeleteBtn.disabled = false;
+            confirmCancelBtn.disabled = false;
+        });
+    });
 
     // --- Navigation and Video End Logic ---
     nextBtn.addEventListener('click', () => {
