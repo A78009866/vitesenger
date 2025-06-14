@@ -498,9 +498,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const isLiked = this.classList.contains('liked');
 
             // Optimistic UI update
-            this.classList.toggle('liked');
+            // this.classList.toggle('liked'); // Removed for precise control below
             let currentLikes = parseInt(likesCountSpan.textContent);
-            likesCountSpan.textContent = isLiked ? currentLikes - 1 : currentLikes + 1;
+            // likesCountSpan.textContent = isLiked ? currentLikes - 1 : currentLikes + 1; // Removed for precise control below
             
             fetch(likeUrl, {
                 method: 'POST',
@@ -514,19 +514,21 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 // Server-side validation
                 if (data.status === 'ok') {
+                    // Correctly update UI based on server response
                     this.classList.toggle('liked', data.liked);
                     likesCountSpan.textContent = data.likes_count;
                 } else {
-                    // Revert UI on failure
-                    this.classList.toggle('liked');
-                    likesCountSpan.textContent = currentLikes;
+                    // Revert UI on failure (e.g., server returned 'error' status)
+                    // The UI was not optimistically updated here, so no need to revert unless
+                    // you choose to do an optimistic update THEN revert.
+                    // If you want optimistic, uncomment the above lines and uncomment the revert here.
+                    console.error('Like action failed on server:', data.message || 'Unknown error');
                 }
             })
             .catch(error => {
                 // Revert UI on network error
-                this.classList.toggle('liked');
-                likesCountSpan.textContent = currentLikes;
-                console.error('Like action failed:', error);
+                // Again, if you had optimistic updates uncommented, you'd revert here.
+                console.error('Like action failed (network/parsing):', error);
             });
         });
     });
@@ -538,7 +540,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const feedbackIcon = this.querySelector('.like-feedback-icon');
 
             // Only trigger like if the target is not the button itself
-            if (!e.target.closest('.like-button') && likeButton && !likeButton.classList.contains('liked')) {
+            if (!e.target.closest('.like-button') && likeButton) { // Removed !likeButton.classList.contains('liked') to allow unliking
                  // Use touchstart to trigger the like logic consistently
                 likeButton.dispatchEvent(new Event('touchstart', { bubbles: true }));
             }
