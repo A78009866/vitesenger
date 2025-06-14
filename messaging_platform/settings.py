@@ -171,10 +171,11 @@ LANGUAGE_CODE = 'ar'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'vitesql_z6qy',
-        'USER': 'vitesql_z6qy_user',
-        'PASSWORD': 'l4dsbayEHYrpZRXmZVyhYlPYG0O4pL5b',
-        'HOST': 'dpg-d0inpdre5dus739pugd0-a.oregon-postgres.render.com',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'salem.2024',
+        'HOST': ''db.bpmyyrzaiuujzcemzcoa.supabase.co'
+',
         'PORT': '5432',
         'OPTIONS': {
             'sslmode': 'require'
