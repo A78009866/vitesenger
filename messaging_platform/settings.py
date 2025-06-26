@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-m(x8xu413g_0^_dfyrw#)mjc_gn7szcc-kx^*pf9xhabh99gjs
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['trimer.onrender.com', '*']
+ALLOWED_HOSTS = ['social-vite.onrender.com', '*']
 
 
 # Application definition
