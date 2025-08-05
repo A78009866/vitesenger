@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="screen-orientation" content="portrait-primary">
     <title>محادثة</title>
+    <script src="https://unpkg.com/wavesurfer.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -302,7 +303,51 @@
             margin-bottom: 8px;
             text-align: center;
         }
-
+        /* --- إضافة CSS جديد --- */
+        .voice-message-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 250px; /* or some fixed width */
+        }
+        .play-pause-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            font-size: 16px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .waveform {
+            flex-grow: 1;
+            height: 40px;
+        }
+        .duration {
+            font-size: 12px;
+            color: #666;
+            flex-shrink: 0;
+        }
+        #record-btn.recording {
+            color: red;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        #record-timer {
+            margin: 0 10px;
+            font-size: 15px;
+            color: #333;
+            display: none; /* يظهر عند التسجيل */
+        }
     </style>
 </head>
 <body>
@@ -347,19 +392,23 @@
         </div>
 
         <div class="chat-footer">
-            <button id="attach-btn" class="action-btn">
-                <i class="fas fa-paperclip"></i>
-            </button>
-            <input type="file" id="file-input" accept="image/*,video/*" style="display:none;">
+    <button id="attach-btn" class="action-btn">
+        <i class="fas fa-paperclip"></i>
+    </button>
+    <input type="file" id="file-input" accept="image/*,video/*" style="display:none;">
 
-            <div class="message-input-container">
-                <textarea id="message-input" class="message-input" placeholder="اكتب رسالة..." rows="1"></textarea>
-            </div>
-            
-            <button id="send-btn" class="action-btn send-btn">
-                <i class="fas fa-paper-plane"></i>
-            </button>
+    <div class="message-input-container">
+        <textarea id="message-input" class="message-input" placeholder="اكتب رسالة..." rows="1"></textarea>
+        <span id="record-timer">00:00</span>
         </div>
+    
+    <button id="record-btn" class="action-btn">
+        <i class="fas fa-microphone"></i>
+    </button>
+    <button id="send-btn" class="action-btn send-btn" style="display: none;">
+        <i class="fas fa-paper-plane"></i>
+    </button>
+    </div>
     </div>
 
     <div id="sending-indicator" class="sending-indicator">
@@ -378,6 +427,9 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // =================================================================
+            // 1. تعريف جميع المتغيرات الأساسية مرة واحدة
+            // =================================================================
             const chatBox = document.getElementById("chat-box");
             const messageInput = document.getElementById("message-input");
             const sendButton = document.getElementById("send-btn");
@@ -392,10 +444,22 @@
             const closeModal = document.getElementById("close-modal");
             const saveImageBtn = document.getElementById("save-image-btn");
 
+            const recordButton = document.getElementById("record-btn");
+            const recordTimer = document.getElementById("record-timer");
+
             const otherUser = "{{ other_user.username }}";
             let lastMessageId = 0;
             let selectedFile = null;
 
+            // متغيرات خاصة بالتسجيل الصوتي
+            let mediaRecorder;
+            let audioChunks = [];
+            let isRecording = false;
+            let timerInterval;
+
+            // =================================================================
+            // 2. الدوال المساعدة
+            // =================================================================
             function scrollToBottom() {
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
@@ -409,29 +473,111 @@
                 return hours + ':' + minutes;
             }
 
-            attachButton.addEventListener('click', () => fileInput.click());
+            // =================================================================
+            // 3. منطق الواجهة الأمامية (UI Logic)
+            // =================================================================
+            
+            // تبديل زر الإرسال وزر الميكروفون
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                if (this.value.trim().length > 0) {
+                    sendButton.style.display = 'flex';
+                    recordButton.style.display = 'none';
+                } else {
+                    sendButton.style.display = 'none';
+                    recordButton.style.display = 'flex';
+                }
+            });
+            messageInput.dispatchEvent(new Event('input')); // لضبط الحالة الأولية
 
+            // التعامل مع إرفاق الملفات
+            attachButton.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', () => {
                 if (fileInput.files.length > 0) {
                     selectedFile = fileInput.files[0];
                     const reader = new FileReader();
-                    reader.onload = function(e) {
-                        filePreviewImage.src = e.target.result;
-                    }
+                    reader.onload = function(e) { filePreviewImage.src = e.target.result; }
                     reader.readAsDataURL(selectedFile);
                     filePreviewContainer.style.display = 'flex';
                 }
             });
-
             removeFileButton.addEventListener('click', () => {
                 selectedFile = null;
                 fileInput.value = '';
                 filePreviewContainer.style.display = 'none';
             });
 
-            function sendMessage() {
-                const content = messageInput.value.trim();
-                if (!content && !selectedFile) return;
+            // =================================================================
+            // 4. منطق الرسائل الصوتية (تم الدمج هنا)
+            // =================================================================
+            function startRecording() {
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        isRecording = true;
+                        recordButton.classList.add("recording");
+                        recordTimer.style.display = 'inline';
+                        messageInput.style.display = 'none';
+                        
+                        let seconds = 0;
+                        recordTimer.textContent = '00:00';
+                        timerInterval = setInterval(() => {
+                            seconds++;
+                            const min = Math.floor(seconds / 60).toString().padStart(2, '0');
+                            const sec = (seconds % 60).toString().padStart(2, '0');
+                            recordTimer.textContent = `${min}:${sec}`;
+                        }, 1000);
+
+                        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+                        mediaRecorder.start();
+
+                        mediaRecorder.addEventListener("dataavailable", event => {
+                            audioChunks.push(event.data);
+                        });
+
+                        mediaRecorder.addEventListener("stop", () => {
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                            sendMessage(null, audioBlob); // <-- استدعاء دالة الإرسال الموحدة
+                            
+                            // Reset UI
+                            isRecording = false;
+                            recordButton.classList.remove("recording");
+                            recordTimer.style.display = 'none';
+                            messageInput.style.display = 'block';
+                            clearInterval(timerInterval);
+                            audioChunks = [];
+                            stream.getTracks().forEach(track => track.stop());
+                        });
+                    })
+                    .catch(err => {
+                        console.error("Error accessing microphone:", err);
+                        alert("لا يمكن الوصول للميكروفون. يرجى التأكد من إعطاء الإذن.");
+                        isRecording = false; // Reset state
+                    });
+            }
+
+            function stopRecording() {
+                if (mediaRecorder && mediaRecorder.state === "recording") {
+                    mediaRecorder.stop();
+                }
+            }
+
+            recordButton.addEventListener('click', () => {
+                if (!isRecording) {
+                    startRecording();
+                } else {
+                    stopRecording();
+                }
+            });
+
+            // =================================================================
+            // 5. دوال إرسال واستقبال الرسائل (النسخة المحدثة)
+            // =================================================================
+
+            // دالة إرسال موحدة تدعم النص، الملفات، والرسائل الصوتية
+            function sendMessage(contentOverride = null, audioBlob = null) {
+                const content = contentOverride !== null ? contentOverride : messageInput.value.trim();
+                if (!content && !selectedFile && !audioBlob) return;
 
                 const sendingIndicator = document.getElementById("sending-indicator");
                 sendingIndicator.style.display = 'block';
@@ -442,11 +588,12 @@
                 formData.append('content', content);
                 
                 if (selectedFile) {
-                    if (selectedFile.type.startsWith('image/')) {
-                        formData.append('image', selectedFile);
-                    } else if (selectedFile.type.startsWith('video/')) {
-                        formData.append('video', selectedFile);
-                    }
+                    if (selectedFile.type.startsWith('image/')) formData.append('image', selectedFile);
+                    else if (selectedFile.type.startsWith('video/')) formData.append('video', selectedFile);
+                }
+                
+                if (audioBlob) {
+                    formData.append('voice_note', audioBlob, 'voicemessage.webm');
                 }
 
                 fetch("{% url 'send_message' %}", {
@@ -460,6 +607,7 @@
                         addMessageToChat(data, true);
                         messageInput.value = "";
                         messageInput.style.height = 'auto';
+                        messageInput.dispatchEvent(new Event('input'));
                         removeFileButton.click();
                         scrollToBottom();
                         
@@ -480,6 +628,7 @@
                 });
             }
 
+            // دالة عرض موحدة تدعم كل أنواع الرسائل بما فيها الصوتية
             function addMessageToChat(msg, isNew) {
                 const messageDiv = document.createElement("div");
                 messageDiv.dataset.id = msg.id;
@@ -496,100 +645,123 @@
                     }
 
                     let mediaHTML = '';
-                    if (msg.image_url) {
-                        mediaHTML = `<img src="${msg.image_url}" alt="Image" style="cursor:pointer;">`;
-                    } else if (msg.video_url) {
-                        mediaHTML = `<video src="${msg.video_url}" controls></video>`;
-                    }
-
                     let contentHTML = msg.content ? `<p>${msg.content.replace(/\n/g, '<br>')}</p>` : '';
-                    
                     let seenIcon = "";
                     if (msg.sender === "{{ request.user.username }}") {
                         seenIcon = `<i class="fas fa-check${msg.is_read ? '-double' : ''}" ${msg.is_read ? 'style="color: #4fc3f7;"' : ''}></i>`;
                     }
-                    
-                    messageDiv.innerHTML = `
-                        ${mediaHTML}
-                        ${contentHTML}
-                        <span class="message-time">
-                            ${formatTime(msg.timestamp)}
-                            ${seenIcon}
-                        </span>
-                    `;
+
+                    if (msg.voice_note_url) {
+                        const uniqueId = `waveform-${msg.id}`;
+                        messageDiv.innerHTML = `
+                            <div class="voice-message-container">
+                                <button class="play-pause-btn" id="play-${uniqueId}"><i class="fas fa-play"></i></button>
+                                <div id="${uniqueId}" class="waveform"></div>
+                                <span id="duration-${uniqueId}" class="duration">00:00</span>
+                            </div>
+                            <span class="message-time">
+                                ${formatTime(msg.timestamp)}
+                                ${seenIcon}
+                            </span>
+                        `;
+                        // Note: WaveSurfer initialization is done after appending to DOM
+                    } else {
+                        if (msg.image_url) {
+                            mediaHTML = `<img src="${msg.image_url}" alt="Image" style="cursor:pointer;">`;
+                        } else if (msg.video_url) {
+                            mediaHTML = `<video src="${msg.video_url}" controls></video>`;
+                        }
+                        messageDiv.innerHTML = `
+                            ${mediaHTML}
+                            ${contentHTML}
+                            <span class="message-time">
+                                ${formatTime(msg.timestamp)}
+                                ${seenIcon}
+                            </span>
+                        `;
+                    }
                 }
                 
                 chatBox.appendChild(messageDiv);
                 
+                // If it's a voice note, initialize WaveSurfer now
+                if (msg.voice_note_url) {
+                    const uniqueId = `waveform-${msg.id}`;
+                    const wavesurfer = WaveSurfer.create({
+                        container: `#${uniqueId}`,
+                        waveColor: '#A8A8A8',
+                        progressColor: '#007bff',
+                        height: 40, barWidth: 2, responsive: true, cursorWidth: 0
+                    });
+
+                    wavesurfer.load(msg.voice_note_url);
+                    const playBtn = document.getElementById(`play-${uniqueId}`);
+                    playBtn.onclick = () => wavesurfer.playPause();
+
+                    wavesurfer.on('play', () => playBtn.innerHTML = '<i class="fas fa-pause"></i>');
+                    wavesurfer.on('pause', () => playBtn.innerHTML = '<i class="fas fa-play"></i>');
+                    wavesurfer.on('finish', () => playBtn.innerHTML = '<i class="fas fa-play"></i>');
+
+                    wavesurfer.on('ready', () => {
+                        const duration = wavesurfer.getDuration();
+                        const min = Math.floor(duration / 60).toString().padStart(2, '0');
+                        const sec = Math.floor(duration % 60).toString().padStart(2, '0');
+                        document.getElementById(`duration-${uniqueId}`).textContent = `${min}:${sec}`;
+                    });
+                }
+
                 if (isNew) {
                     lastMessageId = msg.id;
                 }
             }
+            
+            // =================================================================
+            // 6. جلب الرسائل والتحديث الدوري
+            // =================================================================
 
             function fetchAndRenderMessages() {
                 fetch(`/chat/${otherUser}/get-messages/`)
-                .then(response => response.json())
-                .then(messages => {
-                    chatBox.innerHTML = "";
-                    let latestId = 0;
-                    messages.forEach(msg => {
-                        addMessageToChat(msg, false);
-                        if (msg.id > latestId) latestId = msg.id;
+                    .then(response => response.json())
+                    .then(messages => {
+                        chatBox.innerHTML = "";
+                        let latestId = 0;
+                        messages.forEach(msg => {
+                            addMessageToChat(msg, false);
+                            if (msg.id > latestId) latestId = msg.id;
+                        });
+                        lastMessageId = latestId;
+                        scrollToBottom();
                     });
-                    lastMessageId = latestId;
-                    scrollToBottom();
-                });
             }
 
             function checkNewMessages() {
                 fetch(`/chat/${otherUser}/get-messages/`)
-                .then(response => response.json())
-                .then(messages => {
-                    messages.forEach(msg => {
-                        const messageElement = document.querySelector(`.message[data-id='${msg.id}'], .system-message[data-id='${msg.id}']`);
-                        if (!messageElement) { // New message
-                            addMessageToChat(msg, true);
-                            scrollToBottom();
-                        } else { // Existing message, check for read status update
-                            if (msg.sender === "{{ request.user.username }}" && msg.is_read && !msg.is_system_message) {
-                                const icon = messageElement.querySelector('.message-time .fa-check');
-                                if (icon) {
-                                    icon.classList.add('fa-check-double');
-                                    icon.classList.remove('fa-check');
-                                    icon.style.color = '#4fc3f7';
+                    .then(response => response.json())
+                    .then(messages => {
+                        messages.forEach(msg => {
+                            const messageElement = document.querySelector(`.message[data-id='${msg.id}'], .system-message[data-id='${msg.id}']`);
+                            if (!messageElement) { // New message
+                                addMessageToChat(msg, true);
+                                scrollToBottom();
+                            } else { // Existing message, check for read status update
+                                if (msg.sender === "{{ request.user.username }}" && msg.is_read && !msg.is_system_message) {
+                                    const icon = messageElement.querySelector('.message-time .fa-check-double') || messageElement.querySelector('.message-time .fa-check');
+                                    if (icon && !icon.classList.contains('fa-check-double')) {
+                                        icon.classList.add('fa-check-double');
+                                        icon.classList.remove('fa-check');
+                                        icon.style.color = '#4fc3f7';
+                                    }
                                 }
                             }
-                        }
+                        });
                     });
-                });
             }
-
-            function sendScreenshotNotification() {
-                fetch("{% url 'screenshot_notification' %}", {
-                    method: "POST",
-                    headers: {
-                        "X-CSRFToken": "{{ csrf_token }}",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        'receiver': otherUser
-                    })
-                }).then(response => response.json()).then(data => {
-                    if (data.success) {
-                        console.log("Screenshot notification sent.");
-                    }
-                });
-            }
-
-            document.addEventListener('keyup', function(e) {
-                if (e.key == 'PrintScreen') {
-                    e.preventDefault();
-                    sendScreenshotNotification();
-                }
-            });
-
-            sendButton.addEventListener("click", sendMessage);
             
+            // =================================================================
+            // 7. ربط الأحداث وتشغيل الكود
+            // =================================================================
+
+            sendButton.addEventListener("click", () => sendMessage());
             messageInput.addEventListener("keypress", function(event) {
                 if (event.key === "Enter" && !event.shiftKey) {
                     event.preventDefault();
@@ -597,11 +769,7 @@
                 }
             });
 
-            messageInput.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
-            
+            // Modal logic for images
             chatBox.addEventListener('click', function(event) {
                 if (event.target.tagName === 'IMG' && event.target.closest('.message')) {
                     modalImage.src = event.target.src;
@@ -609,28 +777,24 @@
                     saveImageBtn.href = event.target.src;
                 }
             });
+            closeModal.onclick = function() { imageModal.style.display = "none"; }
 
-            closeModal.onclick = function() {
-                imageModal.style.display = "none";
-            }
+            // Screenshot notification (if needed)
+            document.addEventListener('keyup', function(e) {
+                if (e.key == 'PrintScreen') {
+                    e.preventDefault();
+                    fetch("{% url 'screenshot_notification' %}", {
+                        method: "POST",
+                        headers: { "X-CSRFToken": "{{ csrf_token }}", "Content-Type": "application/json" },
+                        body: JSON.stringify({ 'receiver': otherUser })
+                    });
+                }
+            });
 
             // Initial load and periodic checks
             fetchAndRenderMessages();
             setInterval(checkNewMessages, 3000);
         });
-
-        // Prevent screen rotation
-        function lockOrientation() {
-            try {
-                if (window.screen.orientation && window.screen.orientation.lock) {
-                    window.screen.orientation.lock('portrait').catch(() => {});
-                }
-            } catch (e) {
-                console.warn("Screen orientation lock not supported.", e);
-            }
-        }
-        window.addEventListener('load', lockOrientation);
-        window.addEventListener('resize', lockOrientation);
     </script>
 </body>
 </html>

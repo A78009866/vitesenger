@@ -480,6 +480,8 @@ def chat_view(request, username):
         "other_user": other_user
     })
 
+# views.py (تعديل دالة send_message)
+
 @login_required
 @require_POST
 def send_message(request):
@@ -495,8 +497,11 @@ def send_message(request):
     content = request.POST.get("content", "").strip()
     image_file = request.FILES.get('image')
     video_file = request.FILES.get('video')
+    # --- إضافة جديدة ---
+    voice_file = request.FILES.get('voice_note')
+    # ------------------
 
-    if not content and not image_file and not video_file:
+    if not content and not image_file and not video_file and not voice_file:
         return JsonResponse({"error": "لا يمكن إرسال رسالة فارغة"}, status=400)
 
     message = Message(
@@ -511,10 +516,23 @@ def send_message(request):
 
     if video_file:
         message.video = video_file
+    
+    # --- إضافة جديدة ---
+    if voice_file:
+        # لا حاجة لرفع يدوي، CloudinaryField يعتني بذلك عند الحفظ
+        message.voice_note = voice_file
+    # ------------------
 
     message.save()
 
-    notification_content = content if content else ("📷 صورة" if message.image else "🎥 فيديو")
+    notification_content = "🎙️ رسالة صوتية"
+    if content:
+        notification_content = content
+    elif message.image:
+        notification_content = "📷 صورة"
+    elif message.video:
+        notification_content = "🎥 فيديو"
+
 
     Notification.objects.create(
         recipient=receiver,
@@ -530,12 +548,16 @@ def send_message(request):
         "content": message.content,
         "image_url": message.image.url if message.image else None,
         "video_url": message.video.url if message.video else None,
+        # --- إضافة جديدة ---
+        "voice_note_url": message.voice_note.url if message.voice_note else None,
+        # ------------------
         "timestamp": message.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
         "is_read": message.is_read,
         "seen_at": None,
         "is_system_message": message.is_system_message
     })
 
+# views.py (تعديل دالة get_messages)
 @login_required
 def get_messages(request, username):
     other_user = get_object_or_404(CustomUser, username=username)
@@ -557,6 +579,9 @@ def get_messages(request, username):
             "content": msg.content,
             "image_url": msg.image.url if msg.image else None,
             "video_url": msg.video.url if msg.video else None,
+            # --- إضافة جديدة ---
+            "voice_note_url": msg.voice_note.url if msg.voice_note else None,
+            # ------------------
             "timestamp": msg.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
             "is_read": msg.is_read,
             "seen_at": msg.seen_at.strftime("%Y-%m-%d %H:%M:%S") if msg.seen_at else None,
@@ -564,6 +589,26 @@ def get_messages(request, username):
         }
         for msg in messages_qs
     ], safe=False)
+
+# --- إضافة جديدة ---
+@login_required
+@require_POST
+def delete_message(request, message_id):
+    try:
+        # ابحث عن الرسالة وتأكد أن طالب الحذف هو المرسل
+        message = get_object_or_404(Message, id=message_id, sender=request.user)
+        
+        # قم بحذف الرسالة
+        message.delete()
+        
+        return JsonResponse({'success': True, 'message_id': message_id})
+
+    except Message.DoesNotExist:
+        # إذا حاول مستخدم حذف رسالة لا يملكها، يتم رفض الطلب
+        return JsonResponse({'success': False, 'error': 'Message not found or permission denied.'}, status=403)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+# ------------------
 
 @login_required
 def chat_list(request, username):

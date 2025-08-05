@@ -25,6 +25,7 @@ urlpatterns = [
     path('block_user/<str:username>/', views.block_user, name='block_user'),
     path('unblock_user/<str:username>/', views.unblock_user, name='unblock_user'),
     path('logout/', logout_view, name='logout_view'),
+    path('message/<int:message_id>/delete/', views.delete_message, name='delete_message'),
 
     path("chat/<str:username>/", views.chat_view, name="chat"),
     path('comment/<int:comment_id>/delete/', views.delete_comment, name='delete_comment'),

@@ -156,12 +156,17 @@ class StoryLike(models.Model):
         return f"{self.user.username} likes Story {self.story.id}"
 
 
+# models.py (داخل كلاس Message)
+
 class Message(models.Model):
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sent_messages")
     receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="received_messages")
     content = models.TextField(default="", blank=True)
     image = CloudinaryField('image', blank=True, null=True)
     video = CloudinaryField('video', resource_type="video", blank=True, null=True)
+    # --- إضافة جديدة ---
+    voice_note = CloudinaryField('video', resource_type="video", blank=True, null=True, folder="voice_notes")
+    # ------------------
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     seen_at = models.DateTimeField(null=True, blank=True)
@@ -175,7 +180,7 @@ class Message(models.Model):
             self.is_read = True
             self.seen_at = timezone.now()
             self.save()
-
+            
 class Chat(models.Model):
     participants = models.ManyToManyField(CustomUser, related_name='chats')
     created_at = models.DateTimeField(auto_now_add=True)
