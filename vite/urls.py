@@ -45,6 +45,7 @@ urlpatterns = [
     path('ai/ask/', views.ask_gemini, name='ask_gemini'),
 
     path('notifications/unread_count/', views.get_unread_notifications_count, name='unread_notifications_count'),
+    path('messages/unread_count/', views.get_unread_messages_count, name='unread_messages_count'),
     path('notifications/mark_as_read/<int:notification_id>/', views.mark_notification_as_read, name='mark_notification_as_read'),
     path('activity/update/', views.update_user_activity, name='update_user_activity'),
     

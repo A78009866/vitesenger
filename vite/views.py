@@ -530,21 +530,6 @@ def send_message(request):
         message.voice_note = voice_file
 
     message.save()
-
-    notification_content = "🎙️ رسالة صوتية"
-    if content:
-        notification_content = content
-    elif message.image:
-        notification_content = "📷 صورة"
-    elif message.video:
-        notification_content = "🎥 فيديو"
-
-    Notification.objects.create(
-        recipient=receiver,
-        sender=request.user,
-        notification_type='message',
-        content=notification_content
-    )
     
     response_data = {
         "id": message.id,
@@ -722,6 +707,11 @@ def mark_notification_as_read(request, notification_id):
 @login_required
 def get_unread_notifications_count(request):
     count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+    return JsonResponse({'count': count})
+
+@login_required
+def get_unread_messages_count(request):
+    count = Message.objects.filter(receiver=request.user, is_read=False).count()
     return JsonResponse({'count': count})
 
 @login_required

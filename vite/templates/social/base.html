@@ -414,9 +414,10 @@
             <span>الإشعارات</span>
             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge" style="display: none; font-size: 0.6em; padding: 0.3em 0.5em;">0</span>
         </a>
-        <a class="nav-link" href="{% url 'chat_list' request.user.username %}">
+        <a class="nav-link position-relative" href="{% url 'chat_list' request.user.username %}">
             <i class="fab fa-facebook-messenger"></i>
             <span>الرسائل</span>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger message-badge" style="display: none; font-size: 0.6em; padding: 0.3em 0.5em;">0</span>
         </a>
     </nav>
     
@@ -651,23 +652,32 @@
                 }).catch(error => console.error('Error updating notification count:', error));
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            fetch("{% url 'unread_notifications_count' %}")
+        // ADDITION: New function to update the message count badge
+        function updateMessageCount() {
+            fetch("{% url 'unread_messages_count' %}")
                 .then(response => response.json())
                 .then(data => {
-                    currentNotificationCount = data.count; 
-                    const badge = document.querySelector('.notification-badge');
+                    const badge = document.querySelector('.message-badge');
                     if (badge) {
-                        if (data.count > 0) {
-                            badge.textContent = data.count > 9 ? '9+' : data.count;
+                        const newCount = data.count;
+                        if (newCount > 0) {
+                            badge.textContent = newCount > 9 ? '9+' : newCount;
                             badge.style.display = 'inline-block';
                         } else {
                             badge.style.display = 'none';
                         }
                     }
-                }).catch(error => console.error('Error getting initial notification count:', error));
-            
+                }).catch(error => console.error('Error updating message count:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial counts on page load
+            updateNotificationCount();
+            updateMessageCount();
+        
+            // Set intervals to check periodically
             setInterval(updateNotificationCount, 7000);
+            setInterval(updateMessageCount, 7000);
         });
 
         // Auto-dismiss alerts
