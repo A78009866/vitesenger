@@ -481,7 +481,6 @@ def chat_view(request, username):
     })
 
 # views.py (تعديل دالة send_message)
-
 @login_required
 @require_POST
 def send_message(request):
@@ -497,18 +496,28 @@ def send_message(request):
     content = request.POST.get("content", "").strip()
     image_file = request.FILES.get('image')
     video_file = request.FILES.get('video')
-    # --- إضافة جديدة ---
     voice_file = request.FILES.get('voice_note')
-    # ------------------
+    reply_to_id = request.POST.get("reply_to")  # الحصول على معرف الرسالة المردود عليها
 
     if not content and not image_file and not video_file and not voice_file:
         return JsonResponse({"error": "لا يمكن إرسال رسالة فارغة"}, status=400)
+
+    # الحصول على الرسالة المردود عليها إذا وجدت
+    reply_to_message = None
+    if reply_to_id:
+        try:
+            reply_to_message = Message.objects.get(id=reply_to_id, 
+                                                 sender__in=[request.user, receiver],
+                                                 receiver__in=[request.user, receiver])
+        except Message.DoesNotExist:
+            pass
 
     message = Message(
         sender=request.user,
         receiver=receiver,
         content=content,
-        is_system_message=False
+        is_system_message=False,
+        reply_to=reply_to_message  # تعيين الرسالة المردود عليها
     )
 
     if image_file:
@@ -517,11 +526,8 @@ def send_message(request):
     if video_file:
         message.video = video_file
     
-    # --- إضافة جديدة ---
     if voice_file:
-        # لا حاجة لرفع يدوي، CloudinaryField يعتني بذلك عند الحفظ
         message.voice_note = voice_file
-    # ------------------
 
     message.save()
 
@@ -533,7 +539,6 @@ def send_message(request):
     elif message.video:
         notification_content = "🎥 فيديو"
 
-
     Notification.objects.create(
         recipient=receiver,
         sender=request.user,
@@ -541,21 +546,33 @@ def send_message(request):
         content=notification_content
     )
     
-    return JsonResponse({
+    response_data = {
         "id": message.id,
         "sender": message.sender.username,
         "receiver": receiver.username,
         "content": message.content,
         "image_url": message.image.url if message.image else None,
         "video_url": message.video.url if message.video else None,
-        # --- إضافة جديدة ---
         "voice_note_url": message.voice_note.url if message.voice_note else None,
-        # ------------------
         "timestamp": message.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
         "is_read": message.is_read,
         "seen_at": None,
-        "is_system_message": message.is_system_message
-    })
+        "is_system_message": message.is_system_message,
+        "reply_to": None
+    }
+
+    # إضافة بيانات الرسالة المردود عليها إذا وجدت
+    if reply_to_message:
+        response_data["reply_to"] = {
+            "id": reply_to_message.id,
+            "sender": reply_to_message.sender.username,
+            "content": reply_to_message.content,
+            "image_url": reply_to_message.image.url if reply_to_message.image else None,
+            "video_url": reply_to_message.video.url if reply_to_message.video else None,
+            "voice_note_url": reply_to_message.voice_note.url if reply_to_message.voice_note else None,
+        }
+
+    return JsonResponse(response_data)
 
 # views.py (تعديل دالة get_messages)
 @login_required
@@ -567,7 +584,7 @@ def get_messages(request, username):
     messages_qs = Message.objects.filter(
         (django_models.Q(sender=request.user, receiver=other_user) |
          django_models.Q(sender=other_user, receiver=request.user))
-    ).order_by("timestamp")
+    ).select_related('reply_to').order_by("timestamp")
 
     Message.objects.filter(sender=other_user, receiver=request.user, is_read=False).update(is_read=True, seen_at=timezone.now())
 
@@ -579,17 +596,22 @@ def get_messages(request, username):
             "content": msg.content,
             "image_url": msg.image.url if msg.image else None,
             "video_url": msg.video.url if msg.video else None,
-            # --- إضافة جديدة ---
             "voice_note_url": msg.voice_note.url if msg.voice_note else None,
-            # ------------------
             "timestamp": msg.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
             "is_read": msg.is_read,
             "seen_at": msg.seen_at.strftime("%Y-%m-%d %H:%M:%S") if msg.seen_at else None,
-            "is_system_message": msg.is_system_message
+            "is_system_message": msg.is_system_message,
+            "reply_to": {
+                "id": msg.reply_to.id,
+                "sender": msg.reply_to.sender.username,
+                "content": msg.reply_to.content,
+                "image_url": msg.reply_to.image.url if msg.reply_to.image else None,
+                "video_url": msg.reply_to.video.url if msg.reply_to.video else None,
+                "voice_note_url": msg.reply_to.voice_note.url if msg.reply_to.voice_note else None,
+            } if msg.reply_to else None
         }
         for msg in messages_qs
     ], safe=False)
-
 # --- إضافة جديدة ---
 @login_required
 @require_POST

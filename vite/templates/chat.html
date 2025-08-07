@@ -349,6 +349,57 @@
             display: none; /* يظهر عند التسجيل */
         }
     </style>
+    <style>
+    /* أنماط إضافية للرد على الرسائل */
+    .reply-indicator {
+        display: flex;
+        flex-direction: column;
+        border-right: 3px solid var(--accent-color);
+        padding: 6px 10px;
+        margin-bottom: 8px;
+        background-color: rgba(0,0,0,0.05);
+        border-radius: 4px;
+    }
+
+    .reply-sender {
+        font-size: 12px;
+        font-weight: bold;
+        color: var(--accent-color);
+        margin-bottom: 4px;
+    }
+
+    .reply-content {
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--text-secondary);
+    }
+
+    .reply-media {
+        font-size: 12px;
+        color: var(--accent-color);
+        font-style: italic;
+    }
+
+    .reply-close {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        font-size: 12px;
+    }
+
+    #reply-container {
+        display: none;
+        position: relative;
+        background-color: rgba(0,0,0,0.05);
+        padding: 8px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+    }
+</style>
 </head>
 <body>
     <div class="chat-container">
@@ -396,7 +447,14 @@
         <i class="fas fa-paperclip"></i>
     </button>
     <input type="file" id="file-input" accept="image/*,video/*" style="display:none;">
-
+<div id="reply-container">
+    <div class="reply-indicator">
+        <span class="reply-sender"></span>
+        <span class="reply-content"></span>
+        <span class="reply-media"></span>
+        <span class="reply-close">&times;</span>
+    </div>
+</div>
     <div class="message-input-container">
         <textarea id="message-input" class="message-input" placeholder="اكتب رسالة..." rows="1"></textarea>
         <span id="record-timer">00:00</span>
@@ -795,6 +853,194 @@
             fetchAndRenderMessages();
             setInterval(checkNewMessages, 3000);
         });
+        // إدارة الرد على الرسائل
+let replyingToMessage = null;
+
+function setupReply(messageId) {
+    const messageElement = document.querySelector(`.message[data-id="${messageId}"]`);
+    if (!messageElement) return;
+
+    const sender = messageElement.classList.contains('sent') ? 'أنت' : messageElement.querySelector('.user-name').textContent;
+    let content = messageElement.querySelector('p') ? messageElement.querySelector('p').textContent : '';
+    let mediaType = '';
+    
+    if (messageElement.querySelector('img')) {
+        mediaType = 'صورة';
+    } else if (messageElement.querySelector('video')) {
+        mediaType = 'فيديو';
+    } else if (messageElement.querySelector('.voice-message-container')) {
+        mediaType = 'رسالة صوتية';
+    }
+
+    replyingToMessage = messageId;
+    
+    const replyContainer = document.getElementById('reply-container');
+    replyContainer.style.display = 'block';
+    replyContainer.querySelector('.reply-sender').textContent = `رد على ${sender}`;
+    replyContainer.querySelector('.reply-content').textContent = content || '';
+    replyContainer.querySelector('.reply-media').textContent = mediaType ? `[${mediaType}]` : '';
+    
+    // التمرير إلى حقل الإدخال
+    messageInput.focus();
+}
+
+// إغلاق الرد
+document.querySelector('.reply-close').addEventListener('click', function() {
+    document.getElementById('reply-container').style.display = 'none';
+    replyingToMessage = null;
+});
+
+// تعديل دالة sendMessage لإرسال الرد
+function sendMessage(contentOverride = null, audioBlob = null) {
+    const content = contentOverride !== null ? contentOverride : messageInput.value.trim();
+    if (!content && !selectedFile && !audioBlob && !replyingToMessage) return;
+
+    const sendingIndicator = document.getElementById('sending-indicator');
+    sendingIndicator.style.display = 'block';
+    sendButton.disabled = true;
+
+    const formData = new FormData();
+    formData.append('receiver', otherUser);
+    formData.append('content', content);
+    
+    if (replyingToMessage) {
+        formData.append('reply_to', replyingToMessage);
+    }
+    
+    if (selectedFile) {
+        if (selectedFile.type.startsWith('image/')) formData.append('image', selectedFile);
+        else if (selectedFile.type.startsWith('video/')) formData.append('video', selectedFile);
+    }
+    
+    if (audioBlob) {
+        formData.append('voice_note', audioBlob, 'voicemessage.webm');
+    }
+
+    fetch("{% url 'send_message' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": "{{ csrf_token }}" },
+        body: formData
+    })
+    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+    .then(({ ok, data }) => {
+        if (ok) {
+            addMessageToChat(data, true);
+            messageInput.value = "";
+            messageInput.style.height = 'auto';
+            messageInput.dispatchEvent(new Event('input'));
+            removeFileButton.click();
+            document.getElementById('reply-container').style.display = 'none';
+            replyingToMessage = null;
+            scrollToBottom();
+            
+            const sendSuccess = document.getElementById('send-success');
+            sendSuccess.style.display = 'block';
+            setTimeout(() => { sendSuccess.style.display = 'none'; }, 2000);
+        } else {
+            throw new Error(data.error || "حدث خطأ غير معروف");
+        }
+    })
+    .catch(error => {
+        console.error("Error sending message:", error);
+        alert("حدث خطأ في الإرسال: " + error.message);
+    })
+    .finally(() => {
+        sendingIndicator.style.display = 'none';
+        sendButton.disabled = false;
+    });
+}
+
+// تعديل دالة addMessageToChat لعرض الرسائل المردود عليها
+function addMessageToChat(msg, isNew) {
+    const messageDiv = document.createElement("div");
+    messageDiv.dataset.id = msg.id;
+
+    if (msg.is_system_message) {
+        messageDiv.classList.add("system-message");
+        messageDiv.innerHTML = `<p>${msg.content}</p>`;
+    } else {
+        messageDiv.classList.add("message");
+        if (msg.sender === "{{ request.user.username }}") {
+            messageDiv.classList.add("sent");
+        } else {
+            messageDiv.classList.add("received");
+        }
+
+        let mediaHTML = '';
+        let contentHTML = msg.content ? `<p>${msg.content.replace(/\n/g, '<br>')}</p>` : '';
+        let seenIcon = "";
+        if (msg.sender === "{{ request.user.username }}") {
+            seenIcon = `<i class="fas fa-check${msg.is_read ? '-double' : ''}" ${msg.is_read ? 'style="color: #4fc3f7;"' : ''}></i>`;
+        }
+
+        // إضافة قسم الرد إذا كانت الرسالة ردًا
+        let replySection = '';
+        if (msg.reply_to) {
+            const replyTo = msg.reply_to;
+            let replyContent = replyTo.content || '';
+            let replyMedia = '';
+            
+            if (replyTo.image_url) {
+                replyMedia = '📷 صورة';
+            } else if (replyTo.video_url) {
+                replyMedia = '🎥 فيديو';
+            } else if (replyTo.voice_note_url) {
+                replyMedia = '🎙️ رسالة صوتية';
+            }
+            
+            replySection = `
+                <div class="reply-indicator" onclick="setupReply('${replyTo.id}')">
+                    <span class="reply-sender">${replyTo.sender === "{{ request.user.username }}" ? 'أنت' : replyTo.sender}</span>
+                    <span class="reply-content">${replyContent}</span>
+                    ${replyMedia ? `<span class="reply-media">${replyMedia}</span>` : ''}
+                </div>
+            `;
+        }
+
+        if (msg.voice_note_url) {
+            const uniqueId = `waveform-${msg.id}`;
+            messageDiv.innerHTML = `
+                ${replySection}
+                <div class="voice-message-container">
+                    <button class="play-pause-btn" id="play-${uniqueId}"><i class="fas fa-play"></i></button>
+                    <div id="${uniqueId}" class="waveform"></div>
+                    <span id="duration-${uniqueId}" class="duration">00:00</span>
+                </div>
+                <span class="message-time">
+                    ${formatTime(msg.timestamp)}
+                    ${seenIcon}
+                </span>
+            `;
+        } else {
+            if (msg.image_url) {
+                mediaHTML = `<img src="${msg.image_url}" alt="Image" style="cursor:pointer;">`;
+            } else if (msg.video_url) {
+                mediaHTML = `<video src="${msg.video_url}" controls></video>`;
+            }
+            messageDiv.innerHTML = `
+                ${replySection}
+                ${mediaHTML}
+                ${contentHTML}
+                <span class="message-time">
+                    ${formatTime(msg.timestamp)}
+                    ${seenIcon}
+                </span>
+            `;
+        }
+    }
+    
+    chatBox.appendChild(messageDiv);
+    
+    // إضافة حدث النقر للرد على الرسالة
+    messageDiv.addEventListener('click', function(e) {
+        if (e.target.tagName !== 'IMG' && e.target.tagName !== 'VIDEO' && 
+            !e.target.closest('.reply-indicator') && !e.target.closest('.play-pause-btn')) {
+            setupReply(msg.id);
+        }
+    });
+
+    // باقي الكود الخاص بمعالجة الرسائل الصوتية...
+}
     </script>
 </body>
 </html>

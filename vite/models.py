@@ -164,13 +164,13 @@ class Message(models.Model):
     content = models.TextField(default="", blank=True)
     image = CloudinaryField('image', blank=True, null=True)
     video = CloudinaryField('video', resource_type="video", blank=True, null=True)
-    # --- إضافة جديدة ---
     voice_note = CloudinaryField('video', resource_type="video", blank=True, null=True, folder="voice_notes")
-    # ------------------
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     seen_at = models.DateTimeField(null=True, blank=True)
     is_system_message = models.BooleanField(default=False)
+    # إضافة حقل الرد على الرسالة
+    reply_to = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies')
 
     def __str__(self):
         return f"من {self.sender} إلى {self.receiver}: {self.content[:30]}"

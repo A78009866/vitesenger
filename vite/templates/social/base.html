@@ -75,6 +75,13 @@
         padding: 10px 0;
     }
     
+    /* NEW: Top navbar centered logo */
+    .navbar-top-row .navbar-brand {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
     .nav-icons-top {
         display: flex;
         align-items: center;
@@ -168,29 +175,33 @@
     }
         
     /* --- تعديل: تصميم قائمة البروفايل المنسدلة --- */
-    .dropdown-menu {
-        background-color: var(--navbar-bg); /* نفس خلفية النافبار */
-        backdrop-filter: blur(10px);
-        border: 1px solid var(--navbar-border);
-        border-radius: 0.75rem; /* حواف أكثر دائرية */
-        box-shadow: var(--shadow);
-        margin-top: 0.5rem;
-        /* --- جديد: تحديد موقع القائمة فوق النافبار السفلي --- */
-        bottom: 100% !important; /* اجعلها تفتح للأعلى */
-        top: auto !important;
-        margin-bottom: 10px; /* مسافة بينها وبين النافبار */
-    }
+   .dropdown {
+    position: relative;
+}
 
-    .dropdown-item {
-        color: var(--text);
-        transition: all 0.2s;
-    }
+.dropdown-menu {
+    left: auto !important;
+    right: 0 !important;
+    transform: translateX(-30%) !important; /* زِدها إذا أردتها أبعد */
+    background-color: var(--navbar-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--navbar-border);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow);
+    margin-top: 0.5rem;
+    z-index: 2000;
+}
 
-    .dropdown-item:hover {
-        background-color: var(--hover-bg);
-        color: var(--primary);
-    }
-    
+.dropdown-menu .dropdown-item {
+    color: white !important;
+    font-weight: 500;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: var(--hover-bg);
+    color: var(--primary) !important;
+}
+
     .container.py-4 {
         padding-top: 1.5rem;
         padding-bottom: 1.5rem; /* تعديل المساحة السفلية */
@@ -315,6 +326,22 @@
         .container, .container-fluid { padding-left: 0; padding-right: 0; }
         .row { margin-left: 0; margin-right: 0; }
         .col-12 { padding-left: 15px; padding-right: 15px; }
+        /* NEW: Styles for the search button in the bottom navbar */
+        .bottom-nav .search-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 1.5rem;
+            color: var(--text-muted) !important;
+            padding: 5px 12px !important;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        .bottom-nav .search-link:hover {
+            color: var(--primary) !important;
+            background-color: var(--hover-bg);
+            transform: translateY(-3px);
+        }
 
 </style>
 {% load static %} </head>
@@ -322,6 +349,28 @@
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
             <div class="navbar-top-row">
+                <div class="dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if request.user.profile_picture and request.user.profile_picture.url %}
+                            <img src="{{ request.user.profile_picture.url }}" class="profile-pic" alt="صورة البروفيل">
+                        {% else %}
+                            <img src="{% static 'images/default_profile.png' %}" class="profile-pic" alt="صورة افتراضية">
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                        {% if request.user.is_authenticated and request.user.username %}
+                            <li><a class="dropdown-item" href="{% url 'profile' request.user.username %}"><i class="fas fa-user me-2"></i>الملف الشخصي</a></li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="fas fa-cog me-2"></i>الإعدادات</a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider" style="border-color: var(--navbar-border);"></li>
+                        <form action="{% url 'logout_view' %}" method="post" style="margin:0;"> {% csrf_token %}
+                            <button type="submit" class="dropdown-item">
+                                <i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج
+                            </button>
+                        </form>
+                    </ul>
+                </div>
+                
                 <a class="navbar-brand" href="{% url 'home' %}">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/4/46/1000084215-removebg-preview.png" class="logo-img" alt="شعار Trimer">
                     Trimer
@@ -330,9 +379,6 @@
                 <div class="nav-icons-top">
                     <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#createModal" style="text-decoration: none !important;">
                         <i class="fas fa-plus"></i>
-                    </a>
-                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#searchModal">
-                        <i class="fas fa-search"></i>
                     </a>
                     <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#geminiAiModal">
                         <i class="fas fa-magic"></i> </a>
@@ -355,6 +401,10 @@
             <i class="fas fa-play-circle"></i>
             <span>ريلز</span>
         </a> 
+        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#searchModal">
+            <i class="fas fa-search"></i>
+            <span>بحث</span>
+        </a>
         <a class="nav-link" href="{% url 'friends' %}">
             <i class="fas fa-users"></i>
             <span>الأصدقاء</span>
@@ -368,28 +418,6 @@
             <i class="fab fa-facebook-messenger"></i>
             <span>الرسائل</span>
         </a>
-        <div class="dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                {% if request.user.profile_picture and request.user.profile_picture.url %}
-                    <img src="{{ request.user.profile_picture.url }}" class="profile-pic" alt="صورة البروفيل">
-                {% else %}
-                    <img src="{% static 'images/default_profile.png' %}" class="profile-pic" alt="صورة افتراضية">
-                {% endif %}
-                <span>البروفيل</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                {% if request.user.is_authenticated and request.user.username %}
-                    <li><a class="dropdown-item" href="{% url 'profile' request.user.username %}"><i class="fas fa-user me-2"></i>الملف الشخصي</a></li>
-                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="fas fa-cog me-2"></i>الإعدادات</a></li>
-                {% endif %}
-                <li><hr class="dropdown-divider" style="border-color: var(--navbar-border);"></li>
-                <form action="{% url 'logout_view' %}" method="post" style="margin:0;"> {% csrf_token %}
-                    <button type="submit" class="dropdown-item">
-                        <i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج
-                    </button>
-                </form>
-            </ul>
-        </div>
     </nav>
     
     <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
@@ -714,6 +742,11 @@
                 if (indicator) { indicator.remove(); }
             }
         });
+document.addEventListener('DOMContentLoaded', function() {
+    // أضف السطر هنا
+    new bootstrap.Dropdown(document.getElementById('profileDropdown'));
+    
+});
 
     </script>
 </body>
