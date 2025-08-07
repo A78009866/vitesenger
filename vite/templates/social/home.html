@@ -3,20 +3,41 @@
 {% block content %}
 <link rel="icon" type="image/jpg" href="https://upload.wikimedia.org/wikipedia/commons/4/46/1000084215-removebg-preview.png">
 <style>
+    /* --- تعريف متغيرات التصميم الزجاجي --- */
+    :root {
+        --panel-bg: rgba(28, 28, 28, 0.7); /* خلفية شفافة للعناصر */
+        --panel-border: rgba(255, 255, 255, 0.1); /* حدود شفافة */
+        --blur-effect: blur(12px);
+    }
+
     .dark-home {
-        background-color: #121212;
+        /* تم إزالة الخلفية من هنا لتعتمد على خلفية body من base.html */
         color: #e0e0e0;
         min-height: 100vh;
         padding-top: 20px;
     }
-    .dark-card {
-        background-color: #1e1e1e;
-        border-color: #333;
-        margin-bottom: 20px;
+
+    /* --- تطبيق التصميم الزجاجي على البطاقات الرئيسية --- */
+    .dark-card,
+    .quran-athkar-panel,
+    .reels-section-container,
+    .stories-panel {
+        background-color: var(--panel-bg) !important;
+        backdrop-filter: var(--blur-effect);
+        -webkit-backdrop-filter: var(--blur-effect);
+        border: 1px solid var(--panel-border) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        border-radius: 12px; /* حواف أكثر دائرية */
+        margin-bottom: 25px;
     }
-    .dark-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    
+    .dark-card:hover,
+    .quran-athkar-panel:hover,
+    .reels-section-container:hover,
+    .stories-panel:hover {
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
     }
+    
     .floating-chat-button {
         position: fixed;
         bottom: 30px;
@@ -42,13 +63,8 @@
 
     /* Quran/Athkar Panel Styles */
     .quran-athkar-panel {
-        background-color: #1e1e1e;
-        border: 1px solid #333;
-        border-radius: 8px;
         padding: 25px;
-        margin-bottom: 25px;
         text-align: center;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         font-family: 'Amiri', serif;
     }
     .quran-athkar-panel h3 {
@@ -71,12 +87,8 @@
 
     /* Reels Section Styles */
     .reels-section-container {
-        background-color: #1e1e1e;
-        border: 1px solid #333;
-        border-radius: 8px;
         padding: 20px;
-        margin-bottom: 25px;
-        margin-top: 25px; /* Added margin-top for spacing */
+        margin-top: 25px;
     }
     .reels-section-container h3 {
         color: #e0e0e0;
@@ -90,11 +102,6 @@
         overflow-x: auto;
         padding-bottom: 10px;
         gap: 15px;
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-    .reels-horizontal-scroll::-webkit-scrollbar {
-        display: none;
     }
     .reel-card-link {
         text-decoration: none;
@@ -103,7 +110,7 @@
         flex: 0 0 150px;
         width: 150px;
         height: 250px;
-        background-color: #333;
+        background-color: rgba(0,0,0,0.3); /* خلفية شفافة قليلاً للبطاقة نفسها */
         border-radius: 10px;
         overflow: hidden;
         position: relative;
@@ -115,191 +122,84 @@
         transform: translateY(-5px);
         box-shadow: 0 4px 15px rgba(0,0,0,0.6);
     }
-    .reel-thumbnail {
+    .reel-thumbnail, .reel-video {
         width: 100%;
         height: 100%;
         object-fit: cover;
         position: absolute;
         top: 0;
         left: 0;
-        z-index: 1;
-        transition: opacity 0.3s ease;
     }
-    .reel-video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 2;
-        display: none;
-    }
-    .reel-card:hover .reel-thumbnail,
-    .reel-card:active .reel-thumbnail {
-        opacity: 0;
-    }
-    .reel-card:hover .reel-video,
-    .reel-card:active .reel-video {
-        display: block;
-    }
+    .reel-thumbnail { z-index: 1; transition: opacity 0.3s ease; }
+    .reel-video { z-index: 2; display: none; }
+    .reel-card:hover .reel-thumbnail, .reel-card:active .reel-thumbnail { opacity: 0; }
+    .reel-card:hover .reel-video, .reel-card:active .reel-video { display: block; }
     .reel-card-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 8px;
-        color: white;
-        font-size: 0.8rem;
-        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
-        text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-        z-index: 3;
+        position: absolute; bottom: 0; left: 0; right: 0; padding: 8px; color: white;
+        font-size: 0.8rem; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.7); z-index: 3;
     }
     .reel-card-user-img {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        margin-left: 8px;
-        object-fit: cover;
-        border: 1px solid rgba(255,255,255,0.5);
+        width: 24px; height: 24px; border-radius: 50%; margin-left: 8px;
+        object-fit: cover; border: 1px solid rgba(255,255,255,0.5);
     }
     .reel-views-overlay {
-        position: absolute;
-        top: 8px;
-        left: 8px;
-        z-index: 3;
-        background-color: rgba(0, 0, 0, 0.5);
-        color: white;
-        padding: 3px 8px;
-        border-radius: 10px;
-        font-size: 0.75rem;
-        display: flex;
-        align-items: center;
+        position: absolute; top: 8px; left: 8px; z-index: 3;
+        background-color: rgba(0, 0, 0, 0.5); color: white; padding: 3px 8px;
+        border-radius: 10px; font-size: 0.75rem; display: flex; align-items: center;
     }
     @media (max-width: 768px) {
-        .reel-thumbnail {
-            opacity: 1 !important;
-        }
-        .reel-video {
-            display: none !important;
-        }
+        .reel-thumbnail { opacity: 1 !important; }
+        .reel-video { display: none !important; }
     }
     
-    /* --- New Stories Section Styles --- */
+    /* --- Stories Section Styles --- */
     .stories-panel {
-        background-color: #1e1e1e;
-        border: 1px solid #333;
-        border-radius: 8px;
         padding: 15px;
-        margin-bottom: 20px;
     }
     .stories-panel h3 {
-        color: #4a6bff;
-        margin-bottom: 15px;
-        font-size: 1.3rem;
-        text-align: right;
-        border-bottom: 1px solid #333;
-        padding-bottom: 8px;
+        color: #4a6bff; margin-bottom: 15px; font-size: 1.3rem; text-align: right;
+        border-bottom: 1px solid var(--panel-border); padding-bottom: 8px;
     }
     .stories-horizontal-scroll {
-        display: flex;
-        overflow-x: auto;
-        gap: 12px;
-        padding: 10px 5px;
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+        display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px;
     }
-    .stories-horizontal-scroll::-webkit-scrollbar {
-        display: none;
-    }
-    .story-card-link {
-        text-decoration: none;
-    }
+    .story-card-link { text-decoration: none; }
     .story-card {
-        flex: 0 0 110px;
-        width: 110px;
-        height: 180px;
-        background-color: #333;
-        border-radius: 10px;
-        overflow: hidden;
-        position: relative;
-        cursor: pointer;
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        flex: 0 0 110px; width: 110px; height: 180px;
+        background-color: rgba(0,0,0,0.3); border-radius: 10px; overflow: hidden;
+        position: relative; cursor: pointer; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         box-shadow: 0 2px 8px rgba(0,0,0,0.4);
     }
-    .story-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-    }
-    .story-preview-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-    .story-card:hover .story-preview-img {
-        transform: scale(1.05);
-    }
+    .story-card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+    .story-preview-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+    .story-card:hover .story-preview-img { transform: scale(1.05); }
     .story-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 8px;
-        color: white;
-        text-align: center;
-        background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%);
-        z-index: 2;
+        position: absolute; bottom: 0; left: 0; right: 0; padding: 8px; color: white; text-align: center;
+        background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%); z-index: 2;
     }
     .story-overlay .user-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border: 2px solid #4a6bff;
-        object-fit: cover;
-        margin-bottom: 5px;
+        width: 36px; height: 36px; border-radius: 50%; border: 2px solid #4a6bff;
+        object-fit: cover; margin-bottom: 5px;
     }
     .story-overlay .username {
-        font-weight: bold;
-        font-size: 0.8rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-weight: bold; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .add-story-card {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background-color: #2a2a2e;
-        color: #e0e0e0;
-        font-size: 0.9rem;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background-color: rgba(42, 42, 46, 0.8); /* تعديل الشفافية */
+        color: #e0e0e0; font-size: 0.9rem;
     }
     .add-story-card .plus-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background: #4a6bff;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        margin-bottom: 12px;
-        transition: background-color 0.2s;
+        width: 44px; height: 44px; border-radius: 50%; background: #4a6bff; color: white;
+        display: flex; align-items: center; justify-content: center; font-size: 28px;
+        margin-bottom: 12px; transition: background-color 0.2s;
     }
-    .add-story-card:hover .plus-icon {
-        background-color: #3a5bef;
-    }
+    .add-story-card:hover .plus-icon { background-color: #3a5bef; }
 
     /* CSS لإخفاء شريط التمرير ولكن السماح بالتمرير */
-    .hide-scrollbar {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
-    }
-    .hide-scrollbar::-webkit-scrollbar {
-        display: none; /* Chrome, Safari, Opera*/
-    }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 
@@ -345,13 +245,14 @@
 
 
                 {% for post in posts %}
+                    {# The post_template.html will now inherit the glassy style via the .dark-card class #}
                     {% include 'social/post_template.html' with post=post %}
 
-                    {# --- CHANGE: Reels section is now inserted after the first post --- #}
+                    {# Reels section is inserted after the first post #}
                     {% if forloop.counter == 1 and home_reels %}
                     <div class="reels-section-container">
                         <h3><i class="fas fa-film me-2"></i> شاهد الريلز</h3>
-                        <div class="reels-horizontal-scroll">
+                        <div class="reels-horizontal-scroll hide-scrollbar">
                             {% for reel in home_reels %}
                             <a href="{% url 'reels_feed' %}?show_reel={{ reel.id }}" class="reel-card-link">
                                 <div class="reel-card">

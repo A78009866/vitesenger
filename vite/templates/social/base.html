@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="screen-orientation" content="portrait-primary">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="screen-orientation" content="portrait-primary">
     <title>trimer</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -12,774 +11,387 @@
     <link rel="icon" type="image/jpg" href="https://upload.wikimedia.org/wikipedia/commons/4/46/1000084215-removebg-preview.png">
     <style>
     :root {
-        /* تم تغيير الألوان هنا إلى درجات أغمق وأكثر سوادًا */
-        --bg-dark: #000000;      /* الخلفية الرئيسية أصبحت سوداء بالكامل */
-        --bg-darker: #101010;    /* العناصر الأقل قتامة أصبحت رمادية داكنة جدًا */
-        --bg-light: #181818;     /* العناصر الأفتح مثل القوائم أصبحت أغمق */
+        --bg-dark: #000000;
+        --bg-darker: #101010;
+        --bg-light: #181818;
         --primary: #ffffff;
         --primary-light: #cccccc;
         --text: #ffffff;
         --text-muted: #b3b3b3;
-        --border: #262626;      /* لون الحدود أصبح أغمق ليتناسب مع الخلفية السوداء */
+        --border: #262626;
         --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         --hover-bg: rgba(255, 255, 255, 0.1);
+        /* --- جديد: ألوان زجاجية --- */
+        --navbar-bg: rgba(10, 10, 10, 0.65); /* خلفية شبه شفافة */
+        --navbar-border: rgba(255, 255, 255, 0.1);
     }
 
+    * {
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
+    body {
+        background-color: var(--bg-dark);
+        color: var(--text);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow-x: hidden;
+        /* --- جديد: إضافة مساحة للنافبارات الثابتة --- */
+        padding-top: 70px; /* مساحة للنافبار العلوي */
+        padding-bottom: 80px; /* مساحة للنافبار السفلي */
+    }
+
+    /* --- تعديل: تصميم النافبار العلوي الزجاجي --- */
+    .navbar {
+        background-color: var(--navbar-bg) !important;
+        backdrop-filter: blur(12px); /* تأثير الزجاج المصنفر */
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: var(--shadow);
+        padding: 0;
+        border-bottom: 1px solid var(--navbar-border);
+        /* --- جديد: تثبيت في الأعلى --- */
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1030;
+    }
+
+    .navbar-brand {
+        color: white !important;
+    }
+
+    .logo-img {
+        height: 30px;
+        margin-left: 10px;
+        filter: brightness(0) invert(1);
+    }
+
+    .navbar-top-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 10px 0;
+    }
+    
+    .nav-icons-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .nav-icons-top .nav-link {
+        font-size: 1.2rem;
+        padding: 4px !important;
+        line-height: 1;
+        background-color: var(--bg-darker);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid var(--border);
+        transition: all 0.2s;
+    }
+    .nav-icons-top .nav-link:hover {
+        transform: scale(1.1);
+        background-color: var(--hover-bg);
+    }
+    .nav-icons-top .nav-link i {
+         margin-right: 0rem !important;
+    }
+
+    /* --- تعديل: تصميم النافبار السفلي الزجاجي --- */
+    .bottom-nav {
+        background-color: var(--navbar-bg);
+        backdrop-filter: blur(12px); /* تأثير الزجاج المصنفر */
+        -webkit-backdrop-filter: blur(12px);
+        border-top: 1px solid var(--navbar-border); /* خط فاصل علوي */
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 10px 0;
+        height: 65px;
+        width: 100%;
+        /* --- جديد: تثبيت في الأسفل --- */
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1030;
+    }
+
+    .bottom-nav .nav-link {
+        font-size: 1.5rem;
+        color: var(--text-muted) !important; /* لون باهت افتراضي */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 5px 12px !important;
+        margin: 0 !important;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    .bottom-nav .nav-link:hover, .bottom-nav .nav-link.active {
+        color: var(--primary) !important; /* لون أبيض عند المرور أو النشاط */
+        background-color: var(--hover-bg);
+        transform: translateY(-3px);
+    }
+
+    .bottom-nav .nav-link i {
+        margin: 0 !important;
+    }
+
+    .bottom-nav .profile-pic {
+        width: 32px;
+        height: 32px;
+        border: 2px solid var(--text-muted); /* إطار متناسق */
+        transition: all 0.3s ease;
+    }
+    .bottom-nav a:hover .profile-pic, .bottom-nav .dropdown-toggle.show .profile-pic {
+        border-color: var(--primary); /* تغيير لون الإطار عند الفتح */
+    }
+
+    .nav-link {
+        color: var(--text) !important;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .nav-link:hover {
+        color: var(--primary) !important;
+        background-color: var(--hover-bg);
+    }
         
-        /* إضافة نمط لشعار أبيض */
-        .navbar-brand {
-            color: white !important; /* تأكيد أن لون النص أبيض */
-            /* filter: brightness(0) invert(1); removed as image is already white */
-        }
-        
-        .logo-img {
-            height: 30px;
-            margin-left: 10px; /* For RTL, this adds space to the left of the image (between image and text) */
-            filter: brightness(0) invert(1); /* تحويل لون صورة الشعار إلى أبيض */
-        }
-        
-        * {
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-        }
-        
+    /* --- تعديل: تصميم قائمة البروفايل المنسدلة --- */
+    .dropdown-menu {
+        background-color: var(--navbar-bg); /* نفس خلفية النافبار */
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--navbar-border);
+        border-radius: 0.75rem; /* حواف أكثر دائرية */
+        box-shadow: var(--shadow);
+        margin-top: 0.5rem;
+        /* --- جديد: تحديد موقع القائمة فوق النافبار السفلي --- */
+        bottom: 100% !important; /* اجعلها تفتح للأعلى */
+        top: auto !important;
+        margin-bottom: 10px; /* مسافة بينها وبين النافبار */
+    }
+
+    .dropdown-item {
+        color: var(--text);
+        transition: all 0.2s;
+    }
+
+    .dropdown-item:hover {
+        background-color: var(--hover-bg);
+        color: var(--primary);
+    }
+    
+    .container.py-4 {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem; /* تعديل المساحة السفلية */
+    }
+    
+    @media (max-width: 768px) {
         body {
-            background-color: var(--bg-dark);
-            color: var(--text);
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow-x: hidden; /* Keep this, reel container will handle its own scroll */
+            padding-top: 60px;
+            padding-bottom: 70px;
         }
-        
-        .navbar {
-            background-color: var(--bg-light) !important;
-            box-shadow: var(--shadow);
-            padding: 0; 
+        .navbar-top-row {
+            padding: 8px 0;
         }
-        
-        .nav-link {
-            color: var(--text) !important;
-            font-weight: 500;
-            border-radius: 0.5rem;
-            transition: all 0.2s;
-            white-space: nowrap;
+        .nav-icons-top {
+            gap: 10px;
         }
-        
-        .nav-link:hover {
-            color: var(--primary) !important;
-            background-color: var(--hover-bg);
+        .nav-icons-top .nav-link {
+            font-size: 1.1rem;
+            width: 32px;
+            height: 32px;
         }
-        
-        .nav-link i {
-            margin-right: 0.5rem; 
+        .logo-img {
+            height: 26px;
         }
+        .bottom-nav {
+            height: 60px;
+            padding: 8px 0;
+        }
+        .bottom-nav .nav-link {
+            font-size: 1.3rem;
+            padding: 5px 8px !important;
+        }
+        .bottom-nav .profile-pic {
+            width: 28px;
+            height: 28px;
+        }
+         .nav-link span { /* إخفاء النص في النافبار السفلي */
+             display: none;
+        }
+    }
         
         .theme-toggle {
-            background: var(--bg-darker);
-            border: 1px solid var(--border);
-            color: var(--text);
-            border-radius: 0.5rem;
-            padding: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            background: var(--bg-darker); border: 1px solid var(--border); color: var(--text); border-radius: 0.5rem; padding: 0.5rem; cursor: pointer; transition: all 0.3s ease;
         }
-        
-        .theme-toggle:hover {
-            background: var(--hover-bg);
-            transform: scale(1.05);
-        }
-        
-        .theme-toggle i {
-            font-size: 1rem;
-        }
-        
-        .card {
-            background-color: var(--bg-light);
-            border: 1px solid var(--border);
-            border-radius: 0.75rem;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s, background-color 0.3s ease, border-color 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-2px);
-        }
-        
-        .card-header, .card-footer {
-            background-color: transparent;
-            border: none;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary);
-            border-color: var(--primary);
-            font-weight: 500;
-            padding: 0.5rem 1.5rem;
-            border-radius: 0.5rem;
-            transition: all 0.2s;
-            color: var(--bg-light);
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--primary-light);
-            border-color: var(--primary-light);
-            transform: translateY(-1px);
-            color: var(--bg-light);
-        }
-        
-        .btn-outline-primary {
-            color: var(--primary);
-            border-color: var(--primary);
-            font-weight: 500;
-        }
-        
-        .btn-outline-primary:hover {
-            background-color: var(--primary);
-            color: var(--bg-light);
-        }
-        
-        .text-muted {
-            color: var(--text-muted) !important;
-        }
-        
-        .post-actions i {
-            cursor: pointer;
-            margin-right: 1rem;
-            font-size: 1.2rem;
-            transition: all 0.2s;
-            color: var(--text);
-        }
-        
-        .post-actions i:hover {
-            transform: scale(1.1);
-        }
-        
-        .post-actions i.liked {
-            color: #ff4757 !important; 
-        }
-        
-        .post-actions i.saved {
-            color: #ffa502;
-        }
-        
-        .profile-pic { 
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--primary);
-            transition: all 0.2s;
-        }
-        
-        .profile-pic:hover {
-            transform: scale(1.1);
-        }
-        
-        .search-bar { 
-            background-color: var(--bg-darker);
-            border: 1px solid var(--border);
-            color: var(--text);
-            border-radius: 0.5rem;
-            padding: 0.5rem 1rem;
-            width: 100%;
-            max-width: 400px;
-            transition: all 0.2s;
-        }
-        
-        .search-bar:focus {
-            background-color: var(--bg-darker);
-            color: var(--text);
-            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
-            outline: none;
-            border-color: var(--primary);
-        }
-        
-        .search-bar::placeholder {
-            color: var(--text-muted);
-        }
-        
-        .dropdown-menu {
-            background-color: var(--bg-light);
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            box-shadow: var(--shadow);
-            margin-top: 0.5rem;
-        }
-        
-        .dropdown-item {
-            color: var(--text);
-            transition: all 0.2s;
-        }
-        
-        .dropdown-item:hover {
-            background-color: var(--hover-bg);
-            color: var(--primary);
-        }
-        
-        .container { 
-            max-width: 1200px;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        .btn-animate:hover {
-            animation: pulse 0.5s ease;
-        }
-
-        .modal-content {
-            background-color: var(--bg-light);
-            border: 1px solid var(--border);
-            color: var(--text);
-        }
-        
-        .modal-header {
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .modal-footer {
-            border-top: 1px solid var(--border);
-        }
-        
-        .btn-close {
-            filter: var(--bs-btn-close-filter, none);
-        }
-        
-        [data-theme="dark"] .btn-close { 
-            filter: invert(1) grayscale(100%) brightness(200%);
-        }
-        
-        .form-control {
-            background-color: var(--bg-darker);
-            border: 1px solid var(--border);
-            color: var(--text);
-        }
-        
-        .form-control:focus {
-            background-color: var(--bg-darker);
-            border-color: var(--primary);
-            color: var(--text);
-            box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.1); 
-        }
-        
-        .form-control::placeholder {
-            color: var(--text-muted);
-        }
-        
-        .settings-section {
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .settings-section:last-child {
-            border-bottom: none;
-        }
-        
-        .settings-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem 0;
-        }
-        
-        .settings-label {
-            font-weight: 500;
-            color: var(--text);
-        }
-        
-        .settings-description {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-top: 0.25rem;
-        }
-
-        .navbar .container { 
-            padding-left: 15px;
-            padding-right: 15px;
-        }
-
-        /* Adjusted styles for the top navbar to match the image */
-        .navbar-top-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between; 
-            width: 100%;
-            padding: 10px 0; 
-        }
-        
-        .navbar-brand {
-            display: flex; 
-            align-items: center;
-        }
-        
-        .logo-img { 
-            height: 29px; 
-            margin-left: 10px; 
-        }
-        
-        .nav-icons-top { /* New class for top right icons */
-            display: flex;
-            align-items: center;
-            gap: 15px; /* Reduced gap between icons */
-        }
-        
-        .nav-icons-top .nav-link {
-            font-size: 1.3rem; /* Slightly smaller icon size */
-            padding: 4px !important; 
-            line-height: 1; 
-            background-color: var(--bg-darker); /* Circle background for top icons */
-            border-radius: 50%;
-            width: 36px; /* Reduced size for icons */
-            height: 36px; /* Reduced size for icons */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 1px solid var(--border);
-        }
-        .nav-icons-top .nav-link i{
-             margin-right: 0rem !important;
-        }
-        
-        /* Bottom Navigation Bar */
-        .bottom-nav {
-            background-color: var(--bg-light);
-            border-top: 1px solid var(--border); /* Line separator */
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 10px 0;
-            height: 60px; /* Standard height for bottom nav */
-            width: 100%; /* Ensure full width */
-        }
-
-        .bottom-nav .nav-link {
-            font-size: 1.4rem; /* Icon size */
-            color: var(--text) !important;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 5px 10px !important; /* Padding for touch targets */
-            margin: 0 !important; /* Remove any default margins */
-        }
-
-        .bottom-nav .nav-link i {
-            margin: 0 !important; /* Ensure icon is centered */
-        }
-
-        /* Profile picture in bottom nav */
-        .bottom-nav .profile-pic {
-            width: 30px; /* Slightly smaller for nav */
-            height: 30px;
-            border-width: 1px; /* Thinner border */
-        }
-                
-        .container.py-4 { 
-            padding-top: 1.5rem; 
-        }
-        
+        .theme-toggle:hover { background: var(--hover-bg); transform: scale(1.05); }
+        .theme-toggle i { font-size: 1rem; }
+        .card { background-color: var(--bg-light); border: 1px solid var(--border); border-radius: 0.75rem; margin-bottom: 1.5rem; box-shadow: var(--shadow); transition: transform 0.2s, background-color 0.3s ease, border-color 0.3s ease; }
+        .card:hover { transform: translateY(-2px); }
+        .card-header, .card-footer { background-color: transparent; border: none; }
+        .btn-primary { background-color: var(--primary); border-color: var(--primary); font-weight: 500; padding: 0.5rem 1.5rem; border-radius: 0.5rem; transition: all 0.2s; color: var(--bg-light); }
+        .btn-primary:hover { background-color: var(--primary-light); border-color: var(--primary-light); transform: translateY(-1px); color: var(--bg-light); }
+        .btn-outline-primary { color: var(--primary); border-color: var(--primary); font-weight: 500; }
+        .btn-outline-primary:hover { background-color: var(--primary); color: var(--bg-light); }
+        .text-muted { color: var(--text-muted) !important; }
+        .post-actions i { cursor: pointer; margin-right: 1rem; font-size: 1.2rem; transition: all 0.2s; color: var(--text); }
+        .post-actions i:hover { transform: scale(1.1); }
+        .post-actions i.liked { color: #ff4757 !important; }
+        .post-actions i.saved { color: #ffa502; }
+        .profile-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); transition: all 0.2s; }
+        .profile-pic:hover { transform: scale(1.1); }
+        .search-bar { background-color: var(--bg-darker); border: 1px solid var(--border); color: var(--text); border-radius: 0.5rem; padding: 0.5rem 1rem; width: 100%; max-width: 400px; transition: all 0.2s; }
+        .search-bar:focus { background-color: var(--bg-darker); color: var(--text); box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2); outline: none; border-color: var(--primary); }
+        .search-bar::placeholder { color: var(--text-muted); }
+        .container { max-width: 1200px; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .btn-animate:hover { animation: pulse 0.5s ease; }
+        .modal-content { background-color: var(--bg-light); border: 1px solid var(--border); color: var(--text); }
+        .modal-header { border-bottom: 1px solid var(--border); }
+        .modal-footer { border-top: 1px solid var(--border); }
+        .btn-close { filter: var(--bs-btn-close-filter, none); }
+        [data-theme="dark"] .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+        .form-control { background-color: var(--bg-darker); border: 1px solid var(--border); color: var(--text); }
+        .form-control:focus { background-color: var(--bg-darker); border-color: var(--primary); color: var(--text); box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.1); }
+        .form-control::placeholder { color: var(--text-muted); }
+        .settings-section { padding: 1rem 0; border-bottom: 1px solid var(--border); }
+        .settings-section:last-child { border-bottom: none; }
+        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; }
+        .settings-label { font-weight: 500; color: var(--text); }
+        .settings-description { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem; }
+        .navbar .container { padding-left: 15px; padding-right: 15px; }
         @media (max-width: 768px) {
-            .navbar .container {
-                padding-left: 10px;
-                padding-right: 10px;
-            }
-            .navbar-top-row {
-                padding: 8px 0;
-            }
-            
-            .nav-icons-top { /* Mobile adjustment for top icons */
-                gap: 12px; /* Even smaller gap on mobile */
-            }
-            
-            .nav-icons-top .nav-link {
-                font-size: 1.2rem; /* Even smaller icons on mobile */
-                padding: 3px !important;
-                width: 32px; /* Adjust size for mobile */
-                height: 32px;
-            }
-            
-            .logo-img {
-                height: 26px;
-            }
-            
-            .bottom-nav {
-                height: 55px; /* Slightly smaller on mobile */
-                padding: 8px 0;
-            }
-            .bottom-nav .nav-link {
-                font-size: 1.2rem; /* Smaller icons on mobile */
-                 padding: 5px 8px !important;
-            }
-            .bottom-nav .profile-pic {
-                width: 26px;
-                height: 26px;
-            }
-             .nav-link span { /* Hide text on smaller screens for bottom nav */
-                 display: none;
-            }
-        }
-
-        .needs-validation .form-control {
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid var(--border);
-            transition: all 0.2s;
-        }
-
-        .needs-validation .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.1);
-        }
-
-        .needs-validation textarea.form-control {
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        .was-validated .form-control:invalid,
-        .form-control.is-invalid {
-            border-color: #dc3545; 
-        }
-
-        .was-validated .form-control:valid,
-        .form-control.is-valid {
-            border-color: #198754; 
-        }
-
-        .invalid-feedback {
-            font-size: 0.85rem;
-            color: #dc3545;
-        }
-
-        .valid-feedback {
-            font-size: 0.85rem;
-            color: #198754;
-        }
-
-        @media (max-width: 768px) {
-            .card-footer .btn {
-                padding: 4px 8px;
-                font-size: 12px;
-            }
-
-            .post-actions i {
-                font-size: 1rem !important; 
-                margin-right: 0.5rem;
-            }
-
-            .post-actions {
-                justify-content: space-around !important; 
-                gap: 5px; 
-            }
-
+            .card-footer .btn { padding: 4px 8px; font-size: 12px; }
+            .post-actions i { font-size: 1rem !important; margin-right: 0.5rem; }
+            .post-actions { justify-content: space-around !important; gap: 5px; }
             .card-body h5 { font-size: 14px; }
             .card-body small { font-size: 11px; }
             .card-text { font-size: 14px; }
-
-            .card img, .video-container { /* Ensure .video-container is used for post videos if needed */
-                max-height: 300px;
-                object-fit: contain; /* Or cover, depending on desired display */
-            }
-
+            .card img, .video-container { max-height: 300px; object-fit: contain; }
             .modal-dialog { margin: 1rem; }
             .modal-body .form-control { font-size: 13px; padding: 6px 10px; }
             .modal-body .btn { font-size: 13px; padding: 6px 12px; }
-            
-            .needs-validation .form-control {
-                padding: 0.6rem 0.8rem;
-                font-size: 14px;
-            }
-            .card-body.profile-edit-card { 
-                padding: 1rem;
-            }
-            .profile-edit-card .btn { 
-                padding: 0.5rem 1rem;
-                font-size: 14px;
-            }
-            .nav-link span { 
-                 display: none;
-            }
+            .needs-validation .form-control { padding: 0.6rem 0.8rem; font-size: 14px; }
+            .card-body.profile-edit-card { padding: 1rem; }
+            .profile-edit-card .btn { padding: 0.5rem 1rem; font-size: 14px; }
         }
-
-/* Styles for the new Search Modal */
-.search-modal .modal-dialog {
-    max-width: 90%; /* Make it wider */
-    margin-top: 50px; /* Position it lower from the top */
-}
-
-@media (min-width: 576px) {
-    .search-modal .modal-dialog {
-        max-width: 500px; /* Adjust for larger screens */
-        margin-top: 100px;
-    }
-}
-
-.search-modal .modal-content {
-    border-radius: 0.75rem;
-}
-
-.search-modal .modal-header {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.search-modal .modal-body {
-    padding-top: 0.5rem;
-    padding-bottom: 2rem;
-}
-
-.search-modal .form-control {
-    background-color: var(--bg-darker);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
-    font-size: 1.1rem;
-}
-
-.search-modal .form-control:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.1);
-}
-
-.search-modal .btn-primary {
-    padding: 0.75rem 1.5rem;
-    font-size: 1.1rem;
-}
-
-    /* Custom styles for alerts / messages.success */
-    .alert-container {
-        position: fixed;
-        top: 80px; /* Below navbar */
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 1050; /* Above most other content */
-        width: auto;
-        max-width: 90%;
-    }
-    .alert {
-        padding: 0.75rem 1.25rem;
-        margin-bottom: 1rem;
-        border: 1px solid transparent;
-        border-radius: 0.375rem;
-        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
-    }
-    .alert-success {
-        color: #0f5132;
-        background-color: #d1e7dd;
-        border-color: #badbcc;
-    }
-    .alert-danger {
-        color: #842029;
-        background-color: #f8d7da;
-        border-color: #f5c2c7;
-    }
-    .alert-warning {
-        color: #664d03;
-        background-color: #fff3cd;
-        border-color: #ffecb5;
-    }
-    /* Ensure messages are visible in dark theme */
-    body[data-theme="dark"] .alert-success { /* Example, adjust if your theme toggle works differently */
-        background-color: #1A3A2D; /* Darker green */
-        color: #A6D9C3;
-        border-color: #2C5C4A;
-    }
-    body[data-theme="dark"] .alert-danger {
-        background-color: #4B181F; /* Darker red */
-        color: #F1B0B7;
-        border-color: #7A2E38;
-    }
-/* منع تدوير الصفحة */
-@media screen and (min-width: 320px) and (max-width: 767px) and (orientation: landscape) {
-    html {
-        transform: rotate(-90deg);
-        transform-origin: left top;
-        width: 100vh;
-        height: 100vw;
-        overflow-x: hidden;
-        position: absolute;
-        top: 100%;
-        left: 0;
-    }
-    body {
-        /* تأكد من أن العناصر لا تتأثر بالتدوير */
-        touch-action: pan-x pan-y;
-    }
-}
- /* AI Chat Modal Styles */
-        .gemini-chat-message {
-            display: flex;
-            margin-bottom: 1rem;
-            max-width: 85%;
-        }
-        .gemini-chat-message.user {
-            margin-left: auto;
-            flex-direction: row-reverse;
-        }
-        .gemini-chat-message .message-content {
-            padding: 0.6rem 1rem;
-            border-radius: 1rem;
-            word-wrap: break-word;
-        }
-        .gemini-chat-message.user .message-content {
-            background-color: var(--primary);
-            color: var(--bg-dark);
-        }
-        .gemini-chat-message.ai .message-content {
-            background-color: var(--bg-darker);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-        .gemini-chat-message.ai .message-icon {
-            font-size: 1.5rem;
-            margin-left: 0.5rem; /* For RTL */
-            color: var(--primary-light);
-        }
-        .gemini-chat-message.typing-indicator .message-content {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--text-muted);
-            border-radius: 50%;
-            animation: typing 1.4s infinite;
-        }
+        .search-modal .modal-dialog { max-width: 90%; margin-top: 50px; }
+        @media (min-width: 576px) { .search-modal .modal-dialog { max-width: 500px; margin-top: 100px; } }
+        .search-modal .modal-content { border-radius: 0.75rem; }
+        .search-modal .modal-header { border-bottom: none; padding-bottom: 0; }
+        .search-modal .modal-body { padding-top: 0.5rem; padding-bottom: 2rem; }
+        .search-modal .form-control { background-color: var(--bg-darker); border: 1px solid var(--border); color: var(--text); border-radius: 0.5rem; padding: 0.75rem 1rem; font-size: 1.1rem; }
+        .search-modal .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.1); }
+        .search-modal .btn-primary { padding: 0.75rem 1.5rem; font-size: 1.1rem; }
+        .alert-container { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 1050; width: auto; max-width: 90%; }
+        .alert { padding: 0.75rem 1.25rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: 0.375rem; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15); }
+        .alert-success { color: #0f5132; background-color: #d1e7dd; border-color: #badbcc; }
+        .alert-danger { color: #842029; background-color: #f8d7da; border-color: #f5c2c7; }
+        .alert-warning { color: #664d03; background-color: #fff3cd; border-color: #ffecb5; }
+        body[data-theme="dark"] .alert-success { background-color: #1A3A2D; color: #A6D9C3; border-color: #2C5C4A; }
+        body[data-theme="dark"] .alert-danger { background-color: #4B181F; color: #F1B0B7; border-color: #7A2E38; }
+        .gemini-chat-message { display: flex; margin-bottom: 1rem; max-width: 85%; }
+        .gemini-chat-message.user { margin-left: auto; flex-direction: row-reverse; }
+        .gemini-chat-message .message-content { padding: 0.6rem 1rem; border-radius: 1rem; word-wrap: break-word; }
+        .gemini-chat-message.user .message-content { background-color: var(--primary); color: var(--bg-dark); }
+        .gemini-chat-message.ai .message-content { background-color: var(--bg-darker); color: var(--text); border: 1px solid var(--border); }
+        .gemini-chat-message.ai .message-icon { font-size: 1.5rem; margin-left: 0.5rem; color: var(--primary-light); }
+        .gemini-chat-message.typing-indicator .message-content { display: flex; align-items: center; gap: 5px; }
+        .typing-dot { width: 8px; height: 8px; background-color: var(--text-muted); border-radius: 50%; animation: typing 1.4s infinite; }
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+        .container, .container-fluid { padding-left: 0; padding-right: 0; }
+        .row { margin-left: 0; margin-right: 0; }
+        .col-12 { padding-left: 15px; padding-right: 15px; }
 
-        @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-6px); }
-        }
-         /* لضمان عدم وجود هوامش جانبية تمنع الامتداد الكامل */
-        .container, .container-fluid {
-            padding-left: 0;
-            padding-right: 0;
-        }
-
-        .row {
-            margin-left: 0;
-            margin-right: 0;
-        }
-
-        /* لضمان عدم وجود هوامش داخلية غير مرغوبة في الأعمدة */
-        .col-12 {
-            padding-left: 15px;
-            padding-right: 15px;
-        }
-        /* --- الكود الجديد --- */
-.nav-icons-top { /* New class for top right icons */
-    display: flex;
-    align-items: center;
-    gap: 12px; /* تم تقليل المسافة من 15px */
-}
-
-.nav-icons-top .nav-link {
-    font-size: 1.2rem; /* تم تصغير حجم الأيقونة من 1.3rem */
-    padding: 4px !important; 
-    line-height: 1; 
-    background-color: var(--bg-darker); /* Circle background for top icons */
-    border-radius: 50%;
-    width: 34px; /* تم تصغير الحجم من 36px */
-    height: 34px; /* تم تصغير الحجم من 36px */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid var(--border);
-}
-/* ... */
-@media (max-width: 768px) {
-    /* ... */
-    .nav-icons-top { /* Mobile adjustment for top icons */
-        gap: 10px; /* تم تقليل المسافة من 12px */
-    }
-    
-    .nav-icons-top .nav-link {
-        font-size: 1.1rem; /* تم تصغير حجم الأيقونة من 1.2rem */
-        padding: 3px !important;
-        width: 30px; /* تم تصغير الحجم من 32px */
-        height: 30px; /* تم تصغير الحجم من 32px */
-    }
-    /* ... */
-}
-/* --- نهاية الكود الجديد --- */
 </style>
 {% load static %} </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container">
-        <div class="navbar-top-row">
-            <a class="navbar-brand" href="{% url 'home' %}">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/4/46/1000084215-removebg-preview.png" class="logo-img" alt="شعار Trimer">
-                Trimer
-            </a>
-            
-            <div class="nav-icons-top">
-                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#createModal" style="text-decoration: none !important;">
-                    <i class="fas fa-plus"></i>
+        <div class="container">
+            <div class="navbar-top-row">
+                <a class="navbar-brand" href="{% url 'home' %}">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/46/1000084215-removebg-preview.png" class="logo-img" alt="شعار Trimer">
+                    Trimer
                 </a>
-                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#searchModal">
-                    <i class="fas fa-search"></i>
-                </a>
-                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#geminiAiModal">
-                    <i class="fas fa-magic"></i> </a>
+                
+                <div class="nav-icons-top">
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#createModal" style="text-decoration: none !important;">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#searchModal">
+                        <i class="fas fa-search"></i>
+                    </a>
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#geminiAiModal">
+                        <i class="fas fa-magic"></i> </a>
+                </div>
             </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
-<div class="bottom-nav">
-    <a class="nav-link" href="{% url 'home' %}">
-        <i class="fas fa-home"></i>
-        <span>الرئيسية</span>
-    </a>
-    <a class="nav-link" href="{% url 'reels_feed' %}">
-        <i class="fas fa-play-circle"></i>
-        <span>ريلز</span>
-    </a> 
-    <a class="nav-link" href="{% url 'friends' %}">
-        <i class="fas fa-users"></i>
-        <span>الأصدقاء</span>
-    </a>
-    <a class="nav-link position-relative" href="{% url 'notifications' %}">
-        <i class="fas fa-bell"></i>
-        <span>الإشعارات</span>
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge" style="display: none; font-size: 0.6em; padding: 0.3em 0.5em;">0</span>
-    </a>
-    <a class="nav-link" href="{% url 'chat_list' request.user.username %}">
-        <i class="fab fa-facebook-messenger"></i>
-        <span>الرسائل</span>
-    </a>
-    <div class="dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            {% if request.user.profile_picture and request.user.profile_picture.url %}
-                <img src="{{ request.user.profile_picture.url }}" class="profile-pic" alt="صورة البروفيل">
-            {% else %}
-                <img src="{% static 'images/default_profile.png' %}" class="profile-pic" alt="صورة افتراضية">
-            {% endif %}
-            <span>البروفيل</span>
+    <div class="container py-4">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <nav class="bottom-nav">
+        <a class="nav-link active" href="{% url 'home' %}">
+            <i class="fas fa-home"></i>
+            <span>الرئيسية</span>
         </a>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-            {% if request.user.is_authenticated and request.user.username %}
-                <li><a class="dropdown-item" href="{% url 'profile' request.user.username %}"><i class="fas fa-user me-2"></i>الملف الشخصي</a></li>
-                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="fas fa-cog me-2"></i>الإعدادات</a></li>
-            {% endif %}
-            <li><hr class="dropdown-divider"></li>
-            <form action="{% url 'logout_view' %}" method="post" style="margin:0;"> {% csrf_token %}
-                <button type="submit" class="dropdown-item">
-                    <i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج
-                </button>
-            </form>
-        </ul>
-    </div>
-</div>
-
+        <a class="nav-link" href="{% url 'reels_feed' %}">
+            <i class="fas fa-play-circle"></i>
+            <span>ريلز</span>
+        </a> 
+        <a class="nav-link" href="{% url 'friends' %}">
+            <i class="fas fa-users"></i>
+            <span>الأصدقاء</span>
+        </a>
+        <a class="nav-link position-relative" href="{% url 'notifications' %}">
+            <i class="fas fa-bell"></i>
+            <span>الإشعارات</span>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge" style="display: none; font-size: 0.6em; padding: 0.3em 0.5em;">0</span>
+        </a>
+        <a class="nav-link" href="{% url 'chat_list' request.user.username %}">
+            <i class="fab fa-facebook-messenger"></i>
+            <span>الرسائل</span>
+        </a>
+        <div class="dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                {% if request.user.profile_picture and request.user.profile_picture.url %}
+                    <img src="{{ request.user.profile_picture.url }}" class="profile-pic" alt="صورة البروفيل">
+                {% else %}
+                    <img src="{% static 'images/default_profile.png' %}" class="profile-pic" alt="صورة افتراضية">
+                {% endif %}
+                <span>البروفيل</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                {% if request.user.is_authenticated and request.user.username %}
+                    <li><a class="dropdown-item" href="{% url 'profile' request.user.username %}"><i class="fas fa-user me-2"></i>الملف الشخصي</a></li>
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="fas fa-cog me-2"></i>الإعدادات</a></li>
+                {% endif %}
+                <li><hr class="dropdown-divider" style="border-color: var(--navbar-border);"></li>
+                <form action="{% url 'logout_view' %}" method="post" style="margin:0;"> {% csrf_token %}
+                    <button type="submit" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج
+                    </button>
+                </form>
+            </ul>
+        </div>
+    </nav>
+    
     <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -896,12 +508,7 @@
         {% endfor %}
     </div>
     {% endif %}
-
-    <div class="container py-4">
-        {% block content %}
-        {% endblock %}
-    </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Initialize Bootstrap dropdowns
@@ -994,17 +601,6 @@
             });
         });
 
-        // Chat update (existing)
-        function updateChat() {
-            // This function might need to be specific to chat pages
-            // For now, keeping it as is.
-            if (window.location.pathname.includes('/chat/') && window.location.pathname.includes('/get-messages/')) { // Be more specific
-                // Logic for updating chat messages
-            }
-        }
-        // Consider calling updateChat only on relevant pages or adjust interval
-        // setInterval(updateChat, 5000); 
-
         // Notification update (existing)
         let currentNotificationCount = 0; 
         const notificationSound = new Audio("{% static 'sounds/notification.mp3' %}"); 
@@ -1019,11 +615,6 @@
                         if (newCount > 0) {
                             badge.textContent = newCount > 9 ? '9+' : newCount;
                             badge.style.display = 'inline-block';
-                            if (newCount > currentNotificationCount) {
-                                // notificationSound.play().catch(error => {
-                                //     console.warn("لم يتم تشغيل صوت الإشعار، قد يتطلب تفاعل المستخدم:", error);
-                                // });
-                            }
                         } else {
                             badge.style.display = 'none';
                         }
@@ -1048,7 +639,7 @@
                     }
                 }).catch(error => console.error('Error getting initial notification count:', error));
             
-            setInterval(updateNotificationCount, 7000); // Check notifications every 7 seconds
+            setInterval(updateNotificationCount, 7000);
         });
 
         // Auto-dismiss alerts
@@ -1056,136 +647,74 @@
             document.querySelectorAll(".alert-dismissible").forEach(function(alert) {
                 new bootstrap.Alert(alert).close();
             });
-        }, 5000); // Dismiss after 5 seconds
+        }, 5000);
 
         // Gemini AI Chat Logic
-document.addEventListener('DOMContentLoaded', function() {
-    const sendBtn = document.getElementById('gemini-send-btn');
-    const userInput = document.getElementById('gemini-user-input');
-    const chatBody = document.getElementById('gemini-chat-body');
-    const initialMessage = document.getElementById('gemini-initial-message');
-
-    let geminiHistory = [];
-
-    const isMeaningless = (msg) => {
-        const phrases = ["هههه", "ها", "؟", "اوك", "اوكي", "xd", "lol", "تمام", "طيب", "..."];
-        return phrases.includes(msg.toLowerCase().trim());
-    };
-
-    const shouldStoreInHistory = (msg) => !isMeaningless(msg);
-
-    const sendMessage = async () => {
-        const query = userInput.value.trim();
-        if (!query) return;
-
-        if (initialMessage) initialMessage.style.display = 'none';
-
-        appendMessage(query, 'user');
-        if (shouldStoreInHistory(query)) {
-            geminiHistory.push({ role: 'user', content: query });
-        }
-
-        userInput.value = '';
-        showTypingIndicator();
-
-        try {
-            const response = await fetch("{% url 'ask_gemini' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    prompt: query,
-                    history: geminiHistory
-                })
-            });
-
-            const data = await response.json();
-            hideTypingIndicator();
-
-            if (!response.ok || !data.response) {
-                throw new Error(data.error || 'حدث خطأ في الخادم');
+        document.addEventListener('DOMContentLoaded', function() {
+            const sendBtn = document.getElementById('gemini-send-btn');
+            const userInput = document.getElementById('gemini-user-input');
+            const chatBody = document.getElementById('gemini-chat-body');
+            const initialMessage = document.getElementById('gemini-initial-message');
+            let geminiHistory = [];
+            const sendMessage = async () => {
+                const query = userInput.value.trim();
+                if (!query) return;
+                if (initialMessage) initialMessage.style.display = 'none';
+                appendMessage(query, 'user');
+                geminiHistory.push({ role: 'user', content: query });
+                userInput.value = '';
+                showTypingIndicator();
+                try {
+                    const response = await fetch("{% url 'ask_gemini' %}", {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+                        body: JSON.stringify({ prompt: query, history: geminiHistory })
+                    });
+                    const data = await response.json();
+                    hideTypingIndicator();
+                    if (!response.ok || !data.response) { throw new Error(data.error || 'حدث خطأ في الخادم'); }
+                    appendMessage(data.response, 'ai');
+                    geminiHistory.push({ role: 'model', content: data.response });
+                } catch (error) {
+                    hideTypingIndicator();
+                    appendMessage("حدث خطأ، حاول مجددًا.", 'ai');
+                    console.error('Error details:', error);
+                }
+            };
+            sendBtn.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendMessage(); } });
+            function appendMessage(text, sender) {
+                const messageWrapper = document.createElement('div');
+                messageWrapper.className = `gemini-chat-message ${sender}`;
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                messageContent.textContent = text;
+                if (sender === 'ai') {
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-magic message-icon';
+                    messageWrapper.appendChild(icon);
+                }
+                messageWrapper.appendChild(messageContent);
+                chatBody.appendChild(messageWrapper);
+                chatBody.scrollTop = chatBody.scrollHeight;
             }
-
-            appendMessage(data.response, 'ai');
-            geminiHistory.push({ role: 'model', content: data.response });
-
-        } catch (error) {
-            hideTypingIndicator();
-            appendMessage("حدث خطأ، حاول مجددًا.", 'ai');
-            console.error('Error details:', error);
-        }
-    };
-
-    sendBtn.addEventListener('click', sendMessage);
-    userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-
-    function appendMessage(text, sender) {
-        const messageWrapper = document.createElement('div');
-        messageWrapper.className = `gemini-chat-message ${sender}`;
-
-        const messageContent = document.createElement('div');
-        messageContent.className = 'message-content';
-        messageContent.textContent = text;
-
-        if (sender === 'ai') {
-            const icon = document.createElement('i');
-            icon.className = 'fas fa-magic message-icon';
-            messageWrapper.appendChild(icon);
-        }
-
-        messageWrapper.appendChild(messageContent);
-        chatBody.appendChild(messageWrapper);
-        chatBody.scrollTop = chatBody.scrollHeight;
-    }
-
-    function showTypingIndicator() {
-        const typingIndicator = `
-            <div class="gemini-chat-message ai typing-indicator">
-                <i class="fas fa-magic message-icon"></i>
-                <div class="message-content">
-                    <span class="typing-dot"></span>
-                    <span class="typing-dot"></span>
-                    <span class="typing-dot"></span>
-                </div>
-            </div>`;
-        chatBody.insertAdjacentHTML('beforeend', typingIndicator);
-        chatBody.scrollTop = chatBody.scrollHeight;
-    }
-
-    function hideTypingIndicator() {
-        const indicator = document.querySelector('.typing-indicator');
-        if (indicator) {
-            indicator.remove();
-        }
-    }
-});
+            function showTypingIndicator() {
+                const typingIndicator = `
+                    <div class="gemini-chat-message ai typing-indicator">
+                        <i class="fas fa-magic message-icon"></i>
+                        <div class="message-content">
+                            <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+                        </div>
+                    </div>`;
+                chatBody.insertAdjacentHTML('beforeend', typingIndicator);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+            function hideTypingIndicator() {
+                const indicator = document.querySelector('.typing-indicator');
+                if (indicator) { indicator.remove(); }
+            }
+        });
 
     </script>
-    <script>
-// منع تدوير الشاشة على الأجهزة المحمولة
-function lockOrientation() {
-    if (window.screen.orientation && window.screen.orientation.lock) {
-        window.screen.orientation.lock('portrait').catch(function(error) {
-            console.log('Orientation lock failed: ', error);
-        });
-    } else if (window.screen.lockOrientation) {
-        window.screen.lockOrientation('portrait');
-    } else if (window.screen.mozLockOrientation) {
-        window.screen.mozLockOrientation('portrait');
-    } else if (window.screen.msLockOrientation) {
-        window.screen.msLockOrientation('portrait');
-    }
-}
-
-// استدعاء الدالة عند تحميل الصفحة وعند تغيير الحجم
-window.addEventListener('load', lockOrientation);
-window.addEventListener('resize', lockOrientation);
-</script>
 </body>
 </html>

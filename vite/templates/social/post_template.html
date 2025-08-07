@@ -1,13 +1,14 @@
 {% load static %}
 
-<div class="card mb-4 border-dark bg-dark text-light" id="post-{{ post.id }}" style="width: 100%;">
+{# --- CHANGE: Replaced bg-dark and border-dark with a custom 'post-card' class for styling --- #}
+<div class="card post-card mb-4 text-light" id="post-{{ post.id }}">
     <div class="card-body">
         <div class="d-flex align-items-center mb-3">
             <div style="position: relative; flex-shrink: 0;" class="me-2">
                 <a href="{% url 'profile' post.user.username %}">
-                    <img src="{{ post.user.profile_picture.url }}" class="rounded-circle border border-secondary" alt="User avatar"
+                    <img src="{{ post.user.profile_picture.url }}" class="rounded-circle" alt="User avatar"
                         onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
-                        style="width: 50px; height: 50px; object-fit: cover;">
+                        style="width: 50px; height: 50px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
                 </a>
                 {% if post.user.is_online %}
                     <span class="online-indicator-dot" title="نشط الآن"></span>
@@ -25,18 +26,20 @@
             </div>
             {% if post.user == request.user %}
             <div class="dropdown ms-auto">
-                <button class="btn btn-sm btn-dark border border-secondary" type="button" id="postOptionsDropdown-{{ post.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn btn-sm btn-glass" type="button" id="postOptionsDropdown-{{ post.id }}" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end bg-dark border border-secondary" aria-labelledby="postOptionsDropdown-{{ post.id }}">
-                    <li><a class="dropdown-item text-light bg-dark" href="{% url 'edit_post' post.id %}"><i class="fas fa-edit me-2"></i>تعديل</a></li>
-                    <li><a class="dropdown-item text-danger bg-dark" href="{% url 'delete_post' post.id %}"><i class="fas fa-trash-alt me-2"></i>حذف</a></li>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="postOptionsDropdown-{{ post.id }}">
+                    <li><a class="dropdown-item" href="{% url 'edit_post' post.id %}"><i class="fas fa-edit me-2"></i>تعديل</a></li>
+                    <li><a class="dropdown-item text-danger" href="{% url 'delete_post' post.id %}"><i class="fas fa-trash-alt me-2"></i>حذف</a></li>
                 </ul>
             </div>
             {% endif %}
         </div>
 
-        <p class="card-text mb-3">{{ post.content }}</p> {% if post.image %}
+        <p class="card-text mb-3">{{ post.content }}</p>
+        
+        {% if post.image %}
         <div class="post-media-container">
             <img src="{{ post.image.url }}" class="img-fluid rounded post-image clickable-image" alt="Post image" loading="lazy"
                  data-bs-toggle="modal" data-bs-target="#imageModal-{{ post.id }}">
@@ -46,14 +49,7 @@
         {% if post.video %}
         <div class="post-media-container">
             <div class="ratio ratio-16x9 video-container">
-                <video
-                    controls
-                    playsinline
-                    preload="metadata"
-                    poster="{% if post.image %}{{ post.image.url }}{% else %}{% static 'default-video-thumbnail.jpg' %}{% endif %}"
-                    class="lazy-video"
-                    data-src="{{ post.video.url }}"
-                >
+                <video controls playsinline preload="metadata" class="lazy-video" data-src="{{ post.video.url }}">
                     <source src="{{ post.video.url }}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
@@ -74,7 +70,7 @@
             </div>
         </div>
 
-        <hr class="border-secondary">
+        <hr>
 
         <div class="post-actions d-flex justify-content-around">
             <a href="#" class="like-btn text-light" data-post-id="{{ post.id }}">
@@ -90,10 +86,11 @@
     </div>
 </div>
 
-<div class="modal fade" id="commentsModal-{{ post.id }}" tabindex="-1" aria-labelledby="commentsModalLabel-{{ post.id }}" aria-hidden="true">
+{# --- CHANGE: Added 'post-modal' class for styling --- #}
+<div class="modal fade post-modal" id="commentsModal-{{ post.id }}" tabindex="-1" aria-labelledby="commentsModalLabel-{{ post.id }}" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark text-light border border-secondary">
-            <div class="modal-header border-secondary">
+        <div class="modal-content">
+            <div class="modal-header">
                 <h5 class="modal-title" id="commentsModalLabel-{{ post.id }}">التعليقات</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -102,8 +99,8 @@
                     {% for comment in post.comments.all %}
                     <div class="d-flex mb-3">
                         <a href="{% url 'profile' comment.user.username %}">
-                            <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle me-2 border border-secondary"
-                                style="width: 40px; height: 40px; object-fit: cover;"
+                            <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle me-2"
+                                style="width: 40px; height: 40px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);"
                                 onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
                                 alt="{{ comment.user.username }}">
                         </a>
@@ -113,19 +110,19 @@
                                     <strong>@{{ comment.user.username }}</strong>
                                 </a>
                                 <small class="text-muted">{{ comment.created_at|timesince }} مضت</small>
-
                                 {% if comment.user == request.user or post.user == request.user %}
                                 <div class="dropdown ms-auto">
-                                    <button class="btn btn-sm btn-link text-muted" type="button" id="commentDropdown-{{ comment.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <button class="btn btn-sm btn-link text-muted" type="button" data-bs-toggle="dropdown">
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end bg-dark border border-secondary" aria-labelledby="commentDropdown-{{ comment.id }}">
-                                        <li><a class="dropdown-item text-danger bg-dark delete-comment-btn" href="#" data-comment-id="{{ comment.id }}">حذف التعليق</a></li>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item text-danger delete-comment-btn" href="#" data-comment-id="{{ comment.id }}">حذف التعليق</a></li>
                                     </ul>
                                 </div>
                                 {% endif %}
                             </div>
-                            <p class="mb-0 text-light">{{ comment.content }}</p> </div>
+                            <p class="mb-0 text-light">{{ comment.content }}</p>
+                        </div>
                     </div>
                     {% empty %}
                     <p class="text-muted text-center">لا توجد تعليقات حتى الآن</p>
@@ -134,7 +131,7 @@
                 <form id="comment-form-{{ post.id }}" class="comment-form mt-3" action="{% url 'add_comment' post.id %}" method="POST">
                     {% csrf_token %}
                     <div class="input-group">
-                        <input type="text" class="form-control bg-secondary text-light border border-secondary" name="content" placeholder="أكتب تعليقا...">
+                        <input type="text" class="form-control" name="content" placeholder="أكتب تعليقا...">
                         <button class="btn btn-outline-primary" type="submit">نشر</button>
                     </div>
                 </form>
@@ -143,7 +140,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="imageModal-{{ post.id }}" tabindex="-1" aria-hidden="true">
+<div class="modal fade post-modal" id="imageModal-{{ post.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content bg-transparent border-0">
             <div class="modal-header border-0">
@@ -156,10 +153,10 @@
     </div>
 </div>
 
-<div class="modal fade" id="likesModal-{{ post.id }}" tabindex="-1" aria-labelledby="likesModalLabel-{{ post.id }}" aria-hidden="true">
+<div class="modal fade post-modal" id="likesModal-{{ post.id }}" tabindex="-1" aria-labelledby="likesModalLabel-{{ post.id }}" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark text-light border border-secondary">
-            <div class="modal-header border-secondary">
+        <div class="modal-content">
+            <div class="modal-header">
                 <h5 class="modal-title" id="likesModalLabel-{{ post.id }}">المعجبون</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
@@ -168,10 +165,10 @@
                     <ul class="list-group">
                         {% for like in post.likes.all %}
                             {% if like.user.username %}
-                                <li class="list-group-item bg-dark text-light border-secondary d-flex align-items-center">
+                                <li class="list-group-item d-flex align-items-center">
                                     <a href="{% url 'profile' like.user.username %}">
-                                        <img src="{{ like.user.profile_picture.url }}" class="rounded-circle me-2 border border-secondary"
-                                             style="width: 40px; height: 40px; object-fit: cover;"
+                                        <img src="{{ like.user.profile_picture.url }}" class="rounded-circle me-2"
+                                             style="width: 40px; height: 40px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);"
                                              onerror="this.onerror=null; this.src='/media/profile_pics/default_profile.png';"
                                              alt="{{ like.user.username }}">
                                     </a>
@@ -191,24 +188,75 @@
 </div>
 
 <style>
-    .card.bg-dark {
-        background-color: #1a1a1a !important;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    /* --- Glassmorphism Styles for Posts and Modals --- */
+    .post-card,
+    .post-modal .modal-content,
+    .post-card .dropdown-menu {
+        background: rgba(28, 28, 30, 0.7) !important;
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        border-radius: 12px;
+        color: #e0e0e0 !important;
     }
 
-    .modal-content.bg-dark {
-        background-color: #1e1e1e !important;
+    .post-card .dropdown-item {
+        color: #e0e0e0;
+    }
+     .post-card .dropdown-item:hover, .post-card .dropdown-item:focus {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+     .post-card .dropdown-item.text-danger:hover {
+        background-color: rgba(220, 53, 69, 0.2);
+        color: #ff8a8a;
+     }
+
+    /* Style for modal backdrop */
+    .modal-backdrop.show {
+        opacity: 0.6;
     }
 
-    .list-group-item.bg-dark {
-        background-color: #252525 !important;
+    /* Remove default bootstrap coloring */
+    .card.post-card {
+        background-color: transparent !important;
     }
 
-    .form-control.bg-secondary {
-        background-color: #2d2d2d !important;
+    /* Glassy Buttons */
+    .btn-glass {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #e0e0e0;
+    }
+    .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.15);
+        color: #fff;
+    }
+
+    /* Form inputs in modals */
+    .post-modal .form-control {
+        background-color: rgba(0, 0, 0, 0.3) !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
         color: #ffffff !important;
     }
+    .post-modal .form-control::placeholder { color: #a0a0a0; }
+    .post-modal .form-control:focus { box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25); }
 
+
+    /* List items in likes modal */
+    .post-modal .list-group-item {
+        background-color: transparent !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        padding: 0.75rem 1rem;
+    }
+
+    /* Ensure borders inside the card/modal are consistent */
+    .post-card hr, .post-modal .modal-header, .post-modal .modal-footer {
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    
     .post-media-container {
         margin-bottom: 1rem;
         border-radius: 0.5rem;
@@ -217,7 +265,6 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        cursor: pointer;
     }
 
     .post-image {
@@ -228,163 +275,25 @@
         object-fit: contain;
         transition: transform 0.3s ease;
     }
+    .post-image:hover { transform: scale(1.02); }
+    .clickable-image { cursor: zoom-in; }
 
-    .post-image:hover {
-        transform: scale(1.02);
-    }
+    .video-container { width: 100%; background-color: #000; }
+    .video-container video { width: 100%; height: auto; max-height: 500px; }
 
-    .clickable-image {
-        cursor: zoom-in;
-    }
-
-    .video-container {
-        width: 100%;
-        background-color: #000;
-    }
-
-    .video-container video {
-        width: 100%;
-        height: auto;
-        max-height: 500px;
-    }
-
-    #imageModal .modal-content {
-        background-color: rgba(0, 0, 0, 0.9);
-    }
-
-    #imageModal .btn-close {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        z-index: 10;
-        filter: invert(1);
-    }
-
-    .btn-outline-primary {
-        color: #0d6efd;
-        border-color: #0d6efd;
-    }
-
-    .btn-outline-primary:hover {
-        background-color: #0d6efd;
-        color: #fff;
-    }
-
-    .toast {
-        min-width: 250px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        animation: fadeIn 0.3s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .bg-success {
-        background-color: #28a745 !important;
-    }
-
-    .bg-info {
-        background-color: #17a2b8 !important;
-    }
-
-    .bg-error {
-        background-color: #dc3545 !important;
-    }
-
-    a.text-light:hover {
-        color: #ffffff !important;
-        text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
-    }
+    #imageModal-{{ post.id }} .modal-content { background-color: rgba(0, 0, 0, 0.9); }
+    #imageModal-{{ post.id }} .btn-close { position: absolute; top: 15px; right: 15px; z-index: 10; filter: invert(1); }
     
-    .text-break {
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-    }
+    .text-white-80 { color: rgba(255, 255, 255, 0.8) !important; }
+    .post-actions a:hover i { transform: scale(1.15); opacity: 1; }
+    .post-actions i { transition: all 0.2s ease-in-out; opacity: 0.9; }
 
-
-    @media (max-width: 768px) {
-        .post-image {
-            max-height: 350px;
-        }
-
-        .video-container {
-            max-height: 300px;
-        }
-
-        .video-container video {
-            max-height: 300px;
-        }
-
-        .post-media-container {
-            margin-left: -15px;
-            margin-right: -15px;
-            border-radius: 0;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .post-image {
-            max-height: 280px;
-        }
-
-        .video-container {
-            max-height: 250px;
-        }
-
-        .video-container video {
-            max-height: 250px;
-        }
-    }
-</style>
-<style>
-    .fa-lg {
-        font-size: 1.25rem;
-    }
-
-    .text-white-80 {
-        color: rgba(255, 255, 255, 0.8) !important;
-    }
-
-    .post-actions a:hover i {
-        transform: scale(1.15);
-        opacity: 1;
-    }
-
-    .post-actions i {
-        transition: all 0.2s ease-in-out;
-        opacity: 0.9;
-    }
-
-    .dropdown-item i {
-        width: 20px;
-        text-align: center;
-        margin-right: 8px;
-    }
-
-    .bg-dark .text-muted {
-        color: #aaa !important;
-    }
-
-    .dropdown-item:hover i {
-        opacity: 1;
-    }
     .online-indicator-dot {
-        position: absolute;
-        bottom: 2px;
-        right: 2px;
-        width: 12px;
-        height: 12px;
-        background-color: var(--success-color, #22c55e);
-        border-radius: 50%;
-        border: 2px solid #1a1a1a; /* لون خلفية الكارت */
-        box-shadow: 0 0 5px var(--success-color, #22c55e);
-        z-index: 10;
+        position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px;
+        background-color: #22c55e; border-radius: 50%;
+        border: 2px solid #2e2e30; /* Solid approximation of the glassy bg */
+        box-shadow: 0 0 5px #22c55e; z-index: 10;
     }
-</style>
 </style>
 
 <script>
