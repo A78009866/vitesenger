@@ -52,13 +52,29 @@ class ProfileEditForm(forms.ModelForm):
         self.fields['bio'].label = 'نبذة تعريفية'
 
 
+# forms.py
+
+from django import forms
+from .models import Post
+
+# ... النماذج الأخرى
+
 class PostForm(forms.ModelForm):
+    # الحقول النصية والصور والفيديو
+    content = forms.CharField(label='بماذا تفكر؟', widget=forms.Textarea(attrs={'rows': 5}))
+    image = forms.ImageField(label='صورة', required=False)
+    video = forms.FileField(label='فيديو', required=False)
+    
+    # حقل المقطع الصوتي
+    voice_note = forms.FileField(label='مقطع صوتي', required=False)
+
     class Meta:
         model = Post
-        fields = ('content', 'image', 'video')
-        widgets = {
-            'content': forms.Textarea(attrs={'rows': 3, 'placeholder': "What's on your mind?"}),
-        }
+        fields = ['content', 'image', 'video', 'voice_note']
+
+    def clean(self):
+        # ... أضف أي منطق تحقق إضافي هنا إذا لزم الأمر
+        return super().clean()
 
 class PostEditForm(forms.ModelForm):
     class Meta:

@@ -200,6 +200,10 @@ def update_user_activity(request):
     return JsonResponse({'status': 'success'})
 
 
+# views.py
+
+# ... (الكود الحالي)
+
 @login_required
 def create_post(request):
     if request.method == 'POST':
@@ -207,12 +211,27 @@ def create_post(request):
         if form.is_valid():
             post = form.save(commit=False)
             post.user = request.user
+            
+            # الكود الحالي يقوم بالرفع اليدوي. سأتبع نفس النمط للاتساق.
+            
             if 'image' in request.FILES:
                 upload_result = cloudinary.uploader.upload(request.FILES['image'])
                 post.image = upload_result.get('secure_url', upload_result.get('url'))
+            
             if 'video' in request.FILES:
                 upload_result = cloudinary.uploader.upload(request.FILES['video'], resource_type="video")
                 post.video = upload_result.get('secure_url', upload_result.get('url'))
+
+            # --- بداية: الكود المضاف لمعالجة المقطع الصوتي ---
+            if 'voice_note' in request.FILES:
+                upload_result = cloudinary.uploader.upload(
+                    request.FILES['voice_note'], 
+                    resource_type="video", # Cloudinary يستخدم "video" للمقاطع الصوتية
+                    folder="voice_notes"   # تنظيم الملفات في مجلد خاص
+                )
+                post.voice_note = upload_result.get('secure_url', upload_result.get('url'))
+            # --- نهاية: الكود المضاف ---
+
             post.save()
             request.user.points += 10
             request.user.save()
@@ -220,7 +239,6 @@ def create_post(request):
     else:
         form = PostForm()
     return render(request, 'social/create_post.html', {'form': form})
-
 
 @login_required
 def like_post(request, post_id):

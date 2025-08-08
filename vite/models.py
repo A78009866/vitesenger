@@ -194,6 +194,7 @@ class Post(models.Model):
     content = models.TextField()
     image = CloudinaryField('image', blank=True, null=True)
     video = CloudinaryField('video', resource_type="video", blank=True, null=True)
+    voice_note = CloudinaryField('video', resource_type="video", blank=True, null=True, folder="voice_notes")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
