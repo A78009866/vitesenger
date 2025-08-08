@@ -52,30 +52,32 @@ class ProfileEditForm(forms.ModelForm):
         self.fields['bio'].label = 'نبذة تعريفية'
 
 
-# forms.py
-
-from django import forms
-from .models import Post
-
-# ... النماذج الأخرى
-
 class PostForm(forms.ModelForm):
-    # الحقول النصية والصور والفيديو
-    content = forms.CharField(label='بماذا تفكر؟', widget=forms.Textarea(attrs={'rows': 5}))
-    image = forms.ImageField(label='صورة', required=False)
-    video = forms.FileField(label='فيديو', required=False)
+    # إضافة حقل جديد للرسالة الصوتية
+    voice_message = forms.FileField(required=False, label='رسالة صوتية')
     
-    # حقل المقطع الصوتي
-    voice_note = forms.FileField(label='مقطع صوتي', required=False)
-
     class Meta:
         model = Post
-        fields = ['content', 'image', 'video', 'voice_note']
-
+        fields = ['content', 'image', 'video', 'voice_message']
+    
     def clean(self):
-        # ... أضف أي منطق تحقق إضافي هنا إذا لزم الأمر
-        return super().clean()
-
+        cleaned_data = super().clean()
+        content = cleaned_data.get('content')
+        image = cleaned_data.get('image')
+        video = cleaned_data.get('video')
+        voice_message = cleaned_data.get('voice_message')
+        
+        # التأكد من أن المنشور يحتوي على محتوى أو صورة أو فيديو أو رسالة صوتية
+        if not content and not image and not video and not voice_message:
+            raise forms.ValidationError("يجب أن يحتوي المنشور على محتوى كتابي، صورة، فيديو، أو رسالة صوتية.")
+        
+        # التأكد من عدم وجود أكثر من نوع وسائط (صورة/فيديو/صوت)
+        media_count = sum(1 for item in [image, video, voice_message] if item)
+        if media_count > 1:
+            raise forms.ValidationError("لا يمكن نشر أكثر من نوع وسائط (صورة، فيديو، أو رسالة صوتية) في نفس المنشور.")
+        
+        return cleaned_data
+    
 class PostEditForm(forms.ModelForm):
     class Meta:
         model = Post

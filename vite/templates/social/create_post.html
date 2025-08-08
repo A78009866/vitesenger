@@ -2,10 +2,7 @@
 {% load static %}
 {% block content %}
 <style>
-    /*
-        Styling for the create post page, with a dark theme.
-        This ensures a consistent and aesthetically pleasing user experience.
-    */
+    /* ... Your existing styles ... */
     .dark-create-post {
         background-color: #121212;
         color: #e0e0e0;
@@ -25,21 +22,12 @@
     .form-control-dark::placeholder {
         color: #9e9e9e !important;
     }
-    .btn-glass {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #fff;
+    .btn-outline-primary {
+        color: #4a6bff;
+        border-color: #4a6bff;
     }
-    .btn-glass:hover {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: rgba(255, 255, 255, 0.2);
-    }
-    .btn-outline-danger {
-        color: #dc3545;
-        border-color: #dc3545;
-    }
-    .btn-outline-danger:hover {
-        background-color: #dc3545;
+    .btn-outline-primary:hover {
+        background-color: #4a6bff;
         color: #fff;
     }
     .btn-primary {
@@ -64,36 +52,11 @@
         margin-bottom: 10px;
         font-size: 0.9rem;
     }
-    .preview-image, .preview-video {
-        max-width: 100%;
-        height: auto;
-        margin-bottom: 10px;
-        border-radius: 4px;
-    }
     .card-title {
         color: #ffffff;
         border-bottom: 1px solid #333;
         padding-bottom: 10px;
         margin-bottom: 20px;
-    }
-    .icon-white {
-        color: #fff !important;
-    }
-
-    /* Animation for the recording status dot */
-    .blink {
-        animation: blink-animation 1s steps(5, start) infinite;
-        -webkit-animation: blink-animation 1s steps(5, start) infinite;
-    }
-    @keyframes blink-animation {
-        to {
-            visibility: hidden;
-        }
-    }
-    @-webkit-keyframes blink-animation {
-        to {
-            visibility: hidden;
-        }
     }
 </style>
 
@@ -105,59 +68,38 @@
                     <div class="card-body">
                         <form method="POST" action="{% url 'create_post' %}" enctype="multipart/form-data" id="createPostForm">
                             {% csrf_token %}
-                            <h5 class="card-title"><i class="fas fa-plus-circle me-2 icon-white"></i>إنشاء منشور جديد</h5>
-
+                            <h5 class="card-title"><i class="fas fa-plus-circle me-2"></i>إنشاء منشور جديد</h5>
+                            
                             <div class="form-group mb-4">
-                                <textarea class="form-control form-control-dark" name="content" rows="5" placeholder="بماذا تفكر؟"></textarea>
+                                <textarea class="form-control form-control-dark" name="content" rows="5" 
+                                          placeholder="بماذا تفكر؟"></textarea>
                             </div>
-
+                            
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div>
-                                    <!-- Upload voice note button -->
-                                    <label for="id_voice_note" class="btn btn-sm btn-glass me-2" title="رفع مقطع صوتي">
-                                        <i class="fas fa-file-audio icon-white"></i>
-                                    </label>
-                                    <input type="file" name="voice_note" accept="audio/*" id="id_voice_note" style="display: none;">
-
-                                    <!-- Record audio buttons -->
-                                    <button type="button" id="record-btn" class="btn btn-sm btn-glass me-2" title="تسجيل صوت">
-                                        <i class="fas fa-microphone icon-white"></i>
-                                    </button>
-                                    <button type="button" id="stop-record-btn" class="btn btn-sm btn-danger d-none" title="إيقاف التسجيل">
-                                        <i class="fas fa-stop-circle icon-white"></i>
-                                    </button>
-                                    <span id="recording-status" class="text-muted d-none">يتم التسجيل... <i class="fas fa-dot-circle text-danger blink"></i></span>
-
-                                    <!-- Upload image button -->
-                                    <label for="id_image" class="btn btn-sm btn-glass me-2" title="رفع صورة">
-                                        <i class="fas fa-image icon-white"></i>
-                                    </label>
-                                    <input type="file" name="image" accept="image/*" id="id_image" style="display: none;">
-
-                                    <!-- Upload video button -->
-                                    <label for="id_video" class="btn btn-sm btn-glass" title="رفع فيديو">
-                                        <i class="fas fa-video icon-white"></i>
-                                    </label>
-                                    <input type="file" name="video" accept="video/*" id="id_video" style="display: none;">
+                                <div class="d-flex">
+                                    <div class="me-3">
+                                        <label for="image-upload" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-image me-2"></i> إضافة صورة
+                                        </label>
+                                        <input id="image-upload" type="file" name="image" accept="image/*" 
+                                               style="display: none;" onchange="previewFile(this, 'image')">
+                                    </div>
+                                    <div>
+                                        <label for="video-upload" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-video me-2"></i> إضافة فيديو
+                                        </label>
+                                        <input id="video-upload" type="file" name="video" accept="video/*" 
+                                               style="display: none;" onchange="previewFile(this, 'video')">
+                                    </div>
                                 </div>
-                                <button type="submit" class="btn btn-primary" id="post-submit-btn">نشر</button>
+                                
+                                <button type="submit" class="btn btn-primary px-4" id="publishButton">
+                                    <i class="fas fa-paper-plane me-2"></i> نشر
+                                </button>
                             </div>
 
-                            <!-- Media preview section -->
-                            <div id="media-preview" class="d-none">
-                                <p class="preview-title" id="preview-text">لا يوجد وسائط مختارة</p>
-                                <img id="image-preview" src="#" alt="معاينة الصورة" class="preview-image d-none">
-                                <video id="video-preview" controls class="preview-video d-none"></video>
-                                <div id="audio-preview-container" class="d-none">
-                                    <audio controls class="w-100"></audio>
-                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="clear-uploaded-audio-btn"><i class="fas fa-trash me-1 icon-white"></i> إزالة المقطع الصوتي</button>
-                                </div>
-                            </div>
-
-                            <!-- Recorded audio preview section -->
-                            <div id="recorded-audio-preview" class="mt-3 d-none">
-                                <audio controls class="w-100"></audio>
-                                <button type="button" class="btn btn-sm btn-danger mt-2" id="clear-recording-btn"><i class="fas fa-trash me-1 icon-white"></i> حذف المقطع الصوتي</button>
+                            <div id="media-preview" class="d-flex flex-column align-items-center justify-content-center">
+                                <span class="preview-title">معاينة المرفقات ستظهر هنا</span>
                             </div>
                         </form>
                     </div>
@@ -168,222 +110,69 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Get all the relevant elements from the DOM
-    const recordBtn = document.getElementById('record-btn');
-    const stopRecordBtn = document.getElementById('stop-record-btn');
-    const recordingStatus = document.getElementById('recording-status');
-    const clearRecordingBtn = document.getElementById('clear-recording-btn');
-    const recordedAudioPreview = document.getElementById('recorded-audio-preview');
-    const recordedAudioPlayer = recordedAudioPreview.querySelector('audio');
-    const createPostForm = document.getElementById('createPostForm');
-    const voiceNoteInput = document.getElementById('id_voice_note');
-    const imageInput = document.getElementById('id_image');
-    const videoInput = document.getElementById('id_video');
-    const mediaPreviewDiv = document.getElementById('media-preview');
-    const previewText = document.getElementById('preview-text');
-    const imagePreview = document.getElementById('image-preview');
-    const videoPreview = document.getElementById('video-preview');
-    const audioPreviewContainer = document.getElementById('audio-preview-container');
-    const uploadedAudioPlayer = audioPreviewContainer.querySelector('audio');
-    const clearUploadedAudioBtn = document.getElementById('clear-uploaded-audio-btn');
+function previewFile(input, type) {
+    const previewContainer = document.getElementById('media-preview');
+    previewContainer.innerHTML = ''; // مسح المحتوى السابق
+    
+    const previewTitle = document.createElement('span');
+    previewTitle.className = 'preview-title mb-2';
+    previewTitle.textContent = 'معاينة المرفق:';
+    previewContainer.appendChild(previewTitle);
 
-    let mediaRecorder;
-    let audioChunks = [];
-    let recordedBlob;
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
 
-    // A function to disable other file inputs when one is selected
-    function disableOtherInputs(activeInput) {
-        imageInput.disabled = (activeInput !== imageInput && activeInput !== null);
-        videoInput.disabled = (activeInput !== videoInput && activeInput !== null);
-        voiceNoteInput.disabled = (activeInput !== voiceNoteInput && activeInput !== null);
-        recordBtn.disabled = (activeInput !== null);
+        reader.onload = function(e) {
+            if (type === 'image') {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'img-fluid rounded shadow';
+                img.style.maxHeight = '300px';
+                img.style.maxWidth = '100%';
+                previewContainer.appendChild(img);
+                addRemoveButton(previewContainer, input);
+            } else if (type === 'video') {
+                const video = document.createElement('video');
+                video.src = e.target.result;
+                video.controls = true;
+                video.className = 'img-fluid rounded shadow';
+                video.style.maxHeight = '300px';
+                video.style.maxWidth = '100%';
+                previewContainer.appendChild(video);
+                addRemoveButton(previewContainer, input);
+            }
+        }
+        reader.readAsDataURL(file);
     }
+}
 
-    // A function to toggle the visibility of the media preview section
-    function toggleMediaPreview(hasMedia) {
-        if (hasMedia) {
-            mediaPreviewDiv.classList.remove('d-none');
-            previewText.classList.add('d-none');
-        } else {
-            mediaPreviewDiv.classList.add('d-none');
-            previewText.classList.remove('d-none');
-            imagePreview.classList.add('d-none');
-            imagePreview.src = '#';
-            videoPreview.classList.add('d-none');
-            videoPreview.src = '#';
-            audioPreviewContainer.classList.add('d-none');
-            uploadedAudioPlayer.src = '#';
-        }
-    }
+function addRemoveButton(container, input) {
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn btn-sm btn-outline-danger mt-3';
+    removeBtn.innerHTML = '<i class="fas fa-times me-1"></i> إزالة';
+    removeBtn.onclick = function(e) {
+        e.preventDefault();
+        input.value = '';
+        container.innerHTML = '<span class="preview-title">معاينة المرفقات ستظهر هنا</span>';
+    };
+    container.appendChild(removeBtn);
+}
 
-    // Event listener for image input change
-    imageInput.addEventListener('change', function() {
-        const file = this.files.length > 0 ? this.files[0] : null;
-        if (file) {
-            imagePreview.src = URL.createObjectURL(file);
-            imagePreview.classList.remove('d-none');
-            videoPreview.classList.add('d-none');
-            audioPreviewContainer.classList.add('d-none');
-            recordedAudioPreview.classList.add('d-none');
-            toggleMediaPreview(true);
-            disableOtherInputs(this);
-        } else {
-            imagePreview.classList.add('d-none');
-            imagePreview.src = '#';
-            // Check if other media is selected before hiding the preview
-            if (!videoInput.files.length && !voiceNoteInput.files.length && !recordedBlob) {
-                toggleMediaPreview(false);
-                disableOtherInputs(null);
-            }
-        }
-    });
+document.getElementById('createPostForm').addEventListener('submit', function() {
+    var publishButton = document.getElementById('publishButton');
+    // تحقق مما إذا كان المستخدم يحاول النشر بدون محتوى أو مرفق (اختياري، يمكنك إضافة منطق التحقق هنا)
+    // var content = document.querySelector('textarea[name="content"]').value.trim();
+    // var imageFile = document.getElementById('image-upload').files.length > 0;
+    // var videoFile = document.getElementById('video-upload').files.length > 0;
+    // if (!content && !imageFile && !videoFile) {
+    //     // alert('يرجى كتابة محتوى أو إضافة صورة/فيديو.'); // أو عرض رسالة بطريقة أفضل
+    //     // event.preventDefault(); // منع الإرسال
+    //     return; 
+    // }
 
-    // Event listener for video input change
-    videoInput.addEventListener('change', function() {
-        const file = this.files.length > 0 ? this.files[0] : null;
-        if (file) {
-            videoPreview.src = URL.createObjectURL(file);
-            videoPreview.classList.remove('d-none');
-            imagePreview.classList.add('d-none');
-            audioPreviewContainer.classList.add('d-none');
-            recordedAudioPreview.classList.add('d-none');
-            toggleMediaPreview(true);
-            disableOtherInputs(this);
-        } else {
-            videoPreview.classList.add('d-none');
-            videoPreview.src = '#';
-            if (!imageInput.files.length && !voiceNoteInput.files.length && !recordedBlob) {
-                toggleMediaPreview(false);
-                disableOtherInputs(null);
-            }
-        }
-    });
-
-    // Event listener for uploaded voice note input change
-    voiceNoteInput.addEventListener('change', function() {
-        const file = this.files.length > 0 ? this.files[0] : null;
-        if (file) {
-            uploadedAudioPlayer.src = URL.createObjectURL(file);
-            audioPreviewContainer.classList.remove('d-none');
-            imagePreview.classList.add('d-none');
-            videoPreview.classList.add('d-none');
-            recordedAudioPreview.classList.add('d-none');
-            toggleMediaPreview(true);
-            disableOtherInputs(this);
-        } else {
-            audioPreviewContainer.classList.add('d-none');
-            uploadedAudioPlayer.src = '#';
-            if (!imageInput.files.length && !videoInput.files.length && !recordedBlob) {
-                toggleMediaPreview(false);
-                disableOtherInputs(null);
-            }
-        }
-    });
-
-    // Event listener for the "Remove" button for the uploaded audio
-    clearUploadedAudioBtn.addEventListener('click', function() {
-        voiceNoteInput.value = '';
-        audioPreviewContainer.classList.add('d-none');
-        uploadedAudioPlayer.src = '#';
-        if (!imageInput.files.length && !videoInput.files.length && !recordedBlob) {
-            toggleMediaPreview(false);
-        }
-        disableOtherInputs(null);
-    });
-
-    // Event listener for the "Record" button
-    recordBtn.addEventListener('click', async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            recordedBlob = null;
-            
-            mediaRecorder.ondataavailable = event => {
-                audioChunks.push(event.data);
-            };
-
-            mediaRecorder.onstop = () => {
-                recordedBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
-                const audioUrl = URL.createObjectURL(recordedBlob);
-                recordedAudioPlayer.src = audioUrl;
-                recordedAudioPreview.classList.remove('d-none');
-                
-                stream.getTracks().forEach(track => track.stop());
-                disableOtherInputs(null);
-            };
-
-            mediaRecorder.start();
-            recordBtn.classList.add('d-none');
-            stopRecordBtn.classList.remove('d-none');
-            recordingStatus.classList.remove('d-none');
-            recordedAudioPreview.classList.add('d-none');
-
-            // Hide other media previews when recording starts
-            imagePreview.classList.add('d-none');
-            videoPreview.classList.add('d-none');
-            audioPreviewContainer.classList.add('d-none');
-            toggleMediaPreview(true);
-            previewText.textContent = 'يتم التسجيل...';
-            disableOtherInputs(recordBtn);
-
-        } catch (err) {
-            console.error('Error accessing microphone:', err);
-            alert('تعذر الوصول إلى الميكروفون. يرجى التأكد من منحه الإذن والمحاولة مرة أخرى.');
-        }
-    });
-
-    // Event listener for the "Stop Recording" button
-    stopRecordBtn.addEventListener('click', () => {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            mediaRecorder.stop();
-            recordBtn.classList.remove('d-none');
-            stopRecordBtn.classList.add('d-none');
-            recordingStatus.classList.add('d-none');
-            previewText.classList.add('d-none');
-        }
-    });
-
-    // Event listener for the "Delete Recording" button
-    clearRecordingBtn.addEventListener('click', () => {
-        recordedBlob = null;
-        recordedAudioPreview.classList.add('d-none');
-        recordedAudioPlayer.src = '';
-        // Update media preview state
-        if (!imageInput.files.length && !videoInput.files.length && !voiceNoteInput.files.length) {
-            toggleMediaPreview(false);
-        }
-        disableOtherInputs(null);
-    });
-
-    // Event listener for form submission
-    createPostForm.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent default form submission
-
-        const formData = new FormData(this);
-        if (recordedBlob) {
-            // Append the recorded audio as a file to the form data
-            formData.append('voice_note', recordedBlob, 'recorded_audio.mp3');
-        }
-
-        fetch(this.action, {
-            method: this.method,
-            body: formData
-        })
-        .then(response => {
-            if (response.ok) {
-                window.location.href = '{% url "home" %}';
-            } else {
-                alert('حدث خطأ أثناء نشر المنشور.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('حدث خطأ في الشبكة.');
-        });
-    });
+    publishButton.disabled = true;
+    publishButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري النشر...';
 });
 </script>
-
 {% endblock %}
