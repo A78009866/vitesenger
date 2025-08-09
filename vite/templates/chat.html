@@ -12,21 +12,24 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #000000;
-            --secondary-color: #f0f0f0;
-            --text-color: #333;
-            --white: #fff;
-            --message-received: #ffffff;
-            --message-sent: #beafafde;
-            --time-color: rgba(0,0,0,0.4);
-            --online-color: #25D366; /* لون حالة النشاط */
+            /* Instagram Dark Theme Palette */
+            --primary-color: #000000; /* Main background */
+            --secondary-color: #121212; /* Slightly lighter surfaces */
+            --text-color: #ffffff; /* Primary text color */
+            --text-secondary: #a8a8a8; /* Secondary text (timestamps, etc.) */
+            --white: #ffffff;
+            --message-received: #262626; /* Received message bubble */
+            --message-sent: #3797f0; /* Sent message bubble (Instagram Blue) */
+            --accent-color: #3797f0; /* Accent color for links, buttons */
+            --online-color: #25D366; /* Online status color */
+            --header-background: rgba(28, 28, 28, 0.75); /* Glassy header background */
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #e5ddd5;
+            background: var(--primary-color);
             color: var(--text-color);
             height: 100vh;
             overflow: hidden;
@@ -41,16 +44,19 @@
             margin: 0 auto;
         }
         
+        /* --- Glassy Header --- */
         .chat-header {
             display: flex;
             align-items: center;
             padding: 8px 12px;
-            background: var(--primary-color);
+            background: var(--header-background);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             color: var(--white);
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             height: 56px;
         }
         
@@ -77,7 +83,7 @@
             height: 36px;
             border-radius: 50%;
             object-fit: cover;
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
         }
         
         .user-info-header {
@@ -90,7 +96,7 @@
         
         .user-name {
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 600; /* Bolder name */
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -98,7 +104,7 @@
 
         .user-status {
             font-size: 12px;
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--text-secondary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -113,9 +119,8 @@
             flex: 1;
             overflow-y: auto;
             padding: 10px;
-            background-color: #e5ddd5;
-            background-image: url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png');
-            background-attachment: fixed;
+            background-color: var(--primary-color);
+            background-image: none; /* Removed WhatsApp background */
             display: flex;
             flex-direction: column;
             -webkit-overflow-scrolling: touch;
@@ -123,9 +128,9 @@
         
         .message {
             max-width: 80%;
-            padding: 8px 12px;
+            padding: 10px 14px;
             margin-bottom: 8px;
-            border-radius: 8px;
+            border-radius: 18px; /* More rounded bubbles */
             font-size: 15px;
             line-height: 1.4;
             word-wrap: break-word;
@@ -135,7 +140,7 @@
         
         .message img, .message video {
             max-width: 100%;
-            border-radius: 8px;
+            border-radius: 16px; /* Match message radius */
             margin-top: 5px;
             display: block;
         }
@@ -146,41 +151,44 @@
         }
         
         .sent {
-            align-self: flex-end;
-            background: var(--message-sent);
-            color: var(--text-color);
-            border-top-right-radius: 0;
-            margin-left: auto;
-        }
+    align-self: flex-end;
+    background: rgba(55, 151, 240, 0.2); /* خلفية زجاجية شفافة */
+    backdrop-filter: blur(10px); /* تأثير الزجاج */
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--white); /* نص أبيض */
+    margin-left: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1); /* إطار خفيف */
+}
         
         .received {
-            align-self: flex-start;
-            background: var(--message-received);
-            color: var(--text-color);
-            border-top-left-radius: 0;
-            margin-right: auto;
-            box-shadow: 0 1px 0.5px rgba(0,0,0,0.1);
-        }
+    align-self: flex-start;
+    background: rgba(38, 38, 38, 0.4); /* خلفية رمادية شفافة */
+    backdrop-filter: blur(10px); /* تأثير الزجاج */
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--text-color); /* لون النص */
+    margin-right: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1); /* إطار خفيف */
+}
         
         .message-time {
             font-size: 11px;
-            color: var(--time-color);
+            color: var(--text-secondary);
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             margin-top: 4px;
             direction: ltr;
-            float: left; /* Keep time at the end */
+            float: left;
         }
         
-        .received .message-time { color: rgba(0,0,0,0.5); }
+        .sent .message-time { color: rgba(255, 255, 255, 0.8); }
         
         .chat-footer {
             padding: 8px 12px;
-            background: var(--secondary-color);
-            border-top: 1px solid #ddd;
+            background: var(--primary-color); /* Black footer */
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
-            align-items: flex-end; /* Align items to the bottom */
+            align-items: flex-end;
             position: sticky;
             bottom: 0;
             gap: 8px;
@@ -190,10 +198,11 @@
             flex: 1;
             display: flex;
             align-items: center;
-            background: var(--white);
+            background: var(--message-received); /* Dark input background */
             border-radius: 20px;
             padding: 0 12px;
             min-height: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .message-input {
@@ -203,29 +212,33 @@
             font-size: 15px;
             padding: 9px 6px;
             background: transparent;
+            color: var(--text-color); /* White input text */
             max-height: 100px;
             resize: none;
             width: 100%;
         }
+
+        .message-input::placeholder { color: var(--text-secondary); }
         
         .action-btn {
             width: 40px;
             height: 40px;
             border: none;
             background: transparent;
-            color: var(--primary-color);
+            color: var(--white); /* White icons */
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px; /* Slightly larger icons */
             cursor: pointer;
             flex-shrink: 0;
         }
         
         .send-btn {
-            background: var(--primary-color);
-            color: var(--white);
+            background: transparent;
+            color: var(--accent-color); /* Blue send icon */
+            font-size: 22px;
         }
         
         .sending-indicator, .send-success {
@@ -233,7 +246,7 @@
             position: fixed;
             bottom: 70px;
             right: 20px;
-            background: rgba(0,0,0,0.7);
+            background: rgba(38,38,38,0.9);
             color: white;
             padding: 8px 12px;
             border-radius: 20px;
@@ -242,111 +255,52 @@
             animation: fadeIn 0.3s ease;
         }
         
-        .sending-indicator i {
-            margin-left: 5px;
-            animation: spin 1s linear infinite;
-        }
+        .sending-indicator i { margin-left: 5px; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .fa-check { color: rgba(0,0,0,0.3); font-size: 10px; }
+        .fa-check { color: rgba(255,255,255,0.5); font-size: 10px; }
         .fa-check-double { color: #4fc3f7; font-size: 10px; }
-        .verified-badge { color: #1DA1F2; font-size: 0.8em; margin-right: 3px; vertical-align: middle; }
+        .verified-badge { color: #3797f0; font-size: 0.8em; margin-right: 3px; vertical-align: middle; }
         
         #file-preview-container {
-            display: none;
-            position: absolute;
-            bottom: 60px; /* Position above the input bar */
-            right: 10px;
-            left: 10px;
-            background: #fff;
-            padding: 8px;
-            border-radius: 8px;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-            align-items: center;
+            display: none; position: absolute; bottom: 60px; right: 10px; left: 10px;
+            background: #1a1a1a; padding: 8px; border-radius: 8px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.2); align-items: center;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-
-        #file-preview-image {
-            max-width: 50px;
-            max-height: 50px;
-            border-radius: 5px;
-            object-fit: cover;
-        }
-
+        #file-preview-image { max-width: 50px; max-height: 50px; border-radius: 5px; object-fit: cover; }
         #remove-file-btn {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            border-radius: 50%;
-            border: 1px solid white;
-            width: 20px;
-            height: 20px;
-            line-height: 18px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 14px;
-            z-index: 1;
+            position: absolute; top: -8px; right: -8px; background: rgba(0,0,0,0.7); color: white;
+            border-radius: 50%; border: 1px solid white; width: 20px; height: 20px;
+            line-height: 18px; text-align: center; cursor: pointer; font-size: 14px; z-index: 1;
         }
 
         .system-message {
-            align-self: center;
-            background: #e1f5fe;
-            color: #01579b;
-            padding: 5px 10px;
-            border-radius: 10px;
-            font-size: 12px;
-            margin-bottom: 8px;
-            text-align: center;
+            align-self: center; background: #262626; color: var(--text-secondary);
+            padding: 5px 10px; border-radius: 10px; font-size: 12px;
+            margin-bottom: 8px; text-align: center;
         }
-        /* --- إضافة CSS جديد --- */
+        
         .voice-message-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            width: 250px; /* or some fixed width */
+            display: flex; align-items: center; gap: 10px; width: 250px;
         }
         .play-pause-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            cursor: pointer;
-            font-size: 16px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: var(--accent-color); color: white; border: none; border-radius: 50%;
+            width: 35px; height: 35px; cursor: pointer; font-size: 16px;
+            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
         }
-        .waveform {
-            flex-grow: 1;
-            height: 40px;
-        }
-        .duration {
-            font-size: 12px;
-            color: #666;
-            flex-shrink: 0;
-        }
+        .waveform { flex-grow: 1; height: 40px; }
+        .duration { font-size: 12px; color: var(--text-secondary); flex-shrink: 0; }
+        
+        .sent .duration { color: rgba(255,255,255,0.8); }
+
         #record-btn.recording {
-            color: red;
+            color: #ff3b30; /* Red for recording */
             animation: pulse 1.5s infinite;
         }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         #record-timer {
-            margin: 0 10px;
-            font-size: 15px;
-            color: #333;
-            display: none; /* يظهر عند التسجيل */
+            margin: 0 10px; font-size: 15px; color: var(--text-color); display: none;
         }
     </style>
     <style>
@@ -357,19 +311,20 @@
         border-right: 3px solid var(--accent-color);
         padding: 6px 10px;
         margin-bottom: 8px;
-        background-color: rgba(0,0,0,0.05);
-        border-radius: 4px;
+        background-color: rgba(255, 255, 255, 0.08); /* Brighter highlight for reply */
+        border-radius: 8px; /* Rounded corners */
+        cursor: pointer;
     }
 
     .reply-sender {
-        font-size: 12px;
+        font-size: 13px;
         font-weight: bold;
         color: var(--accent-color);
         margin-bottom: 4px;
     }
 
     .reply-content {
-        font-size: 12px;
+        font-size: 13px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -377,27 +332,26 @@
     }
 
     .reply-media {
-        font-size: 12px;
-        color: var(--accent-color);
+        font-size: 13px;
+        color: var(--text-secondary);
         font-style: italic;
     }
 
     .reply-close {
-        position: absolute;
-        top: 4px;
-        right: 4px;
-        cursor: pointer;
-        color: var(--text-secondary);
-        font-size: 12px;
+        position: absolute; top: 4px; right: 4px; cursor: pointer;
+        color: var(--text-secondary); font-size: 12px;
     }
 
     #reply-container {
         display: none;
         position: relative;
-        background-color: rgba(0,0,0,0.05);
-        padding: 8px;
-        margin-bottom: 8px;
+        background-color: transparent; /* Make container transparent */
+        padding: 8px 8px 0 8px;
+        margin-bottom: -8px; /* Pull the input up */
         border-radius: 8px;
+    }
+    #reply-container .reply-indicator {
+        background-color: #2c2c2c;
     }
 </style>
 </head>
@@ -443,30 +397,31 @@
         </div>
 
         <div class="chat-footer">
-    <button id="attach-btn" class="action-btn">
-        <i class="fas fa-paperclip"></i>
-    </button>
-    <input type="file" id="file-input" accept="image/*,video/*" style="display:none;">
-<div id="reply-container">
-    <div class="reply-indicator">
-        <span class="reply-sender"></span>
-        <span class="reply-content"></span>
-        <span class="reply-media"></span>
-        <span class="reply-close">&times;</span>
-    </div>
-</div>
-    <div class="message-input-container">
-        <textarea id="message-input" class="message-input" placeholder="اكتب رسالة..." rows="1"></textarea>
-        <span id="record-timer">00:00</span>
+            <button id="attach-btn" class="action-btn">
+                <i class="fas fa-paperclip"></i>
+            </button>
+            <input type="file" id="file-input" accept="image/*,video/*" style="display:none;">
+            <div style="flex:1; display:flex; flex-direction:column;">
+                <div id="reply-container">
+                    <div class="reply-indicator">
+                        <span class="reply-sender"></span>
+                        <span class="reply-content"></span>
+                        <span class="reply-media"></span>
+                        <span class="reply-close">&times;</span>
+                    </div>
+                </div>
+                <div class="message-input-container">
+                    <textarea id="message-input" class="message-input" placeholder="اكتب رسالة..." rows="1"></textarea>
+                    <span id="record-timer">00:00</span>
+                </div>
+            </div>
+            <button id="record-btn" class="action-btn">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button id="send-btn" class="action-btn send-btn" style="display: none;">
+                <i class="fas fa-paper-plane"></i>
+            </button>
         </div>
-    
-    <button id="record-btn" class="action-btn">
-        <i class="fas fa-microphone"></i>
-    </button>
-    <button id="send-btn" class="action-btn send-btn" style="display: none;">
-        <i class="fas fa-paper-plane"></i>
-    </button>
-    </div>
     </div>
 
     <div id="sending-indicator" class="sending-indicator">
@@ -480,7 +435,7 @@
     <div id="image-modal" style="display:none; position:fixed; z-index:1001; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.9);">
       <span id="close-modal" style="position:absolute; top:15px; right:35px; color:#f1f1f1; font-size:40px; font-weight:bold; cursor:pointer;">&times;</span>
       <img id="modal-image" style="margin:auto; display:block; max-width:80%; max-height:80%; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
-      <a id="save-image-btn" style="display:block; width:80px; text-align:center; padding:10px; background-color:#25D366; color:white; border-radius:5px; text-decoration:none; position:absolute; bottom:20px; left:50%; transform:translateX(-50%); cursor:pointer;" download>حفظ</a>
+      <a id="save-image-btn" style="display:block; width:80px; text-align:center; padding:10px; background-color:#3797f0; color:white; border-radius:5px; text-decoration:none; position:absolute; bottom:20px; left:50%; transform:translateX(-50%); cursor:pointer;" download>حفظ</a>
     </div>
 
     <script>
@@ -491,6 +446,7 @@
             const chatBox = document.getElementById("chat-box");
             const messageInput = document.getElementById("message-input");
             const sendButton = document.getElementById("send-btn");
+            const recordButton = document.getElementById("record-btn");
             const attachButton = document.getElementById("attach-btn");
             const fileInput = document.getElementById("file-input");
             const filePreviewContainer = document.getElementById("file-preview-container");
@@ -501,13 +457,16 @@
             const modalImage = document.getElementById("modal-image");
             const closeModal = document.getElementById("close-modal");
             const saveImageBtn = document.getElementById("save-image-btn");
-
-            const recordButton = document.getElementById("record-btn");
+            
             const recordTimer = document.getElementById("record-timer");
+
+            const replyContainer = document.getElementById('reply-container');
+            const replyCloseButton = document.querySelector('.reply-close');
 
             const otherUser = "{{ other_user.username }}";
             let lastMessageId = 0;
             let selectedFile = null;
+            let replyingToMessage = null;
 
             // متغيرات خاصة بالتسجيل الصوتي
             let mediaRecorder;
@@ -535,21 +494,17 @@
             // 3. منطق الواجهة الأمامية (UI Logic)
             // =================================================================
             
-            // تبديل زر الإرسال وزر الميكروفون
             messageInput.addEventListener('input', function() {
+                const hasText = this.value.trim().length > 0;
                 this.style.height = 'auto';
                 this.style.height = (this.scrollHeight) + 'px';
-                if (this.value.trim().length > 0) {
-                    sendButton.style.display = 'flex';
-                    recordButton.style.display = 'none';
-                } else {
-                    sendButton.style.display = 'none';
-                    recordButton.style.display = 'flex';
-                }
+                
+                sendButton.style.display = hasText ? 'flex' : 'none';
+                recordButton.style.display = hasText ? 'none' : 'flex';
+                attachButton.style.display = hasText ? 'none' : 'flex';
             });
-            messageInput.dispatchEvent(new Event('input')); // لضبط الحالة الأولية
+            messageInput.dispatchEvent(new Event('input'));
 
-            // التعامل مع إرفاق الملفات
             attachButton.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', () => {
                 if (fileInput.files.length > 0) {
@@ -567,7 +522,25 @@
             });
 
             // =================================================================
-            // 4. منطق الرسائل الصوتية (تم الدمج هنا)
+            // 4. منطق الرد على الرسائل
+            // =================================================================
+            function setupReply(messageId, senderName, content, mediaType) {
+                replyingToMessage = messageId;
+                replyContainer.style.display = 'block';
+                replyContainer.querySelector('.reply-sender').textContent = `رد على ${senderName}`;
+                replyContainer.querySelector('.reply-content').textContent = content || '';
+                replyContainer.querySelector('.reply-media').textContent = mediaType ? `[${mediaType}]` : '';
+                messageInput.focus();
+            }
+
+            replyCloseButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                replyContainer.style.display = 'none';
+                replyingToMessage = null;
+            });
+
+            // =================================================================
+            // 5. منطق الرسائل الصوتية
             // =================================================================
             function startRecording() {
                 navigator.mediaDevices.getUserMedia({ audio: true })
@@ -589,15 +562,11 @@
                         mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
                         mediaRecorder.start();
 
-                        mediaRecorder.addEventListener("dataavailable", event => {
-                            audioChunks.push(event.data);
-                        });
-
+                        mediaRecorder.addEventListener("dataavailable", event => audioChunks.push(event.data));
                         mediaRecorder.addEventListener("stop", () => {
                             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                            sendMessage(null, audioBlob); // <-- استدعاء دالة الإرسال الموحدة
+                            sendMessage(null, audioBlob); 
                             
-                            // Reset UI
                             isRecording = false;
                             recordButton.classList.remove("recording");
                             recordTimer.style.display = 'none';
@@ -610,7 +579,7 @@
                     .catch(err => {
                         console.error("Error accessing microphone:", err);
                         alert("لا يمكن الوصول للميكروفون. يرجى التأكد من إعطاء الإذن.");
-                        isRecording = false; // Reset state
+                        isRecording = false;
                     });
             }
 
@@ -629,10 +598,8 @@
             });
 
             // =================================================================
-            // 5. دوال إرسال واستقبال الرسائل (النسخة المحدثة)
+            // 6. دوال إرسال واستقبال الرسائل
             // =================================================================
-
-            // دالة إرسال موحدة تدعم النص، الملفات، والرسائل الصوتية
             function sendMessage(contentOverride = null, audioBlob = null) {
                 const content = contentOverride !== null ? contentOverride : messageInput.value.trim();
                 if (!content && !selectedFile && !audioBlob) return;
@@ -645,11 +612,13 @@
                 formData.append('receiver', otherUser);
                 formData.append('content', content);
                 
+                if (replyingToMessage) {
+                    formData.append('reply_to', replyingToMessage);
+                }
                 if (selectedFile) {
                     if (selectedFile.type.startsWith('image/')) formData.append('image', selectedFile);
                     else if (selectedFile.type.startsWith('video/')) formData.append('video', selectedFile);
                 }
-                
                 if (audioBlob) {
                     formData.append('voice_note', audioBlob, 'voicemessage.webm');
                 }
@@ -667,6 +636,7 @@
                         messageInput.style.height = 'auto';
                         messageInput.dispatchEvent(new Event('input'));
                         removeFileButton.click();
+                        replyCloseButton.click(); // Reset reply UI
                         scrollToBottom();
                         
                         const sendSuccess = document.getElementById("send-success");
@@ -686,7 +656,6 @@
                 });
             }
 
-            // دالة عرض موحدة تدعم كل أنواع الرسائل بما فيها الصوتية
             function addMessageToChat(msg, isNew) {
                 const messageDiv = document.createElement("div");
                 messageDiv.dataset.id = msg.id;
@@ -696,70 +665,91 @@
                     messageDiv.innerHTML = `<p>${msg.content}</p>`;
                 } else {
                     messageDiv.classList.add("message");
-                    if (msg.sender === "{{ request.user.username }}") {
-                        messageDiv.classList.add("sent");
-                    } else {
-                        messageDiv.classList.add("received");
+                    const isSender = msg.sender === "{{ request.user.username }}";
+                    messageDiv.classList.add(isSender ? "sent" : "received");
+
+                    let replySection = '';
+                    if (msg.reply_to) {
+                        const replyTo = msg.reply_to;
+                        let replyContent = replyTo.content || '';
+                        let replyMedia = '';
+                        if (replyTo.image_url) replyMedia = '📷 صورة';
+                        else if (replyTo.video_url) replyMedia = '🎥 فيديو';
+                        else if (replyTo.voice_note_url) replyMedia = '🎙️ رسالة صوتية';
+                        
+                        const replySenderName = replyTo.sender === "{{ request.user.username }}" ? 'أنت' : replyTo.sender;
+                        replySection = `
+                            <div class="reply-indicator">
+                                <span class="reply-sender">${replySenderName}</span>
+                                <span class="reply-content">${replyContent}</span>
+                                ${replyMedia ? `<span class="reply-media">${replyMedia}</span>` : ''}
+                            </div>`;
                     }
 
                     let mediaHTML = '';
                     let contentHTML = msg.content ? `<p>${msg.content.replace(/\n/g, '<br>')}</p>` : '';
                     let seenIcon = "";
-                    if (msg.sender === "{{ request.user.username }}") {
-                        seenIcon = `<i class="fas fa-check${msg.is_read ? '-double' : ''}" ${msg.is_read ? 'style="color: #4fc3f7;"' : ''}></i>`;
+                    if (isSender) {
+                        const seenClass = msg.is_read ? 'fa-check-double' : 'fa-check';
+                        const seenStyle = msg.is_read ? 'style="color: #4fc3f7;"' : '';
+                        seenIcon = `<i class="fas ${seenClass}" ${seenStyle}></i>`;
                     }
+                    
+                    let timeAndSeenHTML = `<span class="message-time">${formatTime(msg.timestamp)} ${seenIcon}</span>`;
 
                     if (msg.voice_note_url) {
                         const uniqueId = `waveform-${msg.id}`;
                         messageDiv.innerHTML = `
+                            ${replySection}
                             <div class="voice-message-container">
                                 <button class="play-pause-btn" id="play-${uniqueId}"><i class="fas fa-play"></i></button>
                                 <div id="${uniqueId}" class="waveform"></div>
                                 <span id="duration-${uniqueId}" class="duration">00:00</span>
                             </div>
-                            <span class="message-time">
-                                ${formatTime(msg.timestamp)}
-                                ${seenIcon}
-                            </span>
-                        `;
-                        // Note: WaveSurfer initialization is done after appending to DOM
+                            ${timeAndSeenHTML}`;
                     } else {
-                        if (msg.image_url) {
-                            mediaHTML = `<img src="${msg.image_url}" alt="Image" style="cursor:pointer;">`;
-                        } else if (msg.video_url) {
-                            mediaHTML = `<video src="${msg.video_url}" controls></video>`;
-                        }
-                        messageDiv.innerHTML = `
-                            ${mediaHTML}
-                            ${contentHTML}
-                            <span class="message-time">
-                                ${formatTime(msg.timestamp)}
-                                ${seenIcon}
-                            </span>
-                        `;
+                        if (msg.image_url) mediaHTML = `<img src="${msg.image_url}" alt="Image" style="cursor:pointer;">`;
+                        else if (msg.video_url) mediaHTML = `<video src="${msg.video_url}" controls></video>`;
+                        messageDiv.innerHTML = `${replySection} ${mediaHTML} ${contentHTML} ${timeAndSeenHTML}`;
                     }
                 }
                 
                 chatBox.appendChild(messageDiv);
                 
-                // If it's a voice note, initialize WaveSurfer now
+                // Add event listener for replying
+                if (!msg.is_system_message) {
+                    messageDiv.addEventListener('click', (e) => {
+                        if (e.target.tagName !== 'IMG' && e.target.tagName !== 'VIDEO' &&
+                            !e.target.closest('.reply-indicator') && !e.target.closest('.play-pause-btn') &&
+                            !e.target.closest('a')) {
+                            
+                            const senderName = msg.sender === "{{ request.user.username }}" ? 'أنت' : msg.sender;
+                            let content = msg.content;
+                            let mediaType = '';
+                            if (msg.image_url) mediaType = 'صورة';
+                            else if (msg.video_url) mediaType = 'فيديو';
+                            else if (msg.voice_note_url) mediaType = 'رسالة صوتية';
+                            
+                            setupReply(msg.id, senderName, content, mediaType);
+                        }
+                    });
+                }
+                
                 if (msg.voice_note_url) {
                     const uniqueId = `waveform-${msg.id}`;
+                    const waveColor = msg.sender === "{{ request.user.username }}" ? 'rgba(255,255,255,0.5)' : '#A8A8A8';
+                    const progressColor = msg.sender === "{{ request.user.username }}" ? '#ffffff' : '#3797f0';
                     const wavesurfer = WaveSurfer.create({
-                        container: `#${uniqueId}`,
-                        waveColor: '#A8A8A8',
-                        progressColor: '#007bff',
+                        container: `#${uniqueId}`, waveColor: waveColor, progressColor: progressColor,
                         height: 40, barWidth: 2, responsive: true, cursorWidth: 0
                     });
 
                     wavesurfer.load(msg.voice_note_url);
                     const playBtn = document.getElementById(`play-${uniqueId}`);
-                    playBtn.onclick = () => wavesurfer.playPause();
-
+                    playBtn.onclick = (e) => { e.stopPropagation(); wavesurfer.playPause(); };
                     wavesurfer.on('play', () => playBtn.innerHTML = '<i class="fas fa-pause"></i>');
                     wavesurfer.on('pause', () => playBtn.innerHTML = '<i class="fas fa-play"></i>');
                     wavesurfer.on('finish', () => playBtn.innerHTML = '<i class="fas fa-play"></i>');
-
                     wavesurfer.on('ready', () => {
                         const duration = wavesurfer.getDuration();
                         const min = Math.floor(duration / 60).toString().padStart(2, '0');
@@ -774,7 +764,7 @@
             }
             
             // =================================================================
-            // 6. جلب الرسائل والتحديث الدوري
+            // 7. جلب الرسائل والتحديث الدوري
             // =================================================================
 
             function fetchAndRenderMessages() {
@@ -797,14 +787,14 @@
                     .then(response => response.json())
                     .then(messages => {
                         messages.forEach(msg => {
-                            const messageElement = document.querySelector(`.message[data-id='${msg.id}'], .system-message[data-id='${msg.id}']`);
-                            if (!messageElement) { // New message
+                            const messageElement = chatBox.querySelector(`div[data-id='${msg.id}']`);
+                            if (!messageElement) {
                                 addMessageToChat(msg, true);
                                 scrollToBottom();
-                            } else { // Existing message, check for read status update
+                            } else {
                                 if (msg.sender === "{{ request.user.username }}" && msg.is_read && !msg.is_system_message) {
-                                    const icon = messageElement.querySelector('.message-time .fa-check-double') || messageElement.querySelector('.message-time .fa-check');
-                                    if (icon && !icon.classList.contains('fa-check-double')) {
+                                    const icon = messageElement.querySelector('.message-time .fa-check');
+                                    if (icon) {
                                         icon.classList.add('fa-check-double');
                                         icon.classList.remove('fa-check');
                                         icon.style.color = '#4fc3f7';
@@ -816,7 +806,7 @@
             }
             
             // =================================================================
-            // 7. ربط الأحداث وتشغيل الكود
+            // 8. ربط الأحداث وتشغيل الكود
             // =================================================================
 
             sendButton.addEventListener("click", () => sendMessage());
@@ -827,7 +817,6 @@
                 }
             });
 
-            // Modal logic for images
             chatBox.addEventListener('click', function(event) {
                 if (event.target.tagName === 'IMG' && event.target.closest('.message')) {
                     modalImage.src = event.target.src;
@@ -837,7 +826,6 @@
             });
             closeModal.onclick = function() { imageModal.style.display = "none"; }
 
-            // Screenshot notification (if needed)
             document.addEventListener('keyup', function(e) {
                 if (e.key == 'PrintScreen') {
                     e.preventDefault();
@@ -849,198 +837,9 @@
                 }
             });
 
-            // Initial load and periodic checks
             fetchAndRenderMessages();
             setInterval(checkNewMessages, 3000);
         });
-        // إدارة الرد على الرسائل
-let replyingToMessage = null;
-
-function setupReply(messageId) {
-    const messageElement = document.querySelector(`.message[data-id="${messageId}"]`);
-    if (!messageElement) return;
-
-    const sender = messageElement.classList.contains('sent') ? 'أنت' : messageElement.querySelector('.user-name').textContent;
-    let content = messageElement.querySelector('p') ? messageElement.querySelector('p').textContent : '';
-    let mediaType = '';
-    
-    if (messageElement.querySelector('img')) {
-        mediaType = 'صورة';
-    } else if (messageElement.querySelector('video')) {
-        mediaType = 'فيديو';
-    } else if (messageElement.querySelector('.voice-message-container')) {
-        mediaType = 'رسالة صوتية';
-    }
-
-    replyingToMessage = messageId;
-    
-    const replyContainer = document.getElementById('reply-container');
-    replyContainer.style.display = 'block';
-    replyContainer.querySelector('.reply-sender').textContent = `رد على ${sender}`;
-    replyContainer.querySelector('.reply-content').textContent = content || '';
-    replyContainer.querySelector('.reply-media').textContent = mediaType ? `[${mediaType}]` : '';
-    
-    // التمرير إلى حقل الإدخال
-    messageInput.focus();
-}
-
-// إغلاق الرد
-document.querySelector('.reply-close').addEventListener('click', function() {
-    document.getElementById('reply-container').style.display = 'none';
-    replyingToMessage = null;
-});
-
-// تعديل دالة sendMessage لإرسال الرد
-function sendMessage(contentOverride = null, audioBlob = null) {
-    const content = contentOverride !== null ? contentOverride : messageInput.value.trim();
-    if (!content && !selectedFile && !audioBlob && !replyingToMessage) return;
-
-    const sendingIndicator = document.getElementById('sending-indicator');
-    sendingIndicator.style.display = 'block';
-    sendButton.disabled = true;
-
-    const formData = new FormData();
-    formData.append('receiver', otherUser);
-    formData.append('content', content);
-    
-    if (replyingToMessage) {
-        formData.append('reply_to', replyingToMessage);
-    }
-    
-    if (selectedFile) {
-        if (selectedFile.type.startsWith('image/')) formData.append('image', selectedFile);
-        else if (selectedFile.type.startsWith('video/')) formData.append('video', selectedFile);
-    }
-    
-    if (audioBlob) {
-        formData.append('voice_note', audioBlob, 'voicemessage.webm');
-    }
-
-    fetch("{% url 'send_message' %}", {
-        method: "POST",
-        headers: { "X-CSRFToken": "{{ csrf_token }}" },
-        body: formData
-    })
-    .then(response => response.json().then(data => ({ ok: response.ok, data })))
-    .then(({ ok, data }) => {
-        if (ok) {
-            addMessageToChat(data, true);
-            messageInput.value = "";
-            messageInput.style.height = 'auto';
-            messageInput.dispatchEvent(new Event('input'));
-            removeFileButton.click();
-            document.getElementById('reply-container').style.display = 'none';
-            replyingToMessage = null;
-            scrollToBottom();
-            
-            const sendSuccess = document.getElementById('send-success');
-            sendSuccess.style.display = 'block';
-            setTimeout(() => { sendSuccess.style.display = 'none'; }, 2000);
-        } else {
-            throw new Error(data.error || "حدث خطأ غير معروف");
-        }
-    })
-    .catch(error => {
-        console.error("Error sending message:", error);
-        alert("حدث خطأ في الإرسال: " + error.message);
-    })
-    .finally(() => {
-        sendingIndicator.style.display = 'none';
-        sendButton.disabled = false;
-    });
-}
-
-// تعديل دالة addMessageToChat لعرض الرسائل المردود عليها
-function addMessageToChat(msg, isNew) {
-    const messageDiv = document.createElement("div");
-    messageDiv.dataset.id = msg.id;
-
-    if (msg.is_system_message) {
-        messageDiv.classList.add("system-message");
-        messageDiv.innerHTML = `<p>${msg.content}</p>`;
-    } else {
-        messageDiv.classList.add("message");
-        if (msg.sender === "{{ request.user.username }}") {
-            messageDiv.classList.add("sent");
-        } else {
-            messageDiv.classList.add("received");
-        }
-
-        let mediaHTML = '';
-        let contentHTML = msg.content ? `<p>${msg.content.replace(/\n/g, '<br>')}</p>` : '';
-        let seenIcon = "";
-        if (msg.sender === "{{ request.user.username }}") {
-            seenIcon = `<i class="fas fa-check${msg.is_read ? '-double' : ''}" ${msg.is_read ? 'style="color: #4fc3f7;"' : ''}></i>`;
-        }
-
-        // إضافة قسم الرد إذا كانت الرسالة ردًا
-        let replySection = '';
-        if (msg.reply_to) {
-            const replyTo = msg.reply_to;
-            let replyContent = replyTo.content || '';
-            let replyMedia = '';
-            
-            if (replyTo.image_url) {
-                replyMedia = '📷 صورة';
-            } else if (replyTo.video_url) {
-                replyMedia = '🎥 فيديو';
-            } else if (replyTo.voice_note_url) {
-                replyMedia = '🎙️ رسالة صوتية';
-            }
-            
-            replySection = `
-                <div class="reply-indicator" onclick="setupReply('${replyTo.id}')">
-                    <span class="reply-sender">${replyTo.sender === "{{ request.user.username }}" ? 'أنت' : replyTo.sender}</span>
-                    <span class="reply-content">${replyContent}</span>
-                    ${replyMedia ? `<span class="reply-media">${replyMedia}</span>` : ''}
-                </div>
-            `;
-        }
-
-        if (msg.voice_note_url) {
-            const uniqueId = `waveform-${msg.id}`;
-            messageDiv.innerHTML = `
-                ${replySection}
-                <div class="voice-message-container">
-                    <button class="play-pause-btn" id="play-${uniqueId}"><i class="fas fa-play"></i></button>
-                    <div id="${uniqueId}" class="waveform"></div>
-                    <span id="duration-${uniqueId}" class="duration">00:00</span>
-                </div>
-                <span class="message-time">
-                    ${formatTime(msg.timestamp)}
-                    ${seenIcon}
-                </span>
-            `;
-        } else {
-            if (msg.image_url) {
-                mediaHTML = `<img src="${msg.image_url}" alt="Image" style="cursor:pointer;">`;
-            } else if (msg.video_url) {
-                mediaHTML = `<video src="${msg.video_url}" controls></video>`;
-            }
-            messageDiv.innerHTML = `
-                ${replySection}
-                ${mediaHTML}
-                ${contentHTML}
-                <span class="message-time">
-                    ${formatTime(msg.timestamp)}
-                    ${seenIcon}
-                </span>
-            `;
-        }
-    }
-    
-    chatBox.appendChild(messageDiv);
-    
-    // إضافة حدث النقر للرد على الرسالة
-    messageDiv.addEventListener('click', function(e) {
-        if (e.target.tagName !== 'IMG' && e.target.tagName !== 'VIDEO' && 
-            !e.target.closest('.reply-indicator') && !e.target.closest('.play-pause-btn')) {
-            setupReply(msg.id);
-        }
-    });
-
-    // باقي الكود الخاص بمعالجة الرسائل الصوتية...
-}
     </script>
 </body>
 </html>
