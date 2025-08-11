@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic', # أضف هذا السطر
     'django.contrib.humanize',  # <--- Add this line
     'vite',  # تحديث هذا السطر
     'cloudinary',
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'channels',
 ]
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # Media settings
@@ -179,7 +181,17 @@ DATABASES = {
     }
 }
 
-
+# إعدادات التخزين المؤقت
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'django_cache'),
+        'TIMEOUT': 60 * 15,  # التخزين المؤقت لمدة 15 دقيقة
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000
+        }
+    }
+}
 
 
 

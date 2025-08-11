@@ -601,61 +601,64 @@
             // 6. دوال إرسال واستقبال الرسائل
             // =================================================================
             function sendMessage(contentOverride = null, audioBlob = null) {
-                const content = contentOverride !== null ? contentOverride : messageInput.value.trim();
-                if (!content && !selectedFile && !audioBlob) return;
+    const content = contentOverride !== null ? contentOverride : messageInput.value.trim();
+    if (!content && !selectedFile && !audioBlob) return;
 
-                const sendingIndicator = document.getElementById("sending-indicator");
-                sendingIndicator.style.display = 'block';
-                sendButton.disabled = true;
+    const sendingIndicator = document.getElementById("sending-indicator");
+    sendingIndicator.style.display = 'block';
+    
+    // هذا هو السطر الذي يجب إضافته لتعطيل الزر
+    sendButton.disabled = true;
 
-                const formData = new FormData();
-                formData.append('receiver', otherUser);
-                formData.append('content', content);
-                
-                if (replyingToMessage) {
-                    formData.append('reply_to', replyingToMessage);
-                }
-                if (selectedFile) {
-                    if (selectedFile.type.startsWith('image/')) formData.append('image', selectedFile);
-                    else if (selectedFile.type.startsWith('video/')) formData.append('video', selectedFile);
-                }
-                if (audioBlob) {
-                    formData.append('voice_note', audioBlob, 'voicemessage.webm');
-                }
+    const formData = new FormData();
+    formData.append('receiver', otherUser);
+    formData.append('content', content);
+    
+    if (replyingToMessage) {
+        formData.append('reply_to', replyingToMessage);
+    }
+    if (selectedFile) {
+        if (selectedFile.type.startsWith('image/')) formData.append('image', selectedFile);
+        else if (selectedFile.type.startsWith('video/')) formData.append('video', selectedFile);
+    }
+    if (audioBlob) {
+        formData.append('voice_note', audioBlob, 'voicemessage.webm');
+    }
 
-                fetch("{% url 'send_message' %}", {
-                    method: "POST",
-                    headers: { "X-CSRFToken": "{{ csrf_token }}" },
-                    body: formData
-                })
-                .then(response => response.json().then(data => ({ ok: response.ok, data })))
-                .then(({ ok, data }) => {
-                    if (ok) {
-                        addMessageToChat(data, true);
-                        messageInput.value = "";
-                        messageInput.style.height = 'auto';
-                        messageInput.dispatchEvent(new Event('input'));
-                        removeFileButton.click();
-                        replyCloseButton.click(); // Reset reply UI
-                        scrollToBottom();
-                        
-                        const sendSuccess = document.getElementById("send-success");
-                        sendSuccess.style.display = 'block';
-                        setTimeout(() => { sendSuccess.style.display = 'none'; }, 2000);
-                    } else {
-                        throw new Error(data.error || "حدث خطأ غير معروف");
-                    }
-                })
-                .catch(error => {
-                    console.error("Error sending message:", error);
-                    alert("حدث خطأ في الإرسال: " + error.message);
-                })
-                .finally(() => {
-                    sendingIndicator.style.display = 'none';
-                    sendButton.disabled = false;
-                });
-            }
-
+    fetch("{% url 'send_message' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": "{{ csrf_token }}" },
+        body: formData
+    })
+    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+    .then(({ ok, data }) => {
+        if (ok) {
+            addMessageToChat(data, true);
+            messageInput.value = "";
+            messageInput.style.height = 'auto';
+            messageInput.dispatchEvent(new Event('input'));
+            removeFileButton.click();
+            replyCloseButton.click();
+            scrollToBottom();
+            
+            const sendSuccess = document.getElementById("send-success");
+            sendSuccess.style.display = 'block';
+            setTimeout(() => { sendSuccess.style.display = 'none'; }, 2000);
+        } else {
+            throw new Error(data.error || "حدث خطأ غير معروف");
+        }
+    })
+    .catch(error => {
+        console.error("Error sending message:", error);
+        alert("حدث خطأ في الإرسال: " + error.message);
+    })
+    .finally(() => {
+        sendingIndicator.style.display = 'none';
+        
+        // هذا هو السطر الذي يجب إضافته لإعادة تفعيل الزر
+        sendButton.disabled = false;
+    });
+}
             function addMessageToChat(msg, isNew) {
                 const messageDiv = document.createElement("div");
                 messageDiv.dataset.id = msg.id;

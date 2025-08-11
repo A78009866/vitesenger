@@ -22,6 +22,7 @@ from django.db.models import F, Exists, OuterRef
 import google.generativeai as genai
 from django import forms
 import random
+from django.views.decorators.cache import cache_page
 
 
 User = get_user_model()
@@ -43,7 +44,7 @@ class StoryForm(forms.ModelForm):
             raise forms.ValidationError("لا يمكن رفع صورة وفيديو في نفس القصة. يرجى اختيار واحد فقط.")
         return cleaned_data
 
-
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 @login_required
 def home(request):
     blocked_users = request.user.blocked_users.all()
@@ -111,6 +112,7 @@ def home(request):
     }
     return render(request, 'social/home.html', context)
 
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 def upload_story(request):
@@ -129,6 +131,7 @@ def upload_story(request):
     form = StoryForm()
     return render(request, 'social/upload_story.html', {'form': form})
 
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 def view_stories(request, username):
@@ -191,6 +194,7 @@ def delete_story(request, story_id):
     story.delete()
     return JsonResponse({'success': True, 'message': 'Story deleted successfully.'})
 
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 @require_POST
@@ -199,6 +203,7 @@ def update_user_activity(request):
     request.user.save(update_fields=['last_active'])
     return JsonResponse({'status': 'success'})
 
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 def create_post(request):
@@ -306,6 +311,7 @@ def reject_friend_request(request, username):
     if sender in request.user.received_friend_requests.all():
         request.user.received_friend_requests.remove(sender)
     return redirect('friends')
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 def profile(request, username):
@@ -322,6 +328,7 @@ def profile(request, username):
         'has_received_request': has_received_request,
     }
     return render(request, 'social/profile.html', context)
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 def qr_code_view(request, username):
@@ -329,6 +336,7 @@ def qr_code_view(request, username):
     if not user_profile.qr_code:
         user_profile.generate_qr_code()
     return render(request, 'social/qr_code.html', {'profile_user': user_profile})
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 def friends(request):
@@ -341,6 +349,7 @@ def friends(request):
         'sent_requests': sent_requests,
     }
     return render(request, 'social/friends.html', context)
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 def search_users(request):
@@ -402,6 +411,7 @@ def unblock_user(request, username):
     user_to_unblock = get_object_or_404(CustomUser, username=username)
     request.user.blocked_users.remove(user_to_unblock)
     return redirect('profile', username=username)
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 def edit_profile(request, username):
@@ -456,6 +466,7 @@ def delete_post(request, post_id):
         return redirect('profile', username=request.user.username)
     return render(request, 'social/confirm_delete.html', {'post': post_to_delete})
 
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 def chat_view(request, username):
@@ -616,6 +627,7 @@ def delete_message(request, message_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 # ------------------
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 def chat_list(request, username):
@@ -668,6 +680,7 @@ def chat_list(request, username):
     except Exception as e:
         raise Http404(f"حدث خطأ: {str(e)}")
 
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 def chat(request, username):
@@ -685,6 +698,7 @@ def chat(request, username):
 def splash(request):
     return render(request, 'splash.html')
 
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 def notifications(request):
@@ -727,6 +741,7 @@ def delete_comment(request, comment_id):
 
 def game_view(request):
     return render(request, 'game.html')
+@cache_page(60 * 1)  # التخزين المؤقت للصفحة لمدة دقيقة واحدة
 
 @login_required
 def reels_feed(request):
